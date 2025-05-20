@@ -24,6 +24,7 @@ import Footer from "./components/Footer";
 import { domain } from "@/app/lib/domain";
 import InfoTooltip from "./components/InfoToolTip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { convertToJpg, convertToSvg } from "@/app/lib/imageConverter";
 
 // const layouts = [
 //   { name: "Solo", icon: "/solo.svg" },
@@ -465,6 +466,109 @@ export default function Page() {
       });
   };
 
+  // 下载SVG图像函数
+  const downloadSvg = async () => {
+    if (!generatedImage || imageError) return;
+    
+    setIsLoading(true);
+    toast({
+      title: "正在处理",
+      description: "正在准备SVG文件...",
+      variant: "default",
+    });
+    
+    try {
+      const svgUrl = await convertToSvg(generatedImage);
+      const fileName = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.svg`;
+      
+      // 创建下载链接并触发下载
+      const link = document.createElement('a');
+      link.href = svgUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // 清理
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(svgUrl);
+      }, 100);
+      
+      toast({
+        title: "下载成功",
+        description: `已下载 ${companyName} 的Logo (SVG格式)`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("SVG下载失败:", error);
+      toast({
+        title: "下载失败",
+        description: "无法转换为SVG格式，请尝试其他格式",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 下载JPG图像函数
+  const downloadJpg = async () => {
+    if (!generatedImage || imageError) return;
+    
+    setIsLoading(true);
+    toast({
+      title: "正在处理",
+      description: "正在准备JPG文件...",
+      variant: "default",
+    });
+    
+    try {
+      const jpgUrl = await convertToJpg(generatedImage);
+      const fileName = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.jpg`;
+      
+      // 提取dataURL中的数据并创建Blob
+      const base64Data = jpgUrl.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteArrays = [];
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteArrays.push(byteCharacters.charCodeAt(i));
+      }
+      
+      const byteArray = new Uint8Array(byteArrays);
+      const blob = new Blob([byteArray], {type: 'image/jpeg'});
+      
+      // 创建下载链接
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // 清理
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+      
+      toast({
+        title: "下载成功",
+        description: `已下载 ${companyName} 的Logo (JPG格式)`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("JPG下载失败:", error);
+      toast({
+        title: "下载失败",
+        description: "无法转换为JPG格式，请尝试其他格式",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 更新图像加载失败处理逻辑
   const handleImageError = () => {
     console.error("图像加载失败:", generatedImage);
@@ -889,20 +993,24 @@ export default function Page() {
                           <Button 
                             size="sm"
                             variant="ghost"
-                            disabled={true}
-                            className="justify-start text-gray-500"
-                            title="即将推出，敬请期待"
+                            onClick={() => {
+                              downloadSvg();
+                              setShowExportOptions(false);
+                            }}
+                            className="justify-start"
                           >
-                            下载为SVG (即将推出)
+                            下载为SVG
                           </Button>
                           <Button 
                             size="sm"
                             variant="ghost"
-                            disabled={true}
-                            className="justify-start text-gray-500"
-                            title="即将推出，敬请期待"
+                            onClick={() => {
+                              downloadJpg();
+                              setShowExportOptions(false);
+                            }}
+                            className="justify-start"
                           >
-                            下载为JPG (即将推出)
+                            下载为JPG
                           </Button>
                         </div>
                       </PopoverContent>
