@@ -85,12 +85,6 @@ interface UrlOptions {
 }
 
 export default function Page() {
-  const [userAPIKey, setUserAPIKey] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("userAPIKey") || "";
-    }
-    return "";
-  });
   const [companyName, setCompanyName] = useState("");
   // const [selectedLayout, setSelectedLayout] = useState(layouts[0].name);
   const [selectedStyle, setSelectedStyle] = useState(logoStyles[0].name);
@@ -172,12 +166,6 @@ export default function Page() {
     }
   };
 
-  const handleAPIKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setUserAPIKey(newValue);
-    localStorage.setItem("userAPIKey", newValue);
-  };
-
   // 获取实际使用的颜色值
   const getActualPrimaryColor = () => {
     const selectedColor = primaryColors.find(c => c.name === selectedPrimaryColor);
@@ -192,8 +180,6 @@ export default function Page() {
   // 加载保存的偏好设置
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 加载API密钥已经在state初始化中处理了
-      
       // 加载其他偏好设置
       const savedPreferences = localStorage.getItem("logoPreferences");
       if (savedPreferences) {
@@ -266,7 +252,6 @@ export default function Page() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userAPIKey,
           companyName,
           selectedStyle,
           selectedPrimaryColor: getActualPrimaryColor(),
@@ -643,22 +628,18 @@ export default function Page() {
             <fieldset className="flex grow flex-col" disabled={!isSignedIn}>
               <div className="flex-grow overflow-y-auto">
                 <div className="px-8 pb-0 pt-4 md:px-6 md:pt-6">
-                  {/* API Key Section */}
                   <div className="mb-6">
                     <label
-                      htmlFor="api-key"
-                      className="mb-2 block text-xs font-bold uppercase text-[#F3F3F3]"
+                      htmlFor="company-name"
+                      className="mb-2 block text-xs font-bold uppercase text-[#6F6F6F]"
                     >
-                      REPLICATE API KEY
-                      <span className="ml-2 text-xs uppercase text-[#6F6F6F]">
-                        [OPTIONAL]
-                      </span>
+                      Company Name
                     </label>
                     <Input
-                      value={userAPIKey}
-                      onChange={handleAPIKeyChange}
-                      placeholder="API Key"
-                      type="password"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Sam's Burgers"
+                      required
                     />
                   </div>
                   <div className="-mx-6 mb-6 h-px w-[calc(100%+48px)] bg-[#343434]"></div>
@@ -676,36 +657,6 @@ export default function Page() {
                       required
                     />
                   </div>
-                  {/* Layout Section */}
-                  {/* <div className="mb-6">
-                    <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
-                      Layout
-                      <InfoTooltip content="Select a layout for your logo" />
-                    </label>
-                    <RadioGroup.Root
-                      value={selectedLayout}
-                      onValueChange={setSelectedLayout}
-                      className="group/root grid grid-cols-3 gap-3"
-                    >
-                      {layouts.map((layout) => (
-                        <RadioGroup.Item
-                          value={layout.name}
-                          key={layout.name}
-                          className="group text-[#6F6F6F] focus-visible:outline-none data-[state=checked]:text-white"
-                        >
-                          <Image
-                            src={layout.icon}
-                            alt={layout.name}
-                            width={96}
-                            height={96}
-                            className="w-full rounded-md border border-transparent group-focus-visible:outline group-focus-visible:outline-offset-2 group-focus-visible:outline-gray-400 group-data-[state=checked]:border-white"
-                          />
-                          <span className="text-xs">{layout.name}</span>
-                        </RadioGroup.Item>
-                      ))}
-                    </RadioGroup.Root>
-                  </div> */}
-                  {/* Logo Style Section */}
                   <div className="mb-6">
                     <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                       STYLE
@@ -734,7 +685,6 @@ export default function Page() {
                       ))}
                     </RadioGroup.Root>
                   </div>
-                  {/* Color Picker Section */}
                   <div className="mb-[25px] flex flex-col md:flex-row md:space-x-3">
                     <div className="mb-4 flex-1 md:mb-0">
                       <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
@@ -829,7 +779,6 @@ export default function Page() {
                       )}
                     </div>
                   </div>
-                  {/* 图像尺寸选择 */}
                   <div className="mb-6">
                     <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
                       图像尺寸
@@ -853,7 +802,6 @@ export default function Page() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {/* Additional Options Section */}
                   <div className="mb-1">
                     <div className="mt-1">
                       <div className="mb-1">

@@ -24,7 +24,6 @@ export async function POST(req: Request) {
   const json = await req.json();
   const data = z
     .object({
-      userAPIKey: z.string().optional(),
       companyName: z.string(),
       // selectedLayout: z.string(),
       selectedStyle: z.string(),
@@ -36,9 +35,8 @@ export async function POST(req: Request) {
     })
     .parse(json);
 
-  // Add rate limiting if Upstash API keys are set & no BYOK, otherwise skip
-  // 只在配置了Clerk和Upstash时应用速率限制
-  if (hasClerkConfig && process.env.UPSTASH_REDIS_REST_URL && !data.userAPIKey) {
+  // 应用速率限制（如果配置了Clerk和Upstash）
+  if (hasClerkConfig && process.env.UPSTASH_REDIS_REST_URL) {
     try {
       ratelimit = new Ratelimit({
         redis: Redis.fromEnv(),
@@ -52,10 +50,10 @@ export async function POST(req: Request) {
     }
   }
 
-  // 创建Replicate客户端实例
-  if (!process.env.REPLICATE_API_TOKEN && !data.userAPIKey) {
+  // 检查是否配置了Replicate API令牌
+  if (!process.env.REPLICATE_API_TOKEN) {
     return new Response(
-      "Missing Replicate API token. Please provide your own API key or set REPLICATE_API_TOKEN environment variable.",
+      "Missing Replicate API token. Please set REPLICATE_API_TOKEN environment variable.",
       {
         status: 400,
         headers: { "Content-Type": "text/plain" },
@@ -63,22 +61,10 @@ export async function POST(req: Request) {
     );
   }
 
+  // 创建Replicate客户端实例
   const replicate = new Replicate({
-    auth: data.userAPIKey || process.env.REPLICATE_API_TOKEN,
+    auth: process.env.REPLICATE_API_TOKEN,
   });
-
-  // 只在有Clerk配置时更新用户元数据
-  if (hasClerkConfig && user && data.userAPIKey) {
-    try {
-      (await clerkClient()).users.updateUserMetadata(user.id, {
-        unsafeMetadata: {
-          remaining: "BYOK",
-        },
-      });
-    } catch (error) {
-      console.error("Failed to update user metadata:", error);
-    }
-  }
 
   // 应用速率限制（仅当配置了Clerk和ratelimit且有用户时）
   let remainingCredits = 0;
@@ -103,7 +89,7 @@ export async function POST(req: Request) {
 
       if (!success) {
         return new Response(
-          "You've used up all your credits. Enter your own Replicate API Key to generate more logos.",
+          "You've used up all your credits.",
           {
             status: 429,
             headers: { "Content-Type": "text/plain" },
@@ -251,10 +237,8 @@ export async function POST(req: Request) {
       );
     }
     
-    console.log("Got image URL:", imageUrl);
-    
-    // 确保在成功生成图像后更新用户Credits（如果使用自己的API密钥则跳过）
-    if (hasClerkConfig && user && ratelimit && !data.userAPIKey) {
+    // 确保在成功生成图像后更新用户Credits
+    if (hasClerkConfig && user && ratelimit) {
       try {
         // 再次获取用户最新Credits
         const currentUserData = await (await clerkClient()).users.getUser(user.id);
@@ -366,59 +350,48 @@ export async function POST(req: Request) {
           }
           
           const imgbbData = await imgbbResponse.json();
+          console.log("ImgBB上传成功，获取到永久URL");
           
-          if (imgbbData.success) {
-            console.log("图像成功上传到ImgBB:", imgbbData.data.url);
-            
-            // 检查ImgBB返回的URL格式
-            const imageUrl = imgbbData.data.url;
-            const displayUrl = imgbbData.data.display_url;
-            
-            // 创建多种可能的URL选项，以防某些域名不可访问
-            const image_ibb_url = imageUrl.replace('i.ibb.co', 'image.ibb.co');
-            
-            // 确保URL格式正确
-            console.log("ImgBB返回的URL:", imageUrl);
-            console.log("ImgBB返回的显示URL:", displayUrl);
-            console.log("备用图像URL:", image_ibb_url);
-            
-            return Response.json({ 
-              image_url: imageUrl,
-              display_url: displayUrl,
-              backup_url: image_ibb_url,
-              thumb_url: imgbbData.data.thumb?.url,
-              delete_url: imgbbData.data.delete_url,
-              original_url: imageUrl, // 也返回原始Replicate URL作为备用
-              is_temporary: false
-            }, { status: 200 });
-          } else {
-            console.error("ImgBB上传响应错误:", imgbbData);
-            continue;
-          }
+          // 返回成功响应
+          return Response.json({
+            image_url: imageUrl, // 原始Replicate URL
+            display_url: imgbbData.data.url, // 永久URL
+            backup_url: imgbbData.data.thumb.url, // 缩略图URL
+            original_url: imgbbData.data.image.url, // 原始上传图像URL
+            is_temporary: false
+          }, { status: 200 });
         } catch (uploadError) {
           console.error(`ImgBB上传尝试 ${i+1} 失败: `, uploadError);
           await new Promise(resolve => setTimeout(resolve, 2000)); // 失败后等待2秒再重试
         }
       }
       
-      console.error("所有ImgBB上传尝试均失败");
+      // 如果所有上传尝试都失败，则返回临时URL
+      console.error("所有ImgBB上传尝试都失败，返回临时URL");
       return Response.json({ 
         image_url: imageUrl, 
-        display_url: imageUrl,
+        display_url: imageUrl, 
         is_temporary: true,
-        error: "Failed to upload to ImgBB after multiple attempts"
+        error: "All attempts to upload to ImgBB failed"
       }, { status: 200 });
       
-    } catch (uploadError) {
-      console.error("上传到ImgBB时出错:", uploadError);
-      // 失败时返回原始Replicate URL
-      return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
+    } catch (imgbbError) {
+      console.error("ImgBB处理过程中发生错误:", imgbbError);
+      
+      // 返回带有原始URL的响应
+      return Response.json({ 
+        image_url: imageUrl, 
+        display_url: imageUrl, 
+        is_temporary: true,
+        error: "Error processing ImgBB upload"
+      }, { status: 200 });
     }
+    
   } catch (error) {
     // 处理API密钥错误
     if (error instanceof Error && error.message.includes("Authentication error")) {
       console.error("Authentication error with Replicate:", error.message);
-      return new Response("Your API key is invalid.", {
+      return new Response("Invalid Replicate API configuration.", {
         status: 401,
         headers: { "Content-Type": "text/plain" },
       });
