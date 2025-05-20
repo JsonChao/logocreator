@@ -40,26 +40,42 @@ export const metadata: Metadata = {
   },
 };
 
+// 检查是否配置了Clerk环境变量
+const hasClerkConfig = 
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
+  process.env.CLERK_SECRET_KEY;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 根据Clerk配置情况选择不同的布局包装
+  const AppContent = () => (
+    <html lang="en" className="h-full">
+      <head>
+        <PlausibleProvider domain="logo-creator.io" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <meta name="color-scheme" content="dark" />
+      </head>
+      <body
+        className={`${jura.variable} dark min-h-full bg-[#343434] font-jura antialiased`}
+      >
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+
+  // 如果Clerk未配置，跳过ClerkProvider
+  if (!hasClerkConfig) {
+    return <AppContent />;
+  }
+
+  // 正常的带有Clerk认证的布局
   return (
     <ClerkProvider>
-      <html lang="en" className="h-full">
-        <head>
-          <PlausibleProvider domain="logo-creator.io" />
-          <link rel="icon" href="/favicon.ico" sizes="any" />
-          <meta name="color-scheme" content="dark" />
-        </head>
-        <body
-          className={`${jura.variable} dark min-h-full bg-[#343434] font-jura antialiased`}
-        >
-          {children}
-          <Toaster />
-        </body>
-      </html>
+      <AppContent />
     </ClerkProvider>
   );
 }

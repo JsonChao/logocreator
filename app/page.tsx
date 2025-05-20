@@ -52,6 +52,11 @@ const backgroundColors = [
   { name: "Black", color: "#000000" },
 ];
 
+const hasClerkConfig = typeof window !== 'undefined' ? false : !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
+  process.env.CLERK_SECRET_KEY
+);
+
 export default function Page() {
   const [userAPIKey, setUserAPIKey] = useState(() => {
     if (typeof window !== "undefined") {
@@ -72,7 +77,9 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
 
-  const { isSignedIn, isLoaded, user } = useUser();
+  const { isSignedIn = true, isLoaded = true, user = null } = hasClerkConfig 
+    ? useUser() 
+    : { isSignedIn: true, isLoaded: true, user: null };
 
   const handleAPIKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -86,39 +93,98 @@ export default function Page() {
     }
 
     setIsLoading(true);
+    setGeneratedImage("");
 
-    const res = await fetch("/api/generate-logo", {
-      method: "POST",
-      body: JSON.stringify({
-        userAPIKey,
-        companyName,
-        // selectedLayout,
-        selectedStyle,
-        selectedPrimaryColor,
-        selectedBackgroundColor,
-        additionalInfo,
-      }),
-    });
+    try {
+      console.log("Sending logo generation request...");
+      const res = await fetch("/api/generate-logo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userAPIKey,
+          companyName,
+          selectedStyle,
+          selectedPrimaryColor,
+          selectedBackgroundColor,
+          additionalInfo,
+        }),
+      });
 
-    if (res.ok) {
-      const json = await res.json();
-      setGeneratedImage(`data:image/png;base64,${json.b64_json}`);
-      await user.reload();
-    } else if (res.headers.get("Content-Type") === "text/plain") {
+      console.log("Response status:", res.status);
+      
+      // 错误情况
+      if (!res.ok) {
+        let errorMessage = "An unknown error occurred";
+        
+        // 尝试获取错误消息
+        if (res.headers.get("Content-Type")?.includes("text/plain")) {
+          errorMessage = await res.text();
+        } else if (res.headers.get("Content-Type")?.includes("application/json")) {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        }
+        
+        console.error("Logo generation failed:", errorMessage);
+        toast({
+          variant: "destructive",
+          title: `Error (${res.status})`,
+          description: errorMessage,
+        });
+        return;
+      }
+
+      // 成功情况
+      try {
+        const json = await res.json();
+        console.log("Successfully received logo data:", json);
+        
+        // 处理响应中的图像URL
+        if (json.image_url) {
+          // 直接使用返回的URL
+          setTimeout(() => {
+            setGeneratedImage(json.display_url || json.image_url);
+          }, 0);
+          
+          // 如果图像是临时的，显示警告
+          if (json.is_temporary) {
+            toast({
+              title: "提示",
+              description: "图像链接是临时的，可能会在一小时后过期。",
+              variant: "default",
+            });
+          }
+        } else if (json.b64_json) {
+          // 向后兼容 - 如果还有base64数据的情况
+          setTimeout(() => {
+            setGeneratedImage(`data:image/png;base64,${json.b64_json}`);
+          }, 0);
+        } else {
+          throw new Error("Missing image data in response");
+        }
+        
+        if (user) {
+          await user.reload();
+        }
+      } catch (parseError) {
+        console.error("Error parsing response:", parseError);
+        toast({
+          variant: "destructive",
+          title: "错误",
+          description: "无法处理生成的Logo。",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating logo:", error);
       toast({
         variant: "destructive",
-        title: res.statusText,
-        description: await res.text(),
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate logo. Please try again.",
       });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Whoops!",
-        description: `There was a problem processing your request: ${res.statusText}`,
-      });
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }
 
   return (
@@ -144,7 +210,7 @@ export default function Page() {
                       htmlFor="api-key"
                       className="mb-2 block text-xs font-bold uppercase text-[#F3F3F3]"
                     >
-                      TOGETHER API KEY
+                      REPLICATE API KEY
                       <span className="ml-2 text-xs uppercase text-[#6F6F6F]">
                         [OPTIONAL]
                       </span>
@@ -333,7 +399,7 @@ export default function Page() {
             </fieldset>
           </form>
 
-          {isLoaded && !isSignedIn && (
+          {isLoaded && !isSignedIn && hasClerkConfig ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -361,7 +427,7 @@ export default function Page() {
                 </div>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </div>
 
         <div className="flex w-full flex-col pt-12 md:pt-0">
@@ -370,45 +436,68 @@ export default function Page() {
           <div className="relative flex flex-grow items-center justify-center px-4">
             <div className="relative aspect-square w-full max-w-lg">
               {generatedImage ? (
-                <>
+                <div key="generated-image" className="relative h-full w-full">
                   <Image
                     className={`${isLoading ? "animate-pulse" : ""}`}
                     width={512}
                     height={512}
                     src={generatedImage}
-                    alt=""
+                    alt="Generated logo"
+                    priority
+                    unoptimized
                   />
                   <div
                     className={`pointer-events-none absolute inset-0 transition ${isLoading ? "bg-black/50 duration-500" : "bg-black/0 duration-0"}`}
                   />
 
                   <div className="absolute -right-12 top-0 flex flex-col gap-2">
-                    <Button size="icon" variant="secondary" asChild>
-                      <a href={generatedImage} download="logo.png">
-                        <DownloadIcon />
-                      </a>
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      onClick={() => {
+                        if (!generatedImage) return;
+                        
+                        // 创建一个临时链接元素来下载图像
+                        const downloadLink = document.createElement('a');
+                        
+                        // 设置下载链接和文件名
+                        downloadLink.href = generatedImage;
+                        downloadLink.download = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
+                        
+                        // 将链接添加到DOM中，触发点击，然后移除
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                      }}
+                    >
+                      <DownloadIcon />
                     </Button>
                     <Button
                       size="icon"
-                      onClick={generateLogo}
+                      onClick={() => {
+                        if (!isLoading) generateLogo(); 
+                      }}
                       variant="secondary"
+                      disabled={isLoading}
                     >
                       <Spinner loading={isLoading}>
                         <RefreshCwIcon />
                       </Spinner>
                     </Button>
                   </div>
-                </>
+                </div>
               ) : (
-                <Spinner loading={isLoading} className="size-8 text-white">
-                  <div className="flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-[#2C2C2C]">
-                    <h4 className="text-center text-base leading-tight text-white">
-                      Generate your dream
-                      <br />
-                      logo in 10 seconds!
-                    </h4>
-                  </div>
-                </Spinner>
+                <div key="placeholder" className="h-full w-full">
+                  <Spinner loading={isLoading} className="size-8 text-white">
+                    <div className="flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-[#2C2C2C]">
+                      <h4 className="text-center text-base leading-tight text-white">
+                        Generate your dream
+                        <br />
+                        logo in 10 seconds!
+                      </h4>
+                    </div>
+                  </Spinner>
+                </div>
               )}
             </div>
           </div>

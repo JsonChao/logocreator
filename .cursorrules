@@ -1,0 +1,83 @@
+# LogoCreator AI 开发指南
+
+## 项目概述
+LogoCreator是一个基于Next.js和AI技术的Logo生成工具，允许用户通过自定义样式、颜色和公司名称快速创建专业级别的Logo。集成了Replicate API的Flux Pro 1.1模型，使用Clerk进行用户认证，Upstash Redis进行速率限制。
+
+## 技术栈与要求
+- 使用TypeScript/JavaScript进行开发
+- 基于Next.js 14+框架
+- 使用Tailwind CSS进行样式管理
+- 使用Shadcn UI组件库
+- 集成Clerk进行用户认证
+- 使用Upstash Redis进行速率限制
+- 集成Replicate API生成Logo
+
+## 代码风格与最佳实践
+1. **命名约定**：
+   - 组件使用PascalCase (如 Header.tsx, Footer.tsx)
+   - 函数和变量使用camelCase (如 generateLogo)
+   - 常量使用UPPER_SNAKE_CASE
+
+2. **组件结构**：
+   - 遵循React函数组件模式
+   - 将UI组件保持在components目录下
+   - 可重用UI组件位于components/ui目录下
+   - 页面组件位于app目录下
+
+3. **状态管理**：
+   - 使用React Hooks (useState, useEffect等)进行状态管理
+   - 避免过度使用全局状态
+   - 组件之间的通信尽量通过props传递
+
+4. **API设计**：
+   - API路由位于app/api目录下
+   - 使用Next.js的Edge API Routes
+   - 确保错误处理和速率限制逻辑清晰
+   - 遵循RESTful设计原则
+
+5. **样式管理**：
+   - 使用Tailwind CSS工具类
+   - 避免内联样式
+   - 使用Tailwind的组合类优于自定义CSS
+   - 保持样式的一致性
+
+## Logo生成策略
+- 支持多种预定义的Logo样式：Tech, Flashy, Modern, Playful, Abstract, Minimal
+- 每种样式应有明确的设计提示词
+- 用户可以自定义Logo的主色和背景色
+- 确保提示词逻辑清晰，能正确反映用户选择
+
+## 错误处理
+- 实现清晰的错误边界
+- 使用toast通知用户错误
+- 处理API请求错误，包括无效API密钥、配额超限等
+- 提供清晰的用户反馈
+
+## 性能优化
+- 使用Next.js的Image组件优化图像加载
+- 优化API请求数量
+- 实现合理的缓存策略
+- 确保响应式设计，支持移动设备
+
+## 开发指引
+- 新功能应先在分支中开发，然后合并到主分支
+- 保持代码简洁，避免不必要的复杂性
+- 确保代码有良好的可维护性
+- 遵循DRY原则，避免重复代码
+- 添加适当的注释，特别是对复杂逻辑
+
+## 安全考虑
+- 保护API密钥和敏感信息
+- 实现适当的用户认证和授权
+- 防止常见的Web安全漏洞
+- 在服务器端验证所有用户输入
+
+## 维护和扩展
+此项目的未来方向包括：
+- 创建用户Logo历史记录仪表板
+- 支持SVG格式导出
+- 添加更多Logo样式选项
+- 增加图像尺寸选择功能
+- 显示使用自己API密钥时的近似价格
+- 允许上传参考Logo
+- 重新设计知名品牌Logo并展示 

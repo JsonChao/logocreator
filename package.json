@@ -27,11 +27,11 @@
     "next-plausible": "^3.12.4",
     "react": "^18",
     "react-dom": "^18",
+    "replicate": "^0.25.1",
     "shadcn": "^1.0.0",
     "shadcn-ui": "^0.2.3",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7",
-    "together-ai": "^0.9.0"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@shadcn/ui": "^0.0.4",
