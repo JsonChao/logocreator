@@ -79,17 +79,22 @@ export async function POST(req: Request) {
   }
 
   // 应用速率限制（仅当配置了Clerk和ratelimit且有用户时）
+  let remainingCredits = 0;
   if (hasClerkConfig && user && ratelimit) {
     try {
       const identifier = user.id;
       const { success, remaining } = await ratelimit.limit(identifier);
+      remainingCredits = remaining;
+      
+      console.log(`用户 ${user.id} 已应用速率限制，剩余Credits: ${remaining}`);
       
       try {
-        (await clerkClient()).users.updateUserMetadata(user.id, {
+        await (await clerkClient()).users.updateUserMetadata(user.id, {
           unsafeMetadata: {
             remaining,
           },
         });
+        console.log(`已更新用户 ${user.id} 的元数据，剩余Credits: ${remaining}`);
       } catch (error) {
         console.error("Failed to update user remaining:", error);
       }
@@ -229,6 +234,29 @@ export async function POST(req: Request) {
     }
     
     console.log("Got image URL:", imageUrl);
+    
+    // 确保在成功生成图像后更新用户Credits（如果使用自己的API密钥则跳过）
+    if (hasClerkConfig && user && ratelimit && !data.userAPIKey) {
+      try {
+        // 再次获取用户最新Credits
+        const currentUserData = await (await clerkClient()).users.getUser(user.id);
+        const currentRemaining = currentUserData.unsafeMetadata?.remaining;
+        
+        console.log(`生成后检查：用户 ${user.id} 当前Credits: ${currentRemaining}`);
+        
+        // 如果Credits没有更新，强制更新
+        if (typeof currentRemaining === 'number' && currentRemaining > remainingCredits) {
+          await (await clerkClient()).users.updateUserMetadata(user.id, {
+            unsafeMetadata: {
+              remaining: remainingCredits,
+            },
+          });
+          console.log(`强制更新用户Credits到 ${remainingCredits}`);
+        }
+      } catch (updateError) {
+        console.error("更新用户Credits失败:", updateError);
+      }
+    }
     
     // 上传到ImgBB获取永久链接
     try {

@@ -181,7 +181,13 @@ export default function Page() {
         }
         
         if (user) {
-          await user.reload();
+          try {
+            console.log("刷新用户数据以获取最新Credits信息");
+            await user.reload();
+            console.log("用户数据已刷新，Credits:", user.unsafeMetadata.remaining);
+          } catch (reloadError) {
+            console.error("刷新用户数据失败:", reloadError);
+          }
         }
       } catch (parseError) {
         console.error("Error parsing response:", parseError);
