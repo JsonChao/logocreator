@@ -1,46 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-  useUser,
-} from "@clerk/nextjs";
-import { domain } from "@/app/lib/domain";
-import { RefreshCwIcon, ArrowLeft, Heart } from "lucide-react";
-import { Button } from "./ui/button";
+import { ArrowLeft, Heart } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 export default function Header({ className = "" }: { className?: string }) {
-  const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [liked, setLiked] = useState(false);
-  
-  // Refresh user data to get latest credits - optimized with useCallback
-  const refreshUserData = useCallback(async () => {
-    if (!user) return;
-    setIsLoading(true);
-    try {
-      await user.reload();
-      console.log("User data refreshed, Credits:", user.unsafeMetadata.remaining);
-    } catch (error) {
-      console.error("Failed to refresh user data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-  
-  // Refresh user data once when component loads
-  useEffect(() => {
-    if (isLoaded && user) {
-      refreshUserData();
-    }
-  }, [isLoaded, user, refreshUserData]);
 
   return (
     <header className={`relative z-20 w-full bg-white shadow-none ${className}`} style={{ minHeight: 72 }}>

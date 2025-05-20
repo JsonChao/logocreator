@@ -289,7 +289,6 @@ export async function POST(req: Request) {
       console.log("使用ImgBB API密钥前4位:", imgbbApiKey.substring(0, 4) + "...");
       
       // 尝试获取图像数据 - 增加重试机制
-      const maxFetchRetries = 3;
       const imageBlobs = await Promise.all(
         imageUrls.map(async (url) => {
           const response = await fetch(url);
@@ -309,8 +308,6 @@ export async function POST(req: Request) {
       
       // 尝试上传到ImgBB - 增加重试机制
       const maxUploadRetries = 3;
-      
-      let imgbbData: any[] = [];
       
       for (let i = 0; i < maxUploadRetries; i++) {
         try {
