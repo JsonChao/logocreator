@@ -149,41 +149,23 @@ export default function LogoWizard({
             className="mx-auto max-w-2xl"
           >
             {currentStep === 0 && (
-              <CompanyNameStep 
-                value={initialData.companyName}
-                slogan={initialData.slogan}
-                onChange={(value) => onUpdateData({ companyName: value })}
-                onSloganChange={(slogan) => onUpdateData({ slogan })}
-                onContinue={goToNextStep}
-                continueDisabled={!initialData.companyName.trim()}
+              <CompanyNameStep
+                companyName={initialData.companyName}
+                onCompanyNameChange={(value) => onUpdateData({ companyName: value })}
               />
             )}
             
             {currentStep === 1 && (
               <StyleSelectionStep
-                value={initialData.style}
-                onChange={(value) => onUpdateData({ style: value })}
-                styles={styles}
-                onContinue={goToNextStep}
-                continueDisabled={!initialData.style}
+                style={initialData.style}
+                onStyleChange={(value) => onUpdateData({ style: value })}
               />
             )}
             
             {currentStep === 2 && (
               <ColorSelectionStep
                 primaryColor={initialData.primaryColor}
-                customPrimaryColor={initialData.customPrimaryColor}
-                backgroundColor={initialData.backgroundColor}
-                customBackgroundColor={initialData.customBackgroundColor}
                 onPrimaryColorChange={(value) => onUpdateData({ primaryColor: value })}
-                onCustomPrimaryColorChange={(value) => onUpdateData({ customPrimaryColor: value })}
-                onBackgroundColorChange={(value) => onUpdateData({ backgroundColor: value })}
-                onCustomBackgroundColorChange={(value) => onUpdateData({ customBackgroundColor: value })}
-                colors={colors}
-                backgroundColors={backgroundColors}
-                onContinue={goToNextStep}
-                continueDisabled={!initialData.primaryColor}
-                onSkip={goToNextStep}
               />
             )}
             
