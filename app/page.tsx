@@ -77,8 +77,10 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
 
+  // 修复React Hook条件调用的问题
+  const clerkUser = useUser();
   const { isSignedIn = true, isLoaded = true, user = null } = hasClerkConfig 
-    ? useUser() 
+    ? clerkUser 
     : { isSignedIn: true, isLoaded: true, user: null };
 
   const handleAPIKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {

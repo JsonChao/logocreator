@@ -30,6 +30,7 @@
     "replicate": "^0.25.1",
     "shadcn": "^1.0.0",
     "shadcn-ui": "^0.2.3",
+    "stream-browserify": "^3.0.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },
