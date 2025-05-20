@@ -20,9 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(url),
   title,
   description,
-  icons: {
-    icon: "/favicon.ico",
-  },
+  icons: [
+    { rel: "icon", url: "/images/logocraftai.webp", type: "image/webp" },
+    { rel: "icon", url: "/favicon.ico" }
+  ],
   openGraph: {
     images: [ogimage],
     title,
@@ -55,7 +56,8 @@ export default function RootLayout({
     <html lang="zh" className="h-full">
       <head>
         <PlausibleProvider domain="logocraftai.com" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/images/logocraftai.webp" type="image/webp" />
+        <link rel="alternate icon" href="/favicon.ico" />
         <meta name="color-scheme" content="dark" />
       </head>
       <body
