@@ -13,24 +13,29 @@ import { Button } from "./ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { useCredits } from "@/lib/hooks/useCredits";
+import { cn } from "@/lib/utils";
 
 export default function Header({ className = "" }: { className?: string }) {
   const { user, isLoaded } = useUser();
-  const [creditsLoading, setCreditsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+  const { credits, isLoading: creditsLoading } = useCredits();
+  const [isLoading, setIsLoading] = useState(false);
   const [liked, setLiked] = useState(false);
   
   // Refresh user data to get latest credits - optimized with useCallback
   const refreshUserData = useCallback(async () => {
     if (!user) return;
-    setCreditsLoading(true);
+    setIsLoading(true);
     try {
       await user.reload();
       console.log("User data refreshed, Credits:", user.unsafeMetadata.remaining);
     } catch (error) {
       console.error("Failed to refresh user data:", error);
     } finally {
-      setCreditsLoading(false);
+      setIsLoading(false);
     }
   }, [user]);
   

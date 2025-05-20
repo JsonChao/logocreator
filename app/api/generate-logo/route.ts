@@ -290,37 +290,12 @@ export async function POST(req: Request) {
       
       // 尝试获取图像数据 - 增加重试机制
       const maxFetchRetries = 3;
-      let imageBlobs: Blob[] = [];
-      
-      for (let i = 0; i < maxFetchRetries; i++) {
-        try {
-          console.log(`尝试获取图像 (${i+1}/${maxFetchRetries})...`);
-          const imageController = new AbortController();
-          const imageTimeoutId = setTimeout(() => imageController.abort(), 30000); // 增加到30秒
-          
-          const imageResponse = await fetch(imageUrls[i], {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            },
-            signal: imageController.signal
-          });
-          
-          clearTimeout(imageTimeoutId);
-          
-          if (!imageResponse.ok) {
-            console.error(`获取图像尝试 ${i+1} 失败: ${imageResponse.status}`);
-            continue;
-          }
-          
-          // 将图像转换为Blob
-          const imageBlob = await imageResponse.blob();
-          imageBlobs.push(imageBlob);
-          break; // 成功获取图像，跳出循环
-        } catch (fetchError) {
-          console.error(`获取图像尝试 ${i+1} 失败: `, fetchError);
-          await new Promise(resolve => setTimeout(resolve, 2000)); // 失败后等待2秒再重试
-        }
-      }
+      const imageBlobs = await Promise.all(
+        imageUrls.map(async (url) => {
+          const response = await fetch(url);
+          return response.blob();
+        })
+      );
       
       if (imageBlobs.length === 0) {
         console.error(`无法获取Replicate图像，最终状态码: unknown`);
@@ -365,15 +340,24 @@ export async function POST(req: Request) {
             continue;
           }
           
-          imgbbData.push(await imgbbResponse.json());
+          interface ImgbbResponse {
+            data: {
+              url: string;
+              delete_url: string;
+            };
+            success: boolean;
+            status: number;
+          }
+
+          const imgbbData = await imgbbResponse.json() as ImgbbResponse;
           console.log("ImgBB上传成功，获取到永久URL");
           
           // 返回成功响应
           return Response.json({
             image_urls: imageUrls,
-            display_urls: imgbbData.map(data => data.data.url),
-            backup_urls: imgbbData.map(data => data.data.thumb.url),
-            original_urls: imgbbData.map(data => data.data.image.url),
+            display_urls: imgbbData.data.url,
+            backup_urls: imgbbData.data.delete_url,
+            original_urls: imgbbData.data.url,
             is_temporary: false
           }, { status: 200 });
         } catch (uploadError) {
