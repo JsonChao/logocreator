@@ -559,6 +559,22 @@ export default function Page() {
     console.error("图像加载失败:", generatedImage);
     setImageError(true);
     
+    // 记录错误以便分析
+    try {
+      const errorInfo = {
+        url: generatedImage,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        screenSize: `${window.innerWidth}x${window.innerHeight}`
+      };
+      console.log("图像加载错误详情:", errorInfo);
+      
+      // 可以选择将错误信息发送到服务器进行分析
+      // 这里仅记录到控制台
+    } catch (e) {
+      console.error("记录错误信息失败:", e);
+    }
+    
     // 尝试从localStorage获取该图像的备用URLs
     const storedOptions = Object.keys(localStorage)
       .filter(key => key.startsWith('logo_url_options_'))
@@ -591,6 +607,12 @@ export default function Page() {
         const nextUrl = storedOptions.all[currentIndex + 1];
         console.log("自动尝试下一个备用URL:", nextUrl);
         
+        toast({
+          title: "图像加载问题",
+          description: "正在尝试使用备用图像链接...",
+          variant: "default"
+        });
+        
         setTimeout(() => {
           setImageError(false);
           setGeneratedImage(nextUrl);
@@ -604,10 +626,23 @@ export default function Page() {
       const newUrl = generatedImage.replace('i.ibb.co', 'image.ibb.co');
       console.log("尝试使用替代URL:", newUrl);
       
+      toast({
+        title: "图像加载问题",
+        description: "正在尝试其他图像服务器...",
+        variant: "default"
+      });
+      
       setTimeout(() => {
         setImageError(false);
         setGeneratedImage(newUrl);
       }, 1000);
+    } else {
+      // 如果所有自动修复尝试都失败，向用户提供手动解决方案
+      toast({
+        title: "图像加载失败",
+        description: "请尝试刷新页面或重新生成Logo",
+        variant: "destructive"
+      });
     }
   };
 
@@ -617,6 +652,15 @@ export default function Page() {
 
       <div className="flex w-full flex-col md:flex-row">
         <div className="relative flex h-full w-full flex-col bg-[#2C2C2C] text-[#F3F3F3] md:max-w-sm">
+          {/* 移动端导航提示 - 仅在移动端显示 */}
+          <div className="sticky top-0 z-10 bg-gray-800 p-2 text-center text-xs text-white md:hidden">
+            <p>向下滚动填写表单，完成后点击"生成Logo"</p>
+            <div className="mt-1 flex items-center justify-center space-x-1">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400"></span>
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400" style={{ animationDelay: '0.2s' }}></span>
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400" style={{ animationDelay: '0.4s' }}></span>
+            </div>
+          </div>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -628,12 +672,24 @@ export default function Page() {
             <fieldset className="flex grow flex-col" disabled={!isSignedIn}>
               <div className="flex-grow overflow-y-auto">
                 <div className="px-8 pb-0 pt-4 md:px-6 md:pt-6">
+                  {/* 用户引导区域 */}
+                  <div className="mb-6 rounded-lg bg-gray-800 p-3 text-sm">
+                    <h3 className="mb-2 font-bold text-white">创建专业Logo的4个简单步骤:</h3>
+                    <ol className="list-decimal pl-5 text-gray-300">
+                      <li className="mb-1">输入公司名称</li>
+                      <li className="mb-1">选择适合的风格</li>
+                      <li className="mb-1">自定义颜色</li>
+                      <li className="mb-1">点击生成Logo</li>
+                    </ol>
+                  </div>
+                  
                   <div className="mb-6">
                     <label
                       htmlFor="company-name"
-                      className="mb-2 block text-xs font-bold uppercase text-[#6F6F6F]"
+                      className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]"
                     >
                       Company Name
+                      <InfoTooltip content="输入您的品牌或公司名称，它将作为Logo的核心部分" />
                     </label>
                     <Input
                       value={companyName}
@@ -646,8 +702,11 @@ export default function Page() {
                   <div className="mb-6">
                     <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                       STYLE
-                      <InfoTooltip content="Choose a style for your logo" />
+                      <InfoTooltip content="选择一种风格将决定您Logo的整体设计风格和情感。每种风格都有其独特的特点和适用场景" />
                     </label>
+                    <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
+                      提示: 不同风格适合不同行业，例如Tech适合科技公司，Playful适合儿童品牌，Minimal适合现代简约品牌
+                    </div>
                     <RadioGroup.Root
                       value={selectedStyle}
                       onValueChange={setSelectedStyle}
@@ -673,9 +732,13 @@ export default function Page() {
                   </div>
                   <div className="mb-[25px] flex flex-col md:flex-row md:space-x-3">
                     <div className="mb-4 flex-1 md:mb-0">
-                      <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
+                      <label className="mb-1 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                         Primary
+                        <InfoTooltip content="主色调是Logo的主要颜色，体现品牌的核心色彩特性" />
                       </label>
+                      <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
+                        选择表达品牌个性的颜色: 蓝色代表专业和信任，红色代表热情和能量，绿色代表增长和和谐
+                      </div>
                       <Select
                         value={selectedPrimaryColor}
                         onValueChange={setSelectedPrimaryColor}
@@ -719,9 +782,13 @@ export default function Page() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <label className="mb-1 block items-center text-xs font-bold uppercase text-[#6F6F6F]">
+                      <label className="mb-1 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                         Background
+                        <InfoTooltip content="背景色会影响Logo的整体感观和应用场景的适应性" />
                       </label>
+                      <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
+                        提示: 白色或浅色背景适合多数应用场景，深色背景更具现代感和戏剧性
+                      </div>
                       <Select
                         value={selectedBackgroundColor}
                         onValueChange={setSelectedBackgroundColor}
@@ -766,10 +833,13 @@ export default function Page() {
                     </div>
                   </div>
                   <div className="mb-6">
-                    <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
+                    <label className="mb-1 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                       图像尺寸
-                      <InfoTooltip content="选择生成图像的尺寸" />
+                      <InfoTooltip content="选择生成图像的尺寸，不同尺寸适合不同的应用场景" />
                     </label>
+                    <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
+                      提示: 标准尺寸适合大多数场景，小尺寸生成更快，大尺寸包含更多细节，宽幅适合横幅设计
+                    </div>
                     <Select
                       value={selectedSize}
                       onValueChange={setSelectedSize}
@@ -796,12 +866,15 @@ export default function Page() {
                           className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]"
                         >
                           Additional Info
-                          <InfoTooltip content="Provide any additional information about your logo" />
+                          <InfoTooltip content="在这里添加额外的设计要求和品牌信息，帮助AI更好地理解您的需求" />
                         </label>
+                        <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
+                          提示: 可以描述您的行业、目标受众、品牌个性或特殊要求，例如"适合科技初创公司"或"面向儿童的友好设计"
+                        </div>
                         <Textarea
                           value={additionalInfo}
                           onChange={(e) => setAdditionalInfo(e.target.value)}
-                          placeholder="Enter additional information"
+                          placeholder="例如：我们是一家环保科技公司，希望Logo传达创新和环保理念"
                         />
                       </div>
                     </div>
@@ -831,6 +904,18 @@ export default function Page() {
               </div>
             </fieldset>
           </form>
+
+          {/* 移动端生成结果提示 - 仅在移动端且有生成结果时显示 */}
+          {generatedImage && (
+            <div className="fixed bottom-4 right-4 z-20 rounded-full bg-blue-500 p-3 shadow-lg md:hidden" onClick={() => {
+              // 滚动到顶部以便查看结果
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </div>
+          )}
 
           {isLoaded && !isSignedIn && hasClerkConfig ? (
             <motion.div

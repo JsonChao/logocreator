@@ -38,13 +38,13 @@ export async function POST(req: Request) {
   // 应用速率限制（如果配置了Clerk和Upstash）
   if (hasClerkConfig && process.env.UPSTASH_REDIS_REST_URL) {
     try {
-      ratelimit = new Ratelimit({
-        redis: Redis.fromEnv(),
-        // Allow 3 requests per 2 months on prod
-        limiter: Ratelimit.fixedWindow(3, "60 d"),
-        analytics: true,
-        prefix: "logocreator",
-      });
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      // Allow 3 requests per 2 months on prod
+      limiter: Ratelimit.fixedWindow(3, "60 d"),
+      analytics: true,
+      prefix: "logocreator",
+    });
     } catch (error) {
       console.error("Failed to initialize rate limiting:", error);
     }
@@ -70,31 +70,31 @@ export async function POST(req: Request) {
   let remainingCredits = 0;
   if (hasClerkConfig && user && ratelimit) {
     try {
-      const identifier = user.id;
-      const { success, remaining } = await ratelimit.limit(identifier);
+    const identifier = user.id;
+    const { success, remaining } = await ratelimit.limit(identifier);
       remainingCredits = remaining;
       
       console.log(`用户 ${user.id} 已应用速率限制，剩余Credits: ${remaining}`);
       
       try {
         await (await clerkClient()).users.updateUserMetadata(user.id, {
-          unsafeMetadata: {
-            remaining,
-          },
-        });
+      unsafeMetadata: {
+        remaining,
+      },
+    });
         console.log(`已更新用户 ${user.id} 的元数据，剩余Credits: ${remaining}`);
       } catch (error) {
         console.error("Failed to update user remaining:", error);
       }
 
-      if (!success) {
-        return new Response(
+    if (!success) {
+      return new Response(
           "You've used up all your credits.",
-          {
-            status: 429,
-            headers: { "Content-Type": "text/plain" },
-          },
-        );
+        {
+          status: 429,
+          headers: { "Content-Type": "text/plain" },
+        },
+      );
       }
     } catch (error) {
       console.error("Rate limiting error:", error);
@@ -103,28 +103,28 @@ export async function POST(req: Request) {
   }
 
   const flashyStyle =
-    "Flashy, attention grabbing, bold, futuristic, and eye-catching. Use vibrant neon colors with metallic, shiny, and glossy accents.";
+    "专业级别的Logo设计，引人注目，大胆创新，未来感十足，令人印象深刻。使用鲜艳的霓虹色彩，配以金属质感、光泽和闪亮的点缀效果。确保文字清晰可辨，适合品牌在各种媒体上使用。设计要简洁有力，避免过于复杂的元素。";
 
   const techStyle =
-    "highly detailed, sharp focus, cinematic, photorealistic, Minimalist, clean, sleek, neutral color pallete with subtle accents, clean lines, shadows, and flat.";
+    "高度精细的科技风格Logo，锐利清晰，具有电影感和照片级真实感。极简主义设计，干净流畅，采用中性色调配以微妙的强调色，纯净的线条，适当的阴影，扁平化设计。确保Logo在小尺寸下仍然清晰可辨，适合科技公司使用。";
 
   const modernStyle =
-    "modern, forward-thinking, flat design, geometric shapes, clean lines, natural colors with subtle accents, use strategic negative space to create visual interest.";
+    "现代前卫的Logo设计，采用扁平化设计风格，几何形状，简洁线条，自然色彩搭配微妙的点缀色。巧妙利用负空间创造视觉趣味。设计要简约而不简单，传达品牌的前瞻性和创新精神。确保设计可在各种尺寸和媒介中保持一致性。";
 
   const playfulStyle =
-    "playful, lighthearted, bright bold colors, rounded shapes, lively.";
+    "充满活力的俏皮Logo，使用明亮大胆的色彩，圆润的形状，活泼的设计元素。设计应该引人微笑，具有亲和力和趣味性，同时保持专业水准。适合面向年轻受众或创意行业的品牌。确保字体选择与整体风格协调一致。";
 
   const abstractStyle =
-    "abstract, artistic, creative, unique shapes, patterns, and textures to create a visually interesting and wild logo.";
+    "抽象艺术风格的Logo，富有创意，使用独特的形状、图案和纹理创造视觉上引人入胜的设计。设计要大胆创新且有辨识度，能够传达品牌的独特个性。抽象元素应当与品牌名称巧妙融合，形成和谐的整体。";
 
   const minimalStyle =
-    "minimal, simple, timeless, versatile, single color logo, use negative space, flat design with minimal details, Light, soft, and subtle.";
+    "极简主义Logo设计，简约、永恒、多用途。采用单色设计，巧妙利用负空间，扁平设计风格，细节极少。轻盈、柔和、微妙的视觉效果。确保设计在极简的同时仍具有品牌辨识度，可在各种背景和场景中使用。关注字体的精确排版。";
 
   const vintageStyle =
-    "vintage, retro, classic, nostalgic, distressed textures, heritage-inspired, aged appearance, muted colors with sepia tones.";
+    "复古风格Logo，带有经典怀旧感，使用做旧纹理，传承灵感设计，呈现年代感，采用柔和的复古色调。设计应当唤起特定时代的美感，同时满足现代使用需求。字体选择要符合复古主题，可考虑使用衬线字体。";
 
   const corporateStyle =
-    "professional, corporate, business-like, clean, structured, conservative color scheme, conveys trust and stability.";
+    "专业的企业级Logo设计，商务风格，整洁，结构化，保守配色方案，传达信任感和稳定性。设计要正式且专业，适合商业环境使用。字体要选择大气规范的无衬线字体，整体布局要平衡且易于识别。确保在各种应用场景中均可保持专业形象。";
 
   const styleLookup: Record<string, string> = {
     Flashy: flashyStyle,
@@ -137,9 +137,19 @@ export async function POST(req: Request) {
     Corporate: corporateStyle,
   };
 
-  const prompt = dedent`A single logo, high-quality, award-winning professional design, made for both digital and print media, only contains a few vector shapes, ${styleLookup[data.selectedStyle]}
+  const prompt = dedent`创建一个单一的标志性Logo，高端专业的设计品质，荣获设计大奖级别的专业效果。该Logo应同时适用于数字媒体和印刷媒体，包含少量矢量图形元素以确保清晰度和可扩展性。
 
-  Primary color is ${data.selectedPrimaryColor} and background color is ${data.selectedBackgroundColor}. The company name is ${data.companyName}, make sure to include the company name in the logo. ${data.additionalInfo ? `Additional info: ${data.additionalInfo}` : ""}`;
+  设计风格: ${styleLookup[data.selectedStyle]}
+  
+  主色调: ${data.selectedPrimaryColor}
+  背景色: ${data.selectedBackgroundColor}
+  公司名称: ${data.companyName}
+  
+  请确保Logo设计中包含公司名称，并让名称与图形元素和谐融合。设计要简洁有力，具有令人难忘的独特性，在不同尺寸和背景下都能保持辨识度。Logo应当反映品牌个性，易于识别，并且在黑白模式下仍然有效。
+  
+  ${data.additionalInfo ? `额外设计要求: ${data.additionalInfo}` : ""}
+  
+  请避免过度复杂的设计元素，确保Logo设计符合现代设计标准，可轻松用于网站、社交媒体、名片和其他品牌应用场景。`;
 
   try {
     console.log("Generating logo with Replicate...");
