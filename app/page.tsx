@@ -16,9 +16,9 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import * as RadioGroup from "@radix-ui/react-radio-group";
-import { DownloadIcon, RefreshCwIcon, ThumbsUp, ThumbsDown, ChevronDown } from "lucide-react";
+import { DownloadIcon, RefreshCwIcon, ThumbsUp, ThumbsDown } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { domain } from "@/app/lib/domain";
@@ -128,7 +128,12 @@ export default function Page() {
         try {
           const parsedHistory = JSON.parse(savedHistory);
           // 确保日期对象被正确还原
-          const historyWithDates = parsedHistory.map((item: any) => ({
+          const historyWithDates = parsedHistory.map((item: {
+            imageUrl: string;
+            companyName: string;
+            style: string;
+            date: string;
+          }) => ({
             ...item,
             date: new Date(item.date)
           }));
@@ -213,7 +218,7 @@ export default function Page() {
   }, []);
 
   // 保存偏好设置
-  const savePreferences = () => {
+  const savePreferences = useCallback(() => {
     if (typeof window !== "undefined") {
       const preferences = {
         style: selectedStyle,
@@ -225,13 +230,13 @@ export default function Page() {
       };
       localStorage.setItem("logoPreferences", JSON.stringify(preferences));
     }
-  };
-
-  // 当偏好设置改变时保存
-  useEffect(() => {
-    savePreferences();
   }, [selectedStyle, selectedPrimaryColor, selectedBackgroundColor, 
       customPrimaryColor, customBackgroundColor, selectedSize]);
+
+  // 当组件挂载时保存
+  useEffect(() => {
+    savePreferences();
+  }, [savePreferences]);
 
   async function generateLogo() {
     if (!isSignedIn) {
