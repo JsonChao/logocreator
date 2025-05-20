@@ -654,7 +654,7 @@ export default function Page() {
         <div className="relative flex h-full w-full flex-col bg-[#2C2C2C] text-[#F3F3F3] md:max-w-sm">
           {/* 移动端导航提示 - 仅在移动端显示 */}
           <div className="sticky top-0 z-10 bg-gray-800 p-2 text-center text-xs text-white md:hidden">
-            <p>向下滚动填写表单，完成后点击"生成Logo"</p>
+            <p>向下滚动填写表单，完成后点击&ldquo;生成Logo&rdquo;</p>
             <div className="mt-1 flex items-center justify-center space-x-1">
               <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400"></span>
               <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400" style={{ animationDelay: '0.2s' }}></span>
@@ -869,7 +869,7 @@ export default function Page() {
                           <InfoTooltip content="在这里添加额外的设计要求和品牌信息，帮助AI更好地理解您的需求" />
                         </label>
                         <div className="mb-2 rounded bg-gray-700 px-3 py-2 text-xs text-gray-300">
-                          提示: 可以描述您的行业、目标受众、品牌个性或特殊要求，例如"适合科技初创公司"或"面向儿童的友好设计"
+                          提示: 可以描述您的行业、目标受众、品牌个性或特殊要求，例如&ldquo;适合科技初创公司&rdquo;或&ldquo;面向儿童的友好设计&rdquo;
                         </div>
                         <Textarea
                           value={additionalInfo}
