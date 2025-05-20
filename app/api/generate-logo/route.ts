@@ -168,6 +168,7 @@ export async function POST(req: Request) {
       prompt_upsampling: true,  // 优化提示词
       width: data.width,
       height: data.height,
+      num_outputs: 18,  // 修改为生成18张图片
     };
     
     console.log(`Running model: ${model} with prompt: "${prompt.substring(0, 100)}..."`);
@@ -222,24 +223,24 @@ export async function POST(req: Request) {
     console.log("Prediction completed successfully, status:", finalPrediction.status);
     
     // 处理输出 - 可能是字符串URL或URL数组
-    let imageUrl: string | null = null;
+    let imageUrls: string[] = [];
     console.log("Output type:", typeof finalPrediction.output);
     
     // 检查输出是否有效并提取图像URL
     if (finalPrediction.output) {
-      if (Array.isArray(finalPrediction.output) && finalPrediction.output.length > 0) {
+      if (Array.isArray(finalPrediction.output)) {
         // 处理数组输出
-        imageUrl = finalPrediction.output[0];
+        imageUrls = finalPrediction.output;
       } else if (typeof finalPrediction.output === 'string' && finalPrediction.output.startsWith('http')) {
-        // 处理字符串URL输出
-        imageUrl = finalPrediction.output;
+        // 处理单个字符串URL输出
+        imageUrls = [finalPrediction.output];
       }
     }
     
-    if (!imageUrl) {
+    if (imageUrls.length === 0) {
       console.error("Invalid prediction output:", finalPrediction.output);
       return new Response(
-        "Failed to generate image. No valid image URL received from AI model.",
+        "Failed to generate images. No valid image URLs received from AI model.",
         {
           status: 500,
           headers: { "Content-Type": "text/plain" },
@@ -278,8 +279,8 @@ export async function POST(req: Request) {
       if (!imgbbApiKey) {
         console.warn("未找到ImgBB API密钥，将直接返回Replicate URL");
         return Response.json({ 
-          image_url: imageUrl, 
-          display_url: imageUrl,
+          image_urls: imageUrls,
+          display_urls: imageUrls,
           is_temporary: true 
         }, { status: 200 });
       }
@@ -289,7 +290,7 @@ export async function POST(req: Request) {
       
       // 尝试获取图像数据 - 增加重试机制
       const maxFetchRetries = 3;
-      let imageBlob = null;
+      let imageBlobs: Blob[] = [];
       
       for (let i = 0; i < maxFetchRetries; i++) {
         try {
@@ -297,7 +298,7 @@ export async function POST(req: Request) {
           const imageController = new AbortController();
           const imageTimeoutId = setTimeout(() => imageController.abort(), 30000); // 增加到30秒
           
-          const imageResponse = await fetch(imageUrl, {
+          const imageResponse = await fetch(imageUrls[i], {
             headers: {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             },
@@ -312,7 +313,8 @@ export async function POST(req: Request) {
           }
           
           // 将图像转换为Blob
-          imageBlob = await imageResponse.blob();
+          const imageBlob = await imageResponse.blob();
+          imageBlobs.push(imageBlob);
           break; // 成功获取图像，跳出循环
         } catch (fetchError) {
           console.error(`获取图像尝试 ${i+1} 失败: `, fetchError);
@@ -320,18 +322,20 @@ export async function POST(req: Request) {
         }
       }
       
-      if (!imageBlob) {
+      if (imageBlobs.length === 0) {
         console.error(`无法获取Replicate图像，最终状态码: unknown`);
         return Response.json({ 
-          image_url: imageUrl, 
-          display_url: imageUrl,
+          image_urls: imageUrls,
+          display_urls: imageUrls,
           is_temporary: true,
-          error: "Could not download the generated image"
+          error: "Could not download the generated images"
         }, { status: 200 });
       }
       
       // 尝试上传到ImgBB - 增加重试机制
       const maxUploadRetries = 3;
+      
+      let imgbbData: any[] = [];
       
       for (let i = 0; i < maxUploadRetries; i++) {
         try {
@@ -340,7 +344,9 @@ export async function POST(req: Request) {
           // 创建FormData用于上传
           const formData = new FormData();
           formData.append('key', imgbbApiKey);
-          formData.append('image', imageBlob);
+          for (let j = 0; j < imageBlobs.length; j++) {
+            formData.append('image', imageBlobs[j]);
+          }
           
           // 上传到ImgBB
           const imgbbController = new AbortController();
@@ -359,15 +365,15 @@ export async function POST(req: Request) {
             continue;
           }
           
-          const imgbbData = await imgbbResponse.json();
+          imgbbData.push(await imgbbResponse.json());
           console.log("ImgBB上传成功，获取到永久URL");
           
           // 返回成功响应
           return Response.json({
-            image_url: imageUrl, // 原始Replicate URL
-            display_url: imgbbData.data.url, // 永久URL
-            backup_url: imgbbData.data.thumb.url, // 缩略图URL
-            original_url: imgbbData.data.image.url, // 原始上传图像URL
+            image_urls: imageUrls,
+            display_urls: imgbbData.map(data => data.data.url),
+            backup_urls: imgbbData.map(data => data.data.thumb.url),
+            original_urls: imgbbData.map(data => data.data.image.url),
             is_temporary: false
           }, { status: 200 });
         } catch (uploadError) {
@@ -379,8 +385,8 @@ export async function POST(req: Request) {
       // 如果所有上传尝试都失败，则返回临时URL
       console.error("所有ImgBB上传尝试都失败，返回临时URL");
       return Response.json({ 
-        image_url: imageUrl, 
-        display_url: imageUrl, 
+        image_urls: imageUrls,
+        display_urls: imageUrls,
         is_temporary: true,
         error: "All attempts to upload to ImgBB failed"
       }, { status: 200 });
@@ -390,8 +396,8 @@ export async function POST(req: Request) {
       
       // 返回带有原始URL的响应
       return Response.json({ 
-        image_url: imageUrl, 
-        display_url: imageUrl, 
+        image_urls: imageUrls,
+        display_urls: imageUrls,
         is_temporary: true,
         error: "Error processing ImgBB upload"
       }, { status: 200 });
@@ -408,10 +414,10 @@ export async function POST(req: Request) {
     }
 
     // 处理其他可能的错误
-    console.error("Error generating image:", error);
+    console.error("Error generating images:", error);
     if (error instanceof Error) {
       return new Response(
-        `Error generating logo: ${error.message}`,
+        `Error generating logos: ${error.message}`,
         {
           status: 500,
           headers: { "Content-Type": "text/plain" },
@@ -420,7 +426,7 @@ export async function POST(req: Request) {
     }
 
     return new Response(
-      "An unexpected error occurred while generating the logo.",
+      "An unexpected error occurred while generating the logos.",
       {
         status: 500,
         headers: { "Content-Type": "text/plain" },

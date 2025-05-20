@@ -8,14 +8,17 @@ import {
   useUser,
 } from "@clerk/nextjs";
 import { domain } from "@/app/lib/domain";
-import { RefreshCwIcon } from "lucide-react";
+import { RefreshCwIcon, ArrowLeft, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { useRouter } from "next/navigation";
 
-export default function Header({ className }: { className: string }) {
+export default function Header({ className = "" }: { className?: string }) {
   const { user, isLoaded } = useUser();
   const [creditsLoading, setCreditsLoading] = useState(false);
+  const router = useRouter();
+  const [liked, setLiked] = useState(false);
   
   // Refresh user data to get latest credits - optimized with useCallback
   const refreshUserData = useCallback(async () => {
@@ -39,71 +42,45 @@ export default function Header({ className }: { className: string }) {
   }, [isLoaded, user, refreshUserData]);
 
   return (
-    <header className={`relative w-full ${className}`}>
-      <div className="flex items-center justify-between bg-white px-4 py-3 shadow-sm md:mt-0">
-        {/* Logo - left on mobile, centered on larger screens */}
-        <div className="flex flex-grow justify-start xl:justify-center">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/logocraftai.webp"
-              alt="LogocraftAI"
-              width={180}
-              height={60}
-              className="w-[140px] md:w-[180px] lg:w-[220px]"
-              priority
-            />
-          </Link>
-        </div>
-        {/* Credits Section */}
-        <div className="flex items-center space-x-3">
-          <SignedOut>
-            <SignInButton
-              mode="modal"
-              signUpForceRedirectUrl={domain}
-              forceRedirectUrl={domain}
-            >
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="bg-white text-blue-600 hover:bg-blue-50"
-              >
-                Sign In
-              </Button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-800">
-              {user?.unsafeMetadata.remaining === "BYOK" ? (
-                <span>Custom API Key</span>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <span className="font-semibold">Credits:</span>
-                  <span className="mr-1 font-bold">{`${user?.unsafeMetadata.remaining ?? 3}`}</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-5 w-5 rounded-full p-0" 
-                          onClick={refreshUserData}
-                          disabled={creditsLoading}
-                        >
-                          <RefreshCwIcon className={`h-3 w-3 text-gray-500 ${creditsLoading ? 'animate-spin' : ''}`} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Refresh credits</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              )}
-            </div>
-            <UserButton />
-          </SignedIn>
-        </div>
+    <header className={`relative z-20 w-full bg-white shadow-none ${className}`} style={{ minHeight: 72 }}>
+      <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 md:px-0">
+        {/* 返回按钮 */}
+        <button
+          onClick={() => router.back()}
+          className="flex size-10 items-center justify-center rounded-full transition hover:bg-gray-100 focus:outline-none"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-6 w-6 text-gray-500" />
+        </button>
+
+        {/* 居中Logo */}
+        <Link href="/" className="flex items-center select-none">
+          <Image
+            src="/logoai.svg"
+            alt="logoai"
+            width={40}
+            height={40}
+            className="mr-2"
+            priority
+          />
+          <span className="text-2xl font-bold tracking-tight text-gray-800">logoai</span>
+        </Link>
+
+        {/* 收藏按钮 */}
+        <button
+          onClick={() => setLiked((v) => !v)}
+          className="flex size-10 items-center justify-center rounded-full transition hover:bg-gray-100 focus:outline-none"
+          aria-label="Favorite"
+        >
+          {liked ? (
+            <Heart className="h-6 w-6 fill-red-500 text-red-500" />
+          ) : (
+            <Heart className="h-6 w-6 text-gray-400" />
+          )}
+        </button>
       </div>
+      {/* 底部渐变或细线 */}
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-200 via-pink-200 to-yellow-100 opacity-70" />
     </header>
   );
 }

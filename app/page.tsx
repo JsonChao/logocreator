@@ -62,15 +62,15 @@ export default function Page() {
   // 保留现有状态管理，但将其重新组织到WizardData结构中
   const [wizardData, setWizardData] = useState<WizardData>({
     companyName: "",
-    style: logoStyles[0].name,
-    primaryColor: primaryColors[0].name,
-    customPrimaryColor: "#000000",
-    backgroundColor: backgroundColors[0].name,
-    customBackgroundColor: "#ffffff",
-    size: imageSizes[0],
+    style: "",
+    primaryColor: "",
+    customPrimaryColor: "",
+    backgroundColor: "",
+    customBackgroundColor: "",
     additionalInfo: "",
-    generatedImage: "",
-    isLoading: false
+    size: imageSizes[0],
+    isLoading: false,
+    generatedImages: [],
   });
   
   const [imageError, setImageError] = useState(false);
@@ -209,13 +209,13 @@ export default function Page() {
 
     try {
       console.log("Sending logo generation request...");
-      
-      const res = await fetch("/api/generate-logo", {
-        method: "POST",
+
+    const res = await fetch("/api/generate-logo", {
+      method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+      body: JSON.stringify({
           companyName: wizardData.companyName,
           selectedStyle: wizardData.style,
           selectedPrimaryColor: getActualPrimaryColor(),
@@ -223,8 +223,8 @@ export default function Page() {
           additionalInfo: wizardData.additionalInfo,
           width: wizardData.size.width,
           height: wizardData.size.height,
-        }),
-      });
+      }),
+    });
 
       console.log("Response status:", res.status);
       
@@ -251,47 +251,27 @@ export default function Page() {
 
       // Success handling
       try {
-        const json = await res.json();
+      const json = await res.json();
         console.log("Successfully received logo data:", json);
         
-        // Process image URL in response
-        if (json.image_url) {
-          // Use returned URL directly
+        // Process image URLs in response
+        if (json.image_urls && json.image_urls.length > 0) {
           setTimeout(() => {
-            // Prioritize provided URL options
-            const imageOptions = [
-              json.display_url,
-              json.backup_url, 
-              json.original_url,
-              json.image_url
-            ].filter(Boolean); // Filter out undefined/null values
+            // 使用所有生成的图片URL
+            setWizardData(prev => ({ 
+              ...prev, 
+              generatedImages: json.display_urls || json.image_urls 
+            }));
             
-            console.log("Available image URL options:", imageOptions);
-            
-            // Default to first valid option
-            const imageUrlToUse = imageOptions[0] || json.image_url;
-            console.log("Using image URL:", imageUrlToUse);
-            
-            // Save all URL options for later switching if needed
-            const urlOptions = {
-              primary: imageUrlToUse,
-              all: imageOptions
-            };
-            
-            // Local storage temporary URL selection
-            window.localStorage.setItem(`logo_url_options_${Date.now()}`, JSON.stringify(urlOptions));
-            
-            setWizardData(prev => ({ ...prev, generatedImage: imageUrlToUse }));
-            
-            // Add to history
-            saveToHistory(imageUrlToUse);
+            // 保存到历史记录
+            json.display_urls.forEach((url: string) => saveToHistory(url));
           }, 0);
           
-          // If image is temporary, show warning
+          // If images are temporary, show warning
           if (json.is_temporary) {
             toast({
               title: "Note",
-              description: "Image link is temporary and may expire after one hour.",
+              description: "Image links are temporary and may expire after one hour.",
               variant: "default",
             });
           }
@@ -300,16 +280,10 @@ export default function Page() {
           if (json.error) {
             toast({
               title: "Warning",
-              description: "Logo was generated but there was an issue with permanent storage: " + json.error,
+              description: "Logos were generated but there was an issue with permanent storage: " + json.error,
               variant: "destructive",
             });
           }
-        } else if (json.b64_json) {
-          // Backward compatibility - if base64 data is available
-          setTimeout(() => {
-            const base64Image = `data:image/png;base64,${json.b64_json}`;
-            setWizardData(prev => ({ ...prev, generatedImage: base64Image }));
-          }, 0);
         } else {
           throw new Error("Missing image data in response");
         }
@@ -317,7 +291,7 @@ export default function Page() {
         if (user) {
           try {
             console.log("Refreshing user data to get latest Credits info");
-            await user.reload();
+      await user.reload();
             console.log("User data refreshed, Credits:", user.unsafeMetadata.remaining);
           } catch (reloadError) {
             console.error("Failed to refresh user data:", reloadError);
@@ -345,7 +319,7 @@ export default function Page() {
 
   // Logo下载函数
   const handleDownloadLogo = (format: 'png' | 'svg' | 'jpg') => {
-    if (!wizardData.generatedImage || imageError) return;
+    if (!wizardData.generatedImages.length || imageError) return;
     
     switch (format) {
       case 'png':
@@ -362,12 +336,12 @@ export default function Page() {
 
   // 下载PNG图像函数
   const downloadPng = () => {
-    if (!wizardData.generatedImage || imageError) return;
+    if (!wizardData.generatedImages.length || imageError) return;
     
     const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
     
     // 使用fetch和blob下载
-    fetch(wizardData.generatedImage)
+    fetch(wizardData.generatedImages[0])
       .then(response => response.blob())
       .then(blob => {
         // 创建用于下载的blob URL
@@ -405,7 +379,7 @@ export default function Page() {
 
   // 下载SVG图像函数
   const downloadSvg = async () => {
-    if (!wizardData.generatedImage || imageError) return;
+    if (!wizardData.generatedImages.length || imageError) return;
     
     setWizardData(prev => ({ ...prev, isLoading: true }));
     toast({
@@ -415,7 +389,7 @@ export default function Page() {
     });
     
     try {
-      const svgUrl = await convertToSvg(wizardData.generatedImage);
+      const svgUrl = await convertToSvg(wizardData.generatedImages[0]);
       const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.svg`;
       
       // 创建下载链接并触发下载
@@ -450,7 +424,7 @@ export default function Page() {
 
   // 下载JPG图像函数
   const downloadJpg = async () => {
-    if (!wizardData.generatedImage || imageError) return;
+    if (!wizardData.generatedImages.length || imageError) return;
     
     setWizardData(prev => ({ ...prev, isLoading: true }));
     toast({
@@ -460,7 +434,7 @@ export default function Page() {
     });
     
     try {
-      const jpgUrl = await convertToJpg(wizardData.generatedImage);
+      const jpgUrl = await convertToJpg(wizardData.generatedImages[0]);
       const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.jpg`;
       
       // 提取dataURL中的数据并创建Blob
@@ -519,24 +493,24 @@ export default function Page() {
                 <p className="text-gray-600">Sign in to get started creating beautiful logos</p>
               </div>
               
-              <SignInButton
-                mode="modal"
-                signUpForceRedirectUrl={domain}
-                forceRedirectUrl={domain}
-              >
-                <Button
-                  size="lg"
+                  <SignInButton
+                    mode="modal"
+                    signUpForceRedirectUrl={domain}
+                    forceRedirectUrl={domain}
+                  >
+                    <Button
+                      size="lg"
                   className="w-full bg-blue-600 py-6 text-base font-semibold text-white hover:bg-blue-700"
-                >
+                    >
                   Sign In to Continue
-                </Button>
-              </SignInButton>
+                    </Button>
+                  </SignInButton>
               
               <div className="mt-8 text-center text-sm text-gray-500">
                 <p>Our AI-powered logo creator helps you generate professional logos in minutes</p>
               </div>
-            </div>
-          </div>
+        </div>
+                  </div>
         ) : (
           <div className="flex flex-grow overflow-hidden">
             <div className="w-full overflow-hidden">

@@ -9,22 +9,18 @@ import SizeSelectionStep from "./wizard-steps/SizeSelectionStep";
 import AdditionalInfoStep from "./wizard-steps/AdditionalInfoStep";
 import PreviewStep from "./wizard-steps/PreviewStep";
 
-export type WizardData = {
+export interface WizardData {
   companyName: string;
   style: string;
   primaryColor: string;
   customPrimaryColor: string;
   backgroundColor: string;
   customBackgroundColor: string;
-  size: {
-    name: string;
-    width: number;
-    height: number;
-  };
   additionalInfo: string;
-  generatedImage: string;
+  size: { name: string; width: number; height: number };
   isLoading: boolean;
-};
+  generatedImages: string[];
+}
 
 interface LogoWizardProps {
   initialData: WizardData;
@@ -154,21 +150,27 @@ export default function LogoWizard({
           >
             {currentStep === 0 && (
               <CompanyNameStep 
-                value={initialData.companyName} 
-                onChange={(value) => onUpdateData({ companyName: value })} 
+                value={initialData.companyName}
+                slogan={initialData.slogan}
+                onChange={(value) => onUpdateData({ companyName: value })}
+                onSloganChange={(slogan) => onUpdateData({ slogan })}
+                onContinue={goToNextStep}
+                continueDisabled={!initialData.companyName.trim()}
               />
             )}
             
             {currentStep === 1 && (
-              <StyleSelectionStep 
-                value={initialData.style} 
-                onChange={(value) => onUpdateData({ style: value })} 
+              <StyleSelectionStep
+                value={initialData.style}
+                onChange={(value) => onUpdateData({ style: value })}
                 styles={styles}
+                onContinue={goToNextStep}
+                continueDisabled={!initialData.style}
               />
             )}
             
             {currentStep === 2 && (
-              <ColorSelectionStep 
+              <ColorSelectionStep
                 primaryColor={initialData.primaryColor}
                 customPrimaryColor={initialData.customPrimaryColor}
                 backgroundColor={initialData.backgroundColor}
@@ -179,6 +181,9 @@ export default function LogoWizard({
                 onCustomBackgroundColorChange={(value) => onUpdateData({ customBackgroundColor: value })}
                 colors={colors}
                 backgroundColors={backgroundColors}
+                onContinue={goToNextStep}
+                continueDisabled={!initialData.primaryColor}
+                onSkip={goToNextStep}
               />
             )}
             
@@ -199,7 +204,7 @@ export default function LogoWizard({
             
             {currentStep === 5 && (
               <PreviewStep 
-                generatedImage={initialData.generatedImage}
+                generatedImages={initialData.generatedImages}
                 companyName={initialData.companyName}
                 isLoading={initialData.isLoading}
                 onGenerateLogo={onGenerateLogo}
@@ -237,7 +242,7 @@ export default function LogoWizard({
             </Button>
           )}
           
-          {shouldShowGenerateButton && !initialData.generatedImage && (
+          {shouldShowGenerateButton && !initialData.generatedImages.length && (
             <Button
               disabled={initialData.isLoading}
               onClick={onGenerateLogo}

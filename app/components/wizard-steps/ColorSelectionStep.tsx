@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "../ui/button";
 
 interface ColorSelectionStepProps {
   primaryColor: string;
@@ -20,7 +21,37 @@ interface ColorSelectionStepProps {
   onCustomBackgroundColorChange: (value: string) => void;
   colors: Array<{ name: string; color: string }>;
   backgroundColors: Array<{ name: string; color: string }>;
+  onContinue: () => void;
+  continueDisabled?: boolean;
+  onSkip: () => void;
 }
+
+const colorSchemes = [
+  {
+    name: "Warm",
+    colors: ["#FDE7E7", "#FF9800", "#E53935", "#4A0D23"],
+  },
+  {
+    name: "Cold",
+    colors: ["#C6F6FF", "#00BFFF", "#7BAAF7", "#0A1D66"],
+  },
+  {
+    name: "Contrast",
+    colors: ["#FF4FCB", "#FFD600", "#2D2DFF", "#B100FF"],
+  },
+  {
+    name: "Pastel",
+    colors: ["#FDCACB", "#FDE7D6", "#BFE3E0", "#B6D6D6"],
+  },
+  {
+    name: "Greyscale",
+    colors: ["#FFFFFF", "#CCCCCC", "#888888", "#222222"],
+  },
+  {
+    name: "Gradient",
+    colors: ["linear-gradient(90deg, #FF4FCB 0%, #FFD600 50%, #00BFFF 100%)"],
+  },
+];
 
 export default function ColorSelectionStep({
   primaryColor,
@@ -33,141 +64,69 @@ export default function ColorSelectionStep({
   onCustomBackgroundColorChange,
   colors,
   backgroundColors,
+  onContinue,
+  continueDisabled,
+  onSkip,
 }: ColorSelectionStepProps) {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Select your colors</h1>
-        <p className="text-gray-600">
-          Choose colors that reflect your brand personality
-        </p>
-      </div>
-
-      <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
-        <p>Colors evoke different emotions and associations:</p>
-        <ul className="mt-2 list-disc pl-5">
-          <li><strong>Blue:</strong> Trust, stability, professionalism</li>
-          <li><strong>Red:</strong> Energy, passion, excitement</li>
-          <li><strong>Green:</strong> Growth, health, nature</li>
-          <li><strong>Purple:</strong> Creativity, wisdom, luxury</li>
-        </ul>
-      </div>
-
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1 space-y-3">
-          <label className="flex items-center text-sm font-medium text-gray-700">
-            Primary Color
-            <InfoTooltip content="The main color of your logo" />
-          </label>
-          <Select
-            value={primaryColor}
-            onValueChange={onPrimaryColorChange}
+    <div className="flex min-h-[60vh] w-full items-center justify-center bg-gray-50 py-8">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-white px-8 py-12 shadow-xl">
+        {/* 右上角Skip按钮 */}
+        <div className="absolute right-8 top-8">
+          <Button
+            size="lg"
+            variant="outline"
+            className="rounded-xl border-blue-200 bg-blue-50 px-8 py-2 text-base font-semibold text-blue-600 shadow-sm transition hover:bg-blue-100 focus:ring-2 focus:ring-blue-200"
+            onClick={onSkip}
           >
-            <SelectTrigger className="border-gray-300">
-              <SelectValue placeholder="Select a color" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {colors.map((color) => (
-                  <SelectItem key={color.color} value={color.name}>
-                    <div className="flex items-center">
-                      {color.color !== "custom" && (
-                        <div
-                          className="mr-2 h-4 w-4 rounded-sm border border-gray-200"
-                          style={{ backgroundColor: color.color }}
-                        />
-                      )}
-                      <span>{color.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          
-          {primaryColor === "Custom" && (
-            <div className="mt-2 flex items-center">
-              <Input
-                type="text"
-                value={customPrimaryColor}
-                onChange={(e) => onCustomPrimaryColorChange(e.target.value)}
-                placeholder="#RRGGBB"
-                className="mr-2 border-gray-300"
-              />
-              <div
-                className="h-6 w-6 rounded-md border border-gray-300"
-                style={{ backgroundColor: customPrimaryColor }}
-              />
-            </div>
-          )}
+            Skip
+          </Button>
         </div>
-        
-        <div className="flex-1 space-y-3">
-          <label className="flex items-center text-sm font-medium text-gray-700">
-            Background Color
-            <InfoTooltip content="The background color of your logo" />
-          </label>
-          <Select
-            value={backgroundColor}
-            onValueChange={onBackgroundColorChange}
-          >
-            <SelectTrigger className="border-gray-300">
-              <SelectValue placeholder="Select a color" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {backgroundColors.map((color) => (
-                  <SelectItem key={color.color} value={color.name}>
-                    <div className="flex items-center">
-                      {color.color !== "custom" && (
-                        <div
-                          className="mr-2 h-4 w-4 rounded-sm border border-gray-200"
-                          style={{ backgroundColor: color.color }}
-                        />
-                      )}
-                      <span>{color.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          
-          {backgroundColor === "Custom" && (
-            <div className="mt-2 flex items-center">
-              <Input
-                type="text"
-                value={customBackgroundColor}
-                onChange={(e) => onCustomBackgroundColorChange(e.target.value)}
-                placeholder="#RRGGBB"
-                className="mr-2 border-gray-300"
-              />
-              <div
-                className="h-6 w-6 rounded-md border border-gray-300"
-                style={{ backgroundColor: customBackgroundColor }}
-              />
-            </div>
-          )}
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Select color schemes that matches your brand</h1>
+          <p className="text-base text-gray-500">You can skip if you are not sure</p>
         </div>
-      </div>
-
-      <div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
-        <div className="p-4 text-center">
-          <p className="mb-2 text-sm font-medium text-gray-700">Color Preview</p>
-          <div 
-            className="mx-auto h-20 w-20 rounded-lg"
-            style={{ 
-              backgroundColor: backgroundColor === "Custom" ? customBackgroundColor : 
-                backgroundColors.find(c => c.name === backgroundColor)?.color || "#FFFFFF",
-              color: primaryColor === "Custom" ? customPrimaryColor : 
-                colors.find(c => c.name === primaryColor)?.color || "#000000",
-              border: "1px solid #E5E7EB"
-            }}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {colorSchemes.map((scheme) => (
+            <button
+              key={scheme.name}
+              type="button"
+              className={`group flex flex-col items-center rounded-2xl border-2 bg-gray-50 p-4 shadow-md transition hover:border-blue-400 hover:bg-blue-50 focus:outline-none ${primaryColor === scheme.name ? "border-blue-500 bg-blue-50" : "border-transparent"}`}
+              onClick={() => onPrimaryColorChange(scheme.name)}
+            >
+              <div className="mb-3 flex w-full flex-row gap-1">
+                {scheme.colors.map((c, i) =>
+                  c.startsWith("linear-gradient") ? (
+                    <div
+                      key={i}
+                      className="h-8 flex-1 rounded-lg"
+                      style={{ background: c }}
+                    />
+                  ) : (
+                    <div
+                      key={i}
+                      className="h-8 flex-1 rounded-lg"
+                      style={{ backgroundColor: c }}
+                    />
+                  )
+                )}
+              </div>
+              <span className="text-base font-semibold text-gray-800 group-hover:text-blue-600">
+                {scheme.name}
+              </span>
+            </button>
+          ))}
+        </div>
+        {/* 右下角Continue按钮 */}
+        <div className="mt-10 flex justify-end">
+          <Button
+            size="lg"
+            className="rounded-xl bg-blue-500 px-8 py-2 text-base font-semibold text-white shadow-md transition hover:bg-blue-600 focus:ring-2 focus:ring-blue-200"
+            onClick={onContinue}
+            disabled={continueDisabled}
           >
-            <div className="flex h-full w-full items-center justify-center text-lg font-bold">
-              A
-            </div>
-          </div>
+            Continue
+          </Button>
         </div>
       </div>
     </div>
