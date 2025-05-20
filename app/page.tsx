@@ -422,30 +422,47 @@ export default function Page() {
     setFeedback({ rating: null, comment: "" });
   };
 
-  // 下载图像的函数
-  const downloadImage = (format = 'png') => {
+  // 下载PNG图像函数
+  const downloadPng = () => {
     if (!generatedImage || imageError) return;
     
-    // 目前只支持PNG，但保留扩展空间
-    const extension = format.toLowerCase();
+    const fileName = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
     
-    // 创建临时链接元素
-    const downloadLink = document.createElement('a');
-    
-    // 设置下载链接和文件名
-    downloadLink.href = generatedImage;
-    downloadLink.download = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.${extension}`;
-    
-    // 将链接添加到DOM中，触发点击，然后移除
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    
-    toast({
-      title: "下载成功",
-      description: `已下载 ${companyName} 的Logo（${extension.toUpperCase()}格式）`,
-      variant: "default",
-    });
+    // 使用fetch和blob下载
+    fetch(generatedImage)
+      .then(response => response.blob())
+      .then(blob => {
+        // 创建用于下载的blob URL
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        
+        // 触发下载
+        document.body.appendChild(link);
+        link.click();
+        
+        // 清理
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+        
+        toast({
+          title: "下载成功",
+          description: `已下载 ${companyName} 的Logo (PNG格式)`,
+          variant: "default",
+        });
+      })
+      .catch(error => {
+        console.error("下载失败:", error);
+        // 显示错误提示
+        toast({
+          title: "下载失败",
+          description: "无法下载图像，请右击图像并选择'另存为...'",
+          variant: "destructive",
+        });
+      });
   };
 
   // 更新图像加载失败处理逻辑
@@ -862,7 +879,7 @@ export default function Page() {
                             size="sm"
                             variant="ghost"
                             onClick={() => {
-                              downloadImage('png');
+                              downloadPng();
                               setShowExportOptions(false);
                             }}
                             className="justify-start"
