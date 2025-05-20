@@ -77,6 +77,12 @@ const hasClerkConfig = typeof window !== 'undefined' ? false : !!(
   process.env.CLERK_SECRET_KEY
 );
 
+// 添加类型定义
+interface UrlOptions {
+  primary: string;
+  all: string[];
+}
+
 export default function Page() {
   const [userAPIKey, setUserAPIKey] = useState(() => {
     if (typeof window !== "undefined") {
@@ -302,9 +308,29 @@ export default function Page() {
         if (json.image_url) {
           // 直接使用返回的URL
           setTimeout(() => {
-            // 优先使用display_url，这是ImgBB专门为显示优化的URL
-            const imageUrlToUse = json.display_url || json.image_url;
+            // 优先使用所提供的多种URL选项
+            const imageOptions = [
+              json.display_url,
+              json.backup_url, 
+              json.original_url,
+              json.image_url
+            ].filter(Boolean); // 过滤掉undefined/null值
+            
+            console.log("可用图像URL选项:", imageOptions);
+            
+            // 默认使用第一个有效选项
+            const imageUrlToUse = imageOptions[0] || json.image_url;
             console.log("使用图像URL:", imageUrlToUse);
+            
+            // 保存所有URL选项以便日后需要切换时使用
+            const urlOptions = {
+              primary: imageUrlToUse,
+              all: imageOptions
+            };
+            
+            // 本地存储暂时使用选中的URL
+            window.localStorage.setItem(`logo_url_options_${Date.now()}`, JSON.stringify(urlOptions));
+            
             setGeneratedImage(imageUrlToUse);
             
             // 添加到历史记录
@@ -420,6 +446,62 @@ export default function Page() {
       description: `已下载 ${companyName} 的Logo（${extension.toUpperCase()}格式）`,
       variant: "default",
     });
+  };
+
+  // 更新图像加载失败处理逻辑
+  const handleImageError = () => {
+    console.error("图像加载失败:", generatedImage);
+    setImageError(true);
+    
+    // 尝试从localStorage获取该图像的备用URLs
+    const storedOptions = Object.keys(localStorage)
+      .filter(key => key.startsWith('logo_url_options_'))
+      .map(key => {
+        try {
+          return JSON.parse(localStorage.getItem(key) || '{}') as UrlOptions;
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter((options): options is UrlOptions => 
+        options !== null && 
+        typeof options === 'object' &&
+        Array.isArray(options.all)
+      )
+      .find(options => 
+        options.all.some(url => url === generatedImage || 
+          url.replace('i.ibb.co', 'image.ibb.co') === generatedImage)
+      );
+    
+    if (storedOptions && storedOptions.all.length > 1) {
+      // 找到当前URL的索引
+      const currentIndex = storedOptions.all.findIndex(url => 
+        url === generatedImage || url.replace('i.ibb.co', 'image.ibb.co') === generatedImage
+      );
+      
+      // 选择下一个URL
+      if (currentIndex !== -1 && currentIndex < storedOptions.all.length - 1) {
+        const nextUrl = storedOptions.all[currentIndex + 1];
+        console.log("自动尝试下一个备用URL:", nextUrl);
+        
+        setTimeout(() => {
+          setImageError(false);
+          setGeneratedImage(nextUrl);
+        }, 1000);
+        return;
+      }
+    }
+    
+    // 如果没有找到存储的选项，回退到域名替换策略
+    if (generatedImage.includes('i.ibb.co')) {
+      const newUrl = generatedImage.replace('i.ibb.co', 'image.ibb.co');
+      console.log("尝试使用替代URL:", newUrl);
+      
+      setTimeout(() => {
+        setImageError(false);
+        setGeneratedImage(newUrl);
+      }, 1000);
+    }
   };
 
   return (
@@ -739,15 +821,7 @@ export default function Page() {
                       <Button 
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
-                          // 重置错误状态并重试加载
-                          setImageError(false);
-                          // 尝试不同的URL（如果有）
-                          const newUrl = generatedImage.includes('i.ibb.co') ? 
-                            generatedImage.replace('i.ibb.co', 'image.ibb.co') : 
-                            generatedImage;
-                          setGeneratedImage(newUrl);
-                        }}
+                        onClick={handleImageError}
                       >
                         重试加载
                       </Button>
@@ -761,10 +835,9 @@ export default function Page() {
                       alt="Generated logo"
                       priority
                       unoptimized
-                      onError={() => {
-                        console.error("图像加载失败:", generatedImage);
-                        setImageError(true);
-                      }}
+                      loading="eager"
+                      crossOrigin="anonymous"
+                      onError={handleImageError}
                     />
                   )}
                   <div

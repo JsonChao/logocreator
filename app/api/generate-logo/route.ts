@@ -283,7 +283,11 @@ export async function POST(req: Request) {
       
       if (!imgbbApiKey) {
         console.warn("未找到ImgBB API密钥，将直接返回Replicate URL");
-        return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
+        return Response.json({ 
+          image_url: imageUrl, 
+          display_url: imageUrl,
+          is_temporary: true 
+        }, { status: 200 });
       }
       
       console.log("正在上传图片到ImgBB...");
@@ -326,6 +330,7 @@ export async function POST(req: Request) {
         console.error(`无法获取Replicate图像，最终状态码: unknown`);
         return Response.json({ 
           image_url: imageUrl, 
+          display_url: imageUrl,
           is_temporary: true,
           error: "Could not download the generated image"
         }, { status: 200 });
@@ -369,15 +374,21 @@ export async function POST(req: Request) {
             const imageUrl = imgbbData.data.url;
             const displayUrl = imgbbData.data.display_url;
             
+            // 创建多种可能的URL选项，以防某些域名不可访问
+            const image_ibb_url = imageUrl.replace('i.ibb.co', 'image.ibb.co');
+            
             // 确保URL格式正确
             console.log("ImgBB返回的URL:", imageUrl);
             console.log("ImgBB返回的显示URL:", displayUrl);
+            console.log("备用图像URL:", image_ibb_url);
             
             return Response.json({ 
               image_url: imageUrl,
               display_url: displayUrl,
+              backup_url: image_ibb_url,
               thumb_url: imgbbData.data.thumb?.url,
               delete_url: imgbbData.data.delete_url,
+              original_url: imageUrl, // 也返回原始Replicate URL作为备用
               is_temporary: false
             }, { status: 200 });
           } else {
@@ -393,6 +404,7 @@ export async function POST(req: Request) {
       console.error("所有ImgBB上传尝试均失败");
       return Response.json({ 
         image_url: imageUrl, 
+        display_url: imageUrl,
         is_temporary: true,
         error: "Failed to upload to ImgBB after multiple attempts"
       }, { status: 200 });
