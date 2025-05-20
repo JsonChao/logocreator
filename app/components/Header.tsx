@@ -17,21 +17,21 @@ export default function Header({ className }: { className: string }) {
   const { user, isLoaded } = useUser();
   const [creditsLoading, setCreditsLoading] = useState(false);
   
-  // 刷新用户数据以获取最新Credits - 使用useCallback优化
+  // Refresh user data to get latest credits - optimized with useCallback
   const refreshUserData = useCallback(async () => {
     if (!user) return;
     setCreditsLoading(true);
     try {
       await user.reload();
-      console.log("用户数据已刷新，Credits:", user.unsafeMetadata.remaining);
+      console.log("User data refreshed, Credits:", user.unsafeMetadata.remaining);
     } catch (error) {
-      console.error("刷新用户数据失败:", error);
+      console.error("Failed to refresh user data:", error);
     } finally {
       setCreditsLoading(false);
     }
   }, [user]);
   
-  // 组件加载时刷新一次用户数据
+  // Refresh user data once when component loads
   useEffect(() => {
     if (isLoaded && user) {
       refreshUserData();
@@ -40,7 +40,7 @@ export default function Header({ className }: { className: string }) {
 
   return (
     <header className={`relative w-full ${className}`}>
-      <div className="flex items-center justify-between bg-[#343434] px-4 py-2 md:mt-4">
+      <div className="flex items-center justify-between bg-white px-4 py-3 shadow-sm md:mt-0">
         {/* Logo - left on mobile, centered on larger screens */}
         <div className="flex flex-grow justify-start xl:justify-center">
           <Link href="/" className="flex items-center">
@@ -55,21 +55,29 @@ export default function Header({ className }: { className: string }) {
           </Link>
         </div>
         {/* Credits Section */}
-        <div className="absolute right-8 flex items-center space-x-2 md:top-20 lg:top-8">
+        <div className="flex items-center space-x-3">
           <SignedOut>
             <SignInButton
               mode="modal"
               signUpForceRedirectUrl={domain}
               forceRedirectUrl={domain}
-            />
+            >
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="bg-white text-blue-600 hover:bg-blue-50"
+              >
+                Sign In
+              </Button>
+            </SignInButton>
           </SignedOut>
           <SignedIn>
-            <div className="flex items-center gap-2 rounded-md bg-gray-800 px-3 py-1 text-sm text-white">
+            <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-800">
               {user?.unsafeMetadata.remaining === "BYOK" ? (
-                <span>使用自定义API密钥</span>
+                <span>Custom API Key</span>
               ) : (
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold">剩余次数:</span>
+                  <span className="font-semibold">Credits:</span>
                   <span className="mr-1 font-bold">{`${user?.unsafeMetadata.remaining ?? 3}`}</span>
                   <TooltipProvider>
                     <Tooltip>
@@ -81,11 +89,11 @@ export default function Header({ className }: { className: string }) {
                           onClick={refreshUserData}
                           disabled={creditsLoading}
                         >
-                          <RefreshCwIcon className={`h-3 w-3 text-gray-300 ${creditsLoading ? 'animate-spin' : ''}`} />
+                          <RefreshCwIcon className={`h-3 w-3 text-gray-500 ${creditsLoading ? 'animate-spin' : ''}`} />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>刷新剩余次数</p>
+                        <p>Refresh credits</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
