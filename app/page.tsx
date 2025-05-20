@@ -58,12 +58,6 @@ const hasClerkConfig = typeof window !== 'undefined' ? false : !!(
   process.env.CLERK_SECRET_KEY
 );
 
-// 保留类型定义
-interface UrlOptions {
-  primary: string;
-  all: string[];
-}
-
 export default function Page() {
   // 保留现有状态管理，但将其重新组织到WizardData结构中
   const [wizardData, setWizardData] = useState<WizardData>({
