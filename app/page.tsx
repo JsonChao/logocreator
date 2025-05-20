@@ -459,7 +459,7 @@ export default function Page() {
       .map(key => {
         try {
           return JSON.parse(localStorage.getItem(key) || '{}') as UrlOptions;
-        } catch (e) {
+        } catch (_) {
           return null;
         }
       })
