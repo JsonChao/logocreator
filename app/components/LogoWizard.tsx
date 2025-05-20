@@ -27,9 +27,6 @@ interface LogoWizardProps {
   onUpdateData: (data: Partial<WizardData>) => void;
   onGenerateLogo: () => Promise<void>;
   onDownloadLogo: (format: 'png' | 'svg' | 'jpg') => void;
-  styles: Array<{ name: string; icon: string }>;
-  colors: Array<{ name: string; color: string }>;
-  backgroundColors: Array<{ name: string; color: string }>;
   sizes: Array<{ name: string; width: number; height: number }>;
 }
 
@@ -38,9 +35,6 @@ export default function LogoWizard({
   onUpdateData,
   onGenerateLogo,
   onDownloadLogo,
-  styles,
-  colors,
-  backgroundColors,
   sizes
 }: LogoWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
