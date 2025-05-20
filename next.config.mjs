@@ -22,7 +22,7 @@ const nextConfig = {
     if (nextRuntime === 'edge') {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        stream: require.resolve('stream-browserify'),
+        stream: 'stream-browserify',
       };
     }
     return config;
