@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { DownloadIcon, RefreshCwIcon, PencilIcon, HeartIcon, CheckIcon, Share2Icon } from "lucide-react";
+import { DownloadIcon, RefreshCwIcon, PencilIcon, HeartIcon, Share2Icon } from "lucide-react";
 import Spinner from "../Spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState } from "react";

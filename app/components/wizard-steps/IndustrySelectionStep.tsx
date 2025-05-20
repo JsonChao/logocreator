@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { 
   Plane, Dumbbell, ShoppingBag, Church, Building, Scale, 
   Globe, Cpu, Home, PartyPopper, Stethoscope, Utensils, 
