@@ -241,70 +241,116 @@ export async function POST(req: Request) {
       }
       
       console.log("正在上传图片到ImgBB...");
+      console.log("使用ImgBB API密钥前4位:", imgbbApiKey.substring(0, 4) + "...");
       
-      // 尝试获取图像数据
-      const imageController = new AbortController();
-      const imageTimeoutId = setTimeout(() => imageController.abort(), 15000);
+      // 尝试获取图像数据 - 增加重试机制
+      const maxFetchRetries = 3;
+      let imageBlob = null;
       
-      try {
-        const imageResponse = await fetch(imageUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          },
-          signal: imageController.signal
-        });
-        
-        clearTimeout(imageTimeoutId);
-        
-        if (!imageResponse.ok) {
-          console.error(`无法获取Replicate图像: ${imageResponse.status}`);
-          return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
+      for (let i = 0; i < maxFetchRetries; i++) {
+        try {
+          console.log(`尝试获取图像 (${i+1}/${maxFetchRetries})...`);
+          const imageController = new AbortController();
+          const imageTimeoutId = setTimeout(() => imageController.abort(), 30000); // 增加到30秒
+          
+          const imageResponse = await fetch(imageUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            signal: imageController.signal
+          });
+          
+          clearTimeout(imageTimeoutId);
+          
+          if (!imageResponse.ok) {
+            console.error(`获取图像尝试 ${i+1} 失败: ${imageResponse.status}`);
+            continue;
+          }
+          
+          // 将图像转换为Blob
+          imageBlob = await imageResponse.blob();
+          break; // 成功获取图像，跳出循环
+        } catch (fetchError) {
+          console.error(`获取图像尝试 ${i+1} 失败: `, fetchError);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 失败后等待2秒再重试
         }
-        
-        // 将图像转换为Blob
-        const imageBlob = await imageResponse.blob();
-        
-        // 创建FormData用于上传
-        const formData = new FormData();
-        formData.append('key', imgbbApiKey);
-        formData.append('image', imageBlob);
-        
-        // 上传到ImgBB
-        const imgbbController = new AbortController();
-        const imgbbTimeoutId = setTimeout(() => imgbbController.abort(), 15000);
-        
-        const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
-          method: 'POST',
-          body: formData,
-          signal: imgbbController.signal
-        });
-        
-        clearTimeout(imgbbTimeoutId);
-        
-        if (!imgbbResponse.ok) {
-          console.error(`ImgBB上传失败: ${imgbbResponse.status}`);
-          return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
-        }
-        
-        const imgbbData = await imgbbResponse.json();
-        
-        if (imgbbData.success) {
-          console.log("图像成功上传到ImgBB:", imgbbData.data.url);
-          return Response.json({ 
-            image_url: imgbbData.data.url,
-            display_url: imgbbData.data.display_url,
-            thumb_url: imgbbData.data.thumb.url,
-            delete_url: imgbbData.data.delete_url,
-            is_temporary: false
-          }, { status: 200 });
-        } else {
-          console.error("ImgBB上传响应错误:", imgbbData);
-          return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
-        }
-      } catch (fetchError) {
-        console.error("获取或上传图像时出错:", fetchError);
-        return Response.json({ image_url: imageUrl, is_temporary: true }, { status: 200 });
       }
+      
+      if (!imageBlob) {
+        console.error(`无法获取Replicate图像，最终状态码: unknown`);
+        return Response.json({ 
+          image_url: imageUrl, 
+          is_temporary: true,
+          error: "Could not download the generated image"
+        }, { status: 200 });
+      }
+      
+      // 尝试上传到ImgBB - 增加重试机制
+      const maxUploadRetries = 3;
+      
+      for (let i = 0; i < maxUploadRetries; i++) {
+        try {
+          console.log(`尝试上传到ImgBB (${i+1}/${maxUploadRetries})...`);
+          
+          // 创建FormData用于上传
+          const formData = new FormData();
+          formData.append('key', imgbbApiKey);
+          formData.append('image', imageBlob);
+          
+          // 上传到ImgBB
+          const imgbbController = new AbortController();
+          const imgbbTimeoutId = setTimeout(() => imgbbController.abort(), 30000); // 增加到30秒
+          
+          const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData,
+            signal: imgbbController.signal
+          });
+          
+          clearTimeout(imgbbTimeoutId);
+          
+          if (!imgbbResponse.ok) {
+            console.error(`ImgBB上传尝试 ${i+1} 失败: ${imgbbResponse.status}`);
+            continue;
+          }
+          
+          const imgbbData = await imgbbResponse.json();
+          
+          if (imgbbData.success) {
+            console.log("图像成功上传到ImgBB:", imgbbData.data.url);
+            
+            // 检查ImgBB返回的URL格式
+            let imageUrl = imgbbData.data.url;
+            let displayUrl = imgbbData.data.display_url;
+            
+            // 确保URL格式正确
+            console.log("ImgBB返回的URL:", imageUrl);
+            console.log("ImgBB返回的显示URL:", displayUrl);
+            
+            return Response.json({ 
+              image_url: imageUrl,
+              display_url: displayUrl,
+              thumb_url: imgbbData.data.thumb?.url,
+              delete_url: imgbbData.data.delete_url,
+              is_temporary: false
+            }, { status: 200 });
+          } else {
+            console.error("ImgBB上传响应错误:", imgbbData);
+            continue;
+          }
+        } catch (uploadError) {
+          console.error(`ImgBB上传尝试 ${i+1} 失败: `, uploadError);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 失败后等待2秒再重试
+        }
+      }
+      
+      console.error("所有ImgBB上传尝试均失败");
+      return Response.json({ 
+        image_url: imageUrl, 
+        is_temporary: true,
+        error: "Failed to upload to ImgBB after multiple attempts"
+      }, { status: 200 });
+      
     } catch (uploadError) {
       console.error("上传到ImgBB时出错:", uploadError);
       // 失败时返回原始Replicate URL

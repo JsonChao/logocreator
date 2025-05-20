@@ -76,6 +76,7 @@ export default function Page() {
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
+  const [imageError, setImageError] = useState(false);
 
   // 修复React Hook条件调用的问题
   const clerkUser = useUser();
@@ -96,6 +97,7 @@ export default function Page() {
 
     setIsLoading(true);
     setGeneratedImage("");
+    setImageError(false);
 
     try {
       console.log("Sending logo generation request...");
@@ -146,7 +148,10 @@ export default function Page() {
         if (json.image_url) {
           // 直接使用返回的URL
           setTimeout(() => {
-            setGeneratedImage(json.display_url || json.image_url);
+            // 优先使用display_url，这是ImgBB专门为显示优化的URL
+            const imageUrlToUse = json.display_url || json.image_url;
+            console.log("使用图像URL:", imageUrlToUse);
+            setGeneratedImage(imageUrlToUse);
           }, 0);
           
           // 如果图像是临时的，显示警告
@@ -155,6 +160,15 @@ export default function Page() {
               title: "提示",
               description: "图像链接是临时的，可能会在一小时后过期。",
               variant: "default",
+            });
+          }
+          
+          // 如果上传过程中有错误，显示提示
+          if (json.error) {
+            toast({
+              title: "警告",
+              description: "图像已生成但永久存储遇到问题: " + json.error,
+              variant: "destructive",
             });
           }
         } else if (json.b64_json) {
@@ -439,15 +453,41 @@ export default function Page() {
             <div className="relative aspect-square w-full max-w-lg">
               {generatedImage ? (
                 <div key="generated-image" className="relative h-full w-full">
-                  <Image
-                    className={`${isLoading ? "animate-pulse" : ""}`}
-                    width={512}
-                    height={512}
-                    src={generatedImage}
-                    alt="Generated logo"
-                    priority
-                    unoptimized
-                  />
+                  {imageError ? (
+                    // 显示错误回退UI
+                    <div className="flex h-full w-full flex-col items-center justify-center rounded-xl bg-[#2C2C2C] p-4 text-center">
+                      <p className="mb-2 text-red-400">图像加载失败</p>
+                      <Button 
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          // 重置错误状态并重试加载
+                          setImageError(false);
+                          // 尝试不同的URL（如果有）
+                          const newUrl = generatedImage.includes('i.ibb.co') ? 
+                            generatedImage.replace('i.ibb.co', 'image.ibb.co') : 
+                            generatedImage;
+                          setGeneratedImage(newUrl);
+                        }}
+                      >
+                        重试加载
+                      </Button>
+                    </div>
+                  ) : (
+                    <Image
+                      className={`${isLoading ? "animate-pulse" : ""}`}
+                      width={512}
+                      height={512}
+                      src={generatedImage}
+                      alt="Generated logo"
+                      priority
+                      unoptimized
+                      onError={() => {
+                        console.error("图像加载失败:", generatedImage);
+                        setImageError(true);
+                      }}
+                    />
+                  )}
                   <div
                     className={`pointer-events-none absolute inset-0 transition ${isLoading ? "bg-black/50 duration-500" : "bg-black/0 duration-0"}`}
                   />
@@ -457,7 +497,7 @@ export default function Page() {
                       size="icon" 
                       variant="secondary" 
                       onClick={() => {
-                        if (!generatedImage) return;
+                        if (!generatedImage || imageError) return;
                         
                         // 创建一个临时链接元素来下载图像
                         const downloadLink = document.createElement('a');
@@ -471,6 +511,7 @@ export default function Page() {
                         downloadLink.click();
                         document.body.removeChild(downloadLink);
                       }}
+                      disabled={imageError}
                     >
                       <DownloadIcon />
                     </Button>
