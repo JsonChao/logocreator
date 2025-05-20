@@ -10,18 +10,6 @@ import { domain } from "./lib/domain";
 import { convertToJpg, convertToSvg } from "./lib/imageConverter";
 import LogoWizard, { WizardData } from "./components/LogoWizard";
 
-// 保留现有的常量定义
-const logoStyles = [
-  { name: "Tech", icon: "/tech.svg" },
-  { name: "Flashy", icon: "/flashy.svg" },
-  { name: "Modern", icon: "/modern.svg" },
-  { name: "Playful", icon: "/playful.svg" },
-  { name: "Abstract", icon: "/abstract.svg" },
-  { name: "Minimal", icon: "/minimal.svg" },
-  { name: "Vintage", icon: "/minimal.svg" },
-  { name: "Corporate", icon: "/tech.svg" },
-];
-
 const primaryColors = [
   { name: "Blue", color: "#0F6FFF" },
   { name: "Red", color: "#FF0000" },
