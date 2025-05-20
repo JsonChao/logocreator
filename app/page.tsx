@@ -33,14 +33,14 @@ import { convertToJpg, convertToSvg } from "@/app/lib/imageConverter";
 // ];
 
 const logoStyles = [
-  { name: "Tech", icon: "/tech.svg" },
-  { name: "Flashy", icon: "/flashy.svg" },
-  { name: "Modern", icon: "/modern.svg" },
-  { name: "Playful", icon: "/playful.svg" },
-  { name: "Abstract", icon: "/abstract.svg" },
-  { name: "Minimal", icon: "/minimal.svg" },
-  { name: "Vintage", icon: "/minimal.svg" },
-  { name: "Corporate", icon: "/tech.svg" },
+  { name: "Tech", icon: "/images/logocraftai.webp" },
+  { name: "Flashy", icon: "/images/logocraftai.webp" },
+  { name: "Modern", icon: "/images/logocraftai.webp" },
+  { name: "Playful", icon: "/images/logocraftai.webp" },
+  { name: "Abstract", icon: "/images/logocraftai.webp" },
+  { name: "Minimal", icon: "/images/logocraftai.webp" },
+  { name: "Vintage", icon: "/images/logocraftai.webp" },
+  { name: "Corporate", icon: "/images/logocraftai.webp" },
 ];
 
 const primaryColors = [
@@ -643,20 +643,6 @@ export default function Page() {
                     />
                   </div>
                   <div className="-mx-6 mb-6 h-px w-[calc(100%+48px)] bg-[#343434]"></div>
-                  <div className="mb-6">
-                    <label
-                      htmlFor="company-name"
-                      className="mb-2 block text-xs font-bold uppercase text-[#6F6F6F]"
-                    >
-                      Company Name
-                    </label>
-                    <Input
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Sam's Burgers"
-                      required
-                    />
-                  </div>
                   <div className="mb-6">
                     <label className="mb-2 flex items-center text-xs font-bold uppercase text-[#6F6F6F]">
                       STYLE

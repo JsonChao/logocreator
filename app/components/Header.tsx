@@ -45,7 +45,7 @@ export default function Header({ className }: { className: string }) {
         <div className="flex flex-grow justify-start xl:justify-center">
           <Link href="/" className="flex items-center">
             <Image
-              src="/images/logocraftai-logo.svg"
+              src="/images/logocraftai.webp"
               alt="LogocraftAI"
               width={180}
               height={60}
