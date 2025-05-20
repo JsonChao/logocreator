@@ -43,13 +43,13 @@ export default function Header({ className }: { className: string }) {
       <div className="flex items-center justify-between bg-[#343434] px-4 py-2 md:mt-4">
         {/* Logo - left on mobile, centered on larger screens */}
         <div className="flex flex-grow justify-start xl:justify-center">
-          <Link href="https://togetherai.link/" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image
-              src="together-ai-logo1.svg"
-              alt="together.ai"
-              width={400}
-              height={120}
-              className="w-[220px] md:w-[330px] lg:w-[390px]"
+              src="/images/logocraftai-logo.svg"
+              alt="LogocraftAI"
+              width={180}
+              height={60}
+              className="w-[140px] md:w-[180px] lg:w-[220px]"
               priority
             />
           </Link>

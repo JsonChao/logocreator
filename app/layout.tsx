@@ -10,11 +10,11 @@ const jura = Jura({
   variable: "--font-jura",
 });
 
-const title = "Logo-creator.io – Generate a logo";
-const description = "Generate a logo for your company";
-const url = "https://www.logo-creator.io/";
-const ogimage = "https://www.logo-creator.io/og-image.png";
-const sitename = "logo-creator.io";
+const title = "LogocraftAI – 智能Logo生成器";
+const description = "使用AI技术为您的公司或品牌创建专业级别的Logo";
+const url = "https://www.logocraftai.com/";
+const ogimage = "https://www.logocraftai.com/images/logocraftai-og-image.png";
+const sitename = "LogocraftAI";
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     description,
     url: url,
     siteName: sitename,
-    locale: "en_US",
+    locale: "zh_CN",
     type: "website",
   },
   twitter: {
@@ -52,9 +52,9 @@ export default function RootLayout({
 }>) {
   // 根据Clerk配置情况选择不同的布局包装
   const AppContent = () => (
-    <html lang="en" className="h-full">
+    <html lang="zh" className="h-full">
       <head>
-        <PlausibleProvider domain="logo-creator.io" />
+        <PlausibleProvider domain="logocraftai.com" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="color-scheme" content="dark" />
       </head>
