@@ -95,7 +95,6 @@ export default function LogoWizard({
   const shouldShowNextButton = currentStep < steps.length - 1;
   const shouldShowBackButton = currentStep > 0;
   
-  const isLastStep = currentStep === steps.length - 1;
   const isButtonDisabled = !isCurrentStepValid() || initialData.isLoading;
 
   return (

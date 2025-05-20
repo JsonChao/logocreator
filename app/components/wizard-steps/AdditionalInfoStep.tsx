@@ -20,7 +20,7 @@ export default function AdditionalInfoStep({ value, onChange }: AdditionalInfoSt
         <p>Adding details can help our AI create a more relevant logo:</p>
         <ul className="mt-2 list-disc pl-5">
           <li>Describe your industry or business type</li>
-          <li>Mention any specific imagery you'd like to see</li>
+          <li>Mention any specific imagery you&apos;d like to see</li>
           <li>Specify your target audience</li>
           <li>Include special requirements or preferences</li>
         </ul>

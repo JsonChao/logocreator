@@ -1,38 +1,16 @@
 "use client";
 
-import Spinner from "@/app/components/Spinner";
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { motion } from "framer-motion";
-import { Textarea } from "@/app/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "./components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import * as RadioGroup from "@radix-ui/react-radio-group";
-import { DownloadIcon, RefreshCwIcon, ThumbsUp, ThumbsDown } from "lucide-react";
-import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { domain } from "@/app/lib/domain";
-import InfoTooltip from "./components/InfoToolTip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { convertToJpg, convertToSvg } from "@/app/lib/imageConverter";
+import { domain } from "./lib/domain";
+import { convertToJpg, convertToSvg } from "./lib/imageConverter";
 import LogoWizard, { WizardData } from "./components/LogoWizard";
 
-// const layouts = [
-//   { name: "Solo", icon: "/solo.svg" },
-//   { name: "Side", icon: "/side.svg" },
-//   { name: "Stack", icon: "/stack.svg" },
-// ];
-
+// 保留现有的常量定义
 const logoStyles = [
   { name: "Tech", icon: "/tech.svg" },
   { name: "Flashy", icon: "/flashy.svg" },
@@ -74,12 +52,13 @@ const imageSizes = [
   { name: "Tall (512x1024)", width: 512, height: 1024 },
 ];
 
+// 保留其他常量定义
 const hasClerkConfig = typeof window !== 'undefined' ? false : !!(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
   process.env.CLERK_SECRET_KEY
 );
 
-// 添加类型定义
+// 保留类型定义
 interface UrlOptions {
   primary: string;
   all: string[];
@@ -101,19 +80,12 @@ export default function Page() {
   });
   
   const [imageError, setImageError] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    rating: number | null;
-    comment: string;
-  }>({ rating: null, comment: "" });
   const [generationHistory, setGenerationHistory] = useState<Array<{
     imageUrl: string;
     companyName: string;
     style: string;
     date: Date;
   }>>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [showExportOptions, setShowExportOptions] = useState(false);
 
   // 修复React Hook条件调用的问题
   const clerkUser = useUser();
@@ -537,98 +509,6 @@ export default function Page() {
       });
     } finally {
       setWizardData(prev => ({ ...prev, isLoading: false }));
-    }
-  };
-
-  // 更新图像加载失败处理逻辑
-  const handleImageError = () => {
-    console.error("Image failed to load:", wizardData.generatedImage);
-    setImageError(true);
-    
-    // 记录错误以便分析
-    try {
-      const errorInfo = {
-        url: wizardData.generatedImage,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        screenSize: `${window.innerWidth}x${window.innerHeight}`
-      };
-      console.log("Image error details:", errorInfo);
-      
-      // 可以选择将错误信息发送到服务器进行分析
-      // 这里仅记录到控制台
-    } catch (e) {
-      console.error("Failed to log error info:", e);
-    }
-    
-    // 尝试从localStorage获取该图像的备用URLs
-    const storedOptions = Object.keys(localStorage)
-      .filter(key => key.startsWith('logo_url_options_'))
-      .map(key => {
-        try {
-          return JSON.parse(localStorage.getItem(key) || '{}') as UrlOptions;
-        } catch {
-          // 忽略解析错误
-          return null;
-        }
-      })
-      .filter((options): options is UrlOptions => 
-        options !== null && 
-        typeof options === 'object' &&
-        Array.isArray(options.all)
-      )
-      .find(options => 
-        options.all.some(url => url === wizardData.generatedImage || 
-          url.replace('i.ibb.co', 'image.ibb.co') === wizardData.generatedImage)
-      );
-    
-    if (storedOptions && storedOptions.all.length > 1) {
-      // 找到当前URL的索引
-      const currentIndex = storedOptions.all.findIndex(url => 
-        url === wizardData.generatedImage || url.replace('i.ibb.co', 'image.ibb.co') === wizardData.generatedImage
-      );
-      
-      // 选择下一个URL
-      if (currentIndex !== -1 && currentIndex < storedOptions.all.length - 1) {
-        const nextUrl = storedOptions.all[currentIndex + 1];
-        console.log("Automatically trying next backup URL:", nextUrl);
-        
-        toast({
-          title: "Image Loading Issue",
-          description: "Attempting to use backup image link...",
-          variant: "default"
-        });
-        
-        setTimeout(() => {
-          setImageError(false);
-          setWizardData(prev => ({ ...prev, generatedImage: nextUrl }));
-        }, 1000);
-        return;
-      }
-    }
-    
-    // 如果没有找到存储的选项，回退到域名替换策略
-    if (wizardData.generatedImage.includes('i.ibb.co')) {
-      const newUrl = wizardData.generatedImage.replace('i.ibb.co', 'image.ibb.co');
-      console.log("Attempting to use alternative URL:", newUrl);
-      
-      toast({
-        title: "Image Loading Issue",
-        description: "Trying alternative image server...",
-        variant: "default"
-      });
-      
-      setTimeout(() => {
-        setImageError(false);
-        setWizardData(prev => ({ ...prev, generatedImage: newUrl }));
-      }, 1000);
-    } else {
-      // 如果所有自动修复尝试都失败，向用户提供手动解决方案
-      toast({
-        title: "Image Loading Failed",
-        description: "Please try refreshing the page or generating a new logo",
-        variant: "destructive"
-      });
     }
   };
 
