@@ -519,9 +519,6 @@ export default function Page() {
                 onUpdateData={handleUpdateWizardData}
                 onGenerateLogo={generateLogo}
                 onDownloadLogo={handleDownloadLogo}
-                styles={logoStyles}
-                colors={primaryColors}
-                backgroundColors={backgroundColors}
                 sizes={imageSizes}
               />
             </div>
