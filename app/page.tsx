@@ -33,14 +33,14 @@ import { convertToJpg, convertToSvg } from "@/app/lib/imageConverter";
 // ];
 
 const logoStyles = [
-  { name: "Tech", icon: "/images/logocraftai.webp" },
-  { name: "Flashy", icon: "/images/logocraftai.webp" },
-  { name: "Modern", icon: "/images/logocraftai.webp" },
-  { name: "Playful", icon: "/images/logocraftai.webp" },
-  { name: "Abstract", icon: "/images/logocraftai.webp" },
-  { name: "Minimal", icon: "/images/logocraftai.webp" },
-  { name: "Vintage", icon: "/images/logocraftai.webp" },
-  { name: "Corporate", icon: "/images/logocraftai.webp" },
+  { name: "Tech", icon: "/tech.svg" },
+  { name: "Flashy", icon: "/flashy.svg" },
+  { name: "Modern", icon: "/modern.svg" },
+  { name: "Playful", icon: "/playful.svg" },
+  { name: "Abstract", icon: "/abstract.svg" },
+  { name: "Minimal", icon: "/minimal.svg" },
+  { name: "Vintage", icon: "/minimal.svg" },
+  { name: "Corporate", icon: "/tech.svg" },
 ];
 
 const primaryColors = [
