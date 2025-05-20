@@ -16,13 +16,14 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import * as RadioGroup from "@radix-ui/react-radio-group";
-import { DownloadIcon, RefreshCwIcon } from "lucide-react";
+import { DownloadIcon, RefreshCwIcon, ThumbsUp, ThumbsDown, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { domain } from "@/app/lib/domain";
 import InfoTooltip from "./components/InfoToolTip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // const layouts = [
 //   { name: "Solo", icon: "/solo.svg" },
@@ -37,6 +38,8 @@ const logoStyles = [
   { name: "Playful", icon: "/playful.svg" },
   { name: "Abstract", icon: "/abstract.svg" },
   { name: "Minimal", icon: "/minimal.svg" },
+  { name: "Vintage", icon: "/minimal.svg" },
+  { name: "Corporate", icon: "/tech.svg" },
 ];
 
 const primaryColors = [
@@ -44,12 +47,29 @@ const primaryColors = [
   { name: "Red", color: "#FF0000" },
   { name: "Green", color: "#00FF00" },
   { name: "Yellow", color: "#FFFF00" },
+  { name: "Purple", color: "#800080" },
+  { name: "Orange", color: "#FFA500" },
+  { name: "Pink", color: "#FFC0CB" },
+  { name: "Teal", color: "#008080" },
+  { name: "自定义", color: "custom" },
 ];
 
 const backgroundColors = [
   { name: "White", color: "#FFFFFF" },
   { name: "Gray", color: "#CCCCCC" },
   { name: "Black", color: "#000000" },
+  { name: "Light Blue", color: "#E6F7FF" },
+  { name: "Light Gray", color: "#F0F0F0" },
+  { name: "Light Yellow", color: "#FFFDE7" },
+  { name: "自定义", color: "custom" },
+];
+
+const imageSizes = [
+  { name: "标准 (768x768)", width: 768, height: 768 },
+  { name: "小尺寸 (512x512)", width: 512, height: 512 },
+  { name: "大尺寸 (1024x1024)", width: 1024, height: 1024 },
+  { name: "宽幅 (1024x512)", width: 1024, height: 512 },
+  { name: "高幅 (512x1024)", width: 512, height: 1024 },
 ];
 
 const hasClerkConfig = typeof window !== 'undefined' ? false : !!(
@@ -73,10 +93,26 @@ export default function Page() {
   const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(
     backgroundColors[0].name,
   );
+  const [customPrimaryColor, setCustomPrimaryColor] = useState("#000000");
+  const [customBackgroundColor, setCustomBackgroundColor] = useState("#ffffff");
+  const [selectedSize, setSelectedSize] = useState(imageSizes[0].name);
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState("");
   const [imageError, setImageError] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    rating: number | null;
+    comment: string;
+  }>({ rating: null, comment: "" });
+  const [generationHistory, setGenerationHistory] = useState<Array<{
+    imageUrl: string;
+    companyName: string;
+    style: string;
+    date: Date;
+  }>>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   // 修复React Hook条件调用的问题
   const clerkUser = useUser();
@@ -84,11 +120,118 @@ export default function Page() {
     ? clerkUser 
     : { isSignedIn: true, isLoaded: true, user: null };
 
+  // 在页面加载时从localStorage加载历史记录
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedHistory = localStorage.getItem("logoHistory");
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          // 确保日期对象被正确还原
+          const historyWithDates = parsedHistory.map((item: any) => ({
+            ...item,
+            date: new Date(item.date)
+          }));
+          setGenerationHistory(historyWithDates);
+        } catch (e) {
+          console.error("解析历史记录失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存历史记录到localStorage
+  const saveToHistory = (imageUrl: string) => {
+    if (!imageUrl || !companyName) return;
+    
+    const newHistoryItem = {
+      imageUrl,
+      companyName,
+      style: selectedStyle,
+      date: new Date()
+    };
+    
+    const updatedHistory = [newHistoryItem, ...generationHistory].slice(0, 10); // 只保留最近10条
+    setGenerationHistory(updatedHistory);
+    
+    // 保存到localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("logoHistory", JSON.stringify(updatedHistory));
+    }
+  };
+
   const handleAPIKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setUserAPIKey(newValue);
     localStorage.setItem("userAPIKey", newValue);
   };
+
+  // 获取实际使用的颜色值
+  const getActualPrimaryColor = () => {
+    const selectedColor = primaryColors.find(c => c.name === selectedPrimaryColor);
+    return selectedColor?.color === "custom" ? customPrimaryColor : selectedColor?.color || "#0F6FFF";
+  };
+  
+  const getActualBackgroundColor = () => {
+    const selectedColor = backgroundColors.find(c => c.name === selectedBackgroundColor);
+    return selectedColor?.color === "custom" ? customBackgroundColor : selectedColor?.color || "#FFFFFF";
+  };
+
+  // 加载保存的偏好设置
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // 加载API密钥已经在state初始化中处理了
+      
+      // 加载其他偏好设置
+      const savedPreferences = localStorage.getItem("logoPreferences");
+      if (savedPreferences) {
+        try {
+          const preferences = JSON.parse(savedPreferences);
+          if (preferences.style) {
+            setSelectedStyle(preferences.style);
+          }
+          if (preferences.primaryColor) {
+            setSelectedPrimaryColor(preferences.primaryColor);
+          }
+          if (preferences.backgroundColor) {
+            setSelectedBackgroundColor(preferences.backgroundColor);
+          }
+          if (preferences.customPrimaryColor) {
+            setCustomPrimaryColor(preferences.customPrimaryColor);
+          }
+          if (preferences.customBackgroundColor) {
+            setCustomBackgroundColor(preferences.customBackgroundColor);
+          }
+          if (preferences.size) {
+            setSelectedSize(preferences.size);
+          }
+        } catch (e) {
+          console.error("解析偏好设置失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存偏好设置
+  const savePreferences = () => {
+    if (typeof window !== "undefined") {
+      const preferences = {
+        style: selectedStyle,
+        primaryColor: selectedPrimaryColor,
+        backgroundColor: selectedBackgroundColor,
+        customPrimaryColor,
+        customBackgroundColor,
+        size: selectedSize,
+      };
+      localStorage.setItem("logoPreferences", JSON.stringify(preferences));
+    }
+  };
+
+  // 当偏好设置改变时保存
+  useEffect(() => {
+    savePreferences();
+  }, [selectedStyle, selectedPrimaryColor, selectedBackgroundColor, 
+      customPrimaryColor, customBackgroundColor, selectedSize]);
 
   async function generateLogo() {
     if (!isSignedIn) {
@@ -101,6 +244,10 @@ export default function Page() {
 
     try {
       console.log("Sending logo generation request...");
+      
+      // 获取选择的尺寸
+      const sizeOption = imageSizes.find(size => size.name === selectedSize) || imageSizes[0];
+      
       const res = await fetch("/api/generate-logo", {
         method: "POST",
         headers: {
@@ -110,9 +257,11 @@ export default function Page() {
           userAPIKey,
           companyName,
           selectedStyle,
-          selectedPrimaryColor,
-          selectedBackgroundColor,
+          selectedPrimaryColor: getActualPrimaryColor(),
+          selectedBackgroundColor: getActualBackgroundColor(),
           additionalInfo,
+          width: sizeOption.width,
+          height: sizeOption.height,
         }),
       });
 
@@ -152,6 +301,9 @@ export default function Page() {
             const imageUrlToUse = json.display_url || json.image_url;
             console.log("使用图像URL:", imageUrlToUse);
             setGeneratedImage(imageUrlToUse);
+            
+            // 添加到历史记录
+            saveToHistory(imageUrlToUse);
           }, 0);
           
           // 如果图像是临时的，显示警告
@@ -208,6 +360,62 @@ export default function Page() {
       setIsLoading(false);
     }
   }
+
+  // 提交Logo反馈
+  const submitFeedback = () => {
+    if (feedback.rating === null) {
+      toast({
+        title: "请先评分",
+        description: "请先为Logo质量评分后再提交",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // 这里可以添加将反馈发送到服务器的逻辑
+    // 目前仅在本地记录
+    console.log("用户反馈:", {
+      ...feedback,
+      logoUrl: generatedImage,
+      companyName,
+      style: selectedStyle,
+    });
+    
+    toast({
+      title: "谢谢您的反馈",
+      description: "您的反馈将帮助我们改进Logo生成服务",
+      variant: "default",
+    });
+    
+    setShowFeedback(false);
+    setFeedback({ rating: null, comment: "" });
+  };
+
+  // 下载图像的函数
+  const downloadImage = (format = 'png') => {
+    if (!generatedImage || imageError) return;
+    
+    // 目前只支持PNG，但保留扩展空间
+    const extension = format.toLowerCase();
+    
+    // 创建临时链接元素
+    const downloadLink = document.createElement('a');
+    
+    // 设置下载链接和文件名
+    downloadLink.href = generatedImage;
+    downloadLink.download = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.${extension}`;
+    
+    // 将链接添加到DOM中，触发点击，然后移除
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    
+    toast({
+      title: "下载成功",
+      description: `已下载 ${companyName} 的Logo（${extension.toUpperCase()}格式）`,
+      variant: "default",
+    });
+  };
 
   return (
     <div className="flex h-screen flex-col overflow-y-auto overflow-x-hidden bg-[#343434] md:flex-row">
@@ -335,10 +543,12 @@ export default function Page() {
                             {primaryColors.map((color) => (
                               <SelectItem key={color.color} value={color.name}>
                                 <span className="flex items-center">
-                                  <span
-                                    style={{ backgroundColor: color.color }}
-                                    className="mr-2 size-4 rounded-sm bg-white"
-                                  />
+                                  {color.color !== "custom" && (
+                                    <span
+                                      style={{ backgroundColor: color.color }}
+                                      className="mr-2 size-4 rounded-sm bg-white"
+                                    />
+                                  )}
                                   {color.name}
                                 </span>
                               </SelectItem>
@@ -346,6 +556,22 @@ export default function Page() {
                           </SelectGroup>
                         </SelectContent>
                       </Select>
+                      
+                      {selectedPrimaryColor === "自定义" && (
+                        <div className="mt-2 flex items-center">
+                          <Input
+                            type="text"
+                            value={customPrimaryColor}
+                            onChange={(e) => setCustomPrimaryColor(e.target.value)}
+                            placeholder="#RRGGBB"
+                            className="mr-2"
+                          />
+                          <div 
+                            className="size-6 rounded-sm border border-gray-500" 
+                            style={{ backgroundColor: customPrimaryColor }}
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <label className="mb-1 block items-center text-xs font-bold uppercase text-[#6F6F6F]">
@@ -363,10 +589,12 @@ export default function Page() {
                             {backgroundColors.map((color) => (
                               <SelectItem key={color.color} value={color.name}>
                                 <span className="flex items-center">
-                                  <span
-                                    style={{ backgroundColor: color.color }}
-                                    className="mr-2 size-4 rounded-sm bg-white"
-                                  />
+                                  {color.color !== "custom" && (
+                                    <span
+                                      style={{ backgroundColor: color.color }}
+                                      className="mr-2 size-4 rounded-sm bg-white"
+                                    />
+                                  )}
                                   {color.name}
                                 </span>
                               </SelectItem>
@@ -374,7 +602,47 @@ export default function Page() {
                           </SelectGroup>
                         </SelectContent>
                       </Select>
+                      
+                      {selectedBackgroundColor === "自定义" && (
+                        <div className="mt-2 flex items-center">
+                          <Input
+                            type="text"
+                            value={customBackgroundColor}
+                            onChange={(e) => setCustomBackgroundColor(e.target.value)}
+                            placeholder="#RRGGBB"
+                            className="mr-2"
+                          />
+                          <div 
+                            className="size-6 rounded-sm border border-gray-500" 
+                            style={{ backgroundColor: customBackgroundColor }}
+                          />
+                        </div>
+                      )}
                     </div>
+                  </div>
+                  {/* 图像尺寸选择 */}
+                  <div className="mb-6">
+                    <label className="mb-1 block text-xs font-bold uppercase text-[#6F6F6F]">
+                      图像尺寸
+                      <InfoTooltip content="选择生成图像的尺寸" />
+                    </label>
+                    <Select
+                      value={selectedSize}
+                      onValueChange={setSelectedSize}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择尺寸" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {imageSizes.map((size) => (
+                            <SelectItem key={size.name} value={size.name}>
+                              {size.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {/* Additional Options Section */}
                   <div className="mb-1">
@@ -499,28 +767,50 @@ export default function Page() {
                   />
 
                   <div className="absolute -right-12 top-0 flex flex-col gap-2">
-                    <Button 
-                      size="icon" 
-                      variant="secondary" 
-                      onClick={() => {
-                        if (!generatedImage || imageError) return;
-                        
-                        // 创建一个临时链接元素来下载图像
-                        const downloadLink = document.createElement('a');
-                        
-                        // 设置下载链接和文件名
-                        downloadLink.href = generatedImage;
-                        downloadLink.download = `${companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
-                        
-                        // 将链接添加到DOM中，触发点击，然后移除
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-                      }}
-                      disabled={imageError}
-                    >
-                      <DownloadIcon />
-                    </Button>
+                    <Popover open={showExportOptions} onOpenChange={setShowExportOptions}>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          size="icon" 
+                          variant="secondary" 
+                          disabled={imageError}
+                        >
+                          <DownloadIcon />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent side="right" className="w-48 p-2">
+                        <div className="flex flex-col gap-1">
+                          <Button 
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              downloadImage('png');
+                              setShowExportOptions(false);
+                            }}
+                            className="justify-start"
+                          >
+                            下载为PNG
+                          </Button>
+                          <Button 
+                            size="sm"
+                            variant="ghost"
+                            disabled={true}
+                            className="justify-start text-gray-500"
+                            title="即将推出，敬请期待"
+                          >
+                            下载为SVG (即将推出)
+                          </Button>
+                          <Button 
+                            size="sm"
+                            variant="ghost"
+                            disabled={true}
+                            className="justify-start text-gray-500"
+                            title="即将推出，敬请期待"
+                          >
+                            下载为JPG (即将推出)
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <Button
                       size="icon"
                       onClick={() => {
@@ -533,19 +823,136 @@ export default function Page() {
                         <RefreshCwIcon />
                       </Spinner>
                     </Button>
+                    <Button
+                      size="icon"
+                      onClick={() => setShowFeedback(!showFeedback)}
+                      variant="outline"
+                      disabled={imageError}
+                    >
+                      {feedback.rating === 1 ? <ThumbsUp className="text-green-500" /> : 
+                       feedback.rating === 0 ? <ThumbsDown className="text-red-500" /> :
+                       <span className="text-xs font-medium">评价</span>}
+                    </Button>
                   </div>
+                  
+                  {/* 评分反馈面板 */}
+                  {showFeedback && (
+                    <div className="absolute bottom-0 left-0 right-0 rounded-b-xl bg-gray-800 p-4">
+                      <div className="mb-2 flex justify-between">
+                        <h4 className="text-sm font-medium">Logo质量评价</h4>
+                        <button 
+                          onClick={() => setShowFeedback(false)}
+                          className="text-xs text-gray-400 hover:text-white"
+                        >
+                          关闭
+                        </button>
+                      </div>
+                      
+                      <div className="mb-3 flex justify-center space-x-4">
+                        <Button
+                          variant={feedback.rating === 1 ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFeedback({...feedback, rating: 1})}
+                          className="flex items-center space-x-1"
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                          <span>满意</span>
+                        </Button>
+                        <Button
+                          variant={feedback.rating === 0 ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFeedback({...feedback, rating: 0})}
+                          className="flex items-center space-x-1"
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                          <span>不满意</span>
+                        </Button>
+                      </div>
+                      
+                      <Textarea
+                        value={feedback.comment}
+                        onChange={(e) => setFeedback({...feedback, comment: e.target.value})}
+                        placeholder="请输入您对Logo的具体反馈（可选）"
+                        className="mb-3 h-20"
+                      />
+                      
+                      <Button 
+                        onClick={submitFeedback} 
+                        size="sm" 
+                        className="w-full"
+                      >
+                        提交反馈
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div key="placeholder" className="h-full w-full">
                   <Spinner loading={isLoading} className="size-8 text-white">
                     <div className="flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-[#2C2C2C]">
-                      <h4 className="text-center text-base leading-tight text-white">
-                        Generate your dream
-                        <br />
-                        logo in 10 seconds!
-                      </h4>
+                      {!showHistory || generationHistory.length === 0 ? (
+                        <h4 className="text-center text-base leading-tight text-white">
+                          Generate your dream
+                          <br />
+                          logo in 10 seconds!
+                        </h4>
+                      ) : (
+                        <div className="flex h-full w-full flex-col overflow-hidden">
+                          <div className="flex items-center justify-between border-b border-gray-700 px-4 py-2">
+                            <h4 className="text-sm font-medium">历史记录</h4>
+                            <button 
+                              onClick={() => setShowHistory(false)} 
+                              className="text-xs text-gray-400 hover:text-white"
+                            >
+                              关闭
+                            </button>
+                          </div>
+                          <div className="flex-grow overflow-y-auto p-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              {generationHistory.map((item, index) => (
+                                <div 
+                                  key={index} 
+                                  className="cursor-pointer rounded-md border border-gray-700 p-1 hover:border-gray-500"
+                                  onClick={() => {
+                                    setGeneratedImage(item.imageUrl);
+                                    setCompanyName(item.companyName);
+                                    // 可选：恢复其他设置
+                                    setSelectedStyle(item.style);
+                                  }}
+                                >
+                                  <div className="relative aspect-square w-full overflow-hidden rounded">
+                                    <Image
+                                      fill
+                                      src={item.imageUrl}
+                                      alt={`${item.companyName} logo`}
+                                      className="object-cover"
+                                      unoptimized
+                                      onError={(e) => {
+                                        // 处理加载错误
+                                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="mt-1 truncate text-xs">
+                                    {item.companyName}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </Spinner>
+                  
+                  {!isLoading && !showHistory && generationHistory.length > 0 && (
+                    <button
+                      onClick={() => setShowHistory(true)}
+                      className="mt-2 text-xs text-gray-400 hover:text-white"
+                    >
+                      查看历史记录
+                    </button>
+                  )}
                 </div>
               )}
             </div>

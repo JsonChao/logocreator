@@ -31,6 +31,8 @@ export async function POST(req: Request) {
       selectedPrimaryColor: z.string(),
       selectedBackgroundColor: z.string(),
       additionalInfo: z.string().optional(),
+      width: z.number().default(768),
+      height: z.number().default(768),
     })
     .parse(json);
 
@@ -132,6 +134,12 @@ export async function POST(req: Request) {
   const minimalStyle =
     "minimal, simple, timeless, versatile, single color logo, use negative space, flat design with minimal details, Light, soft, and subtle.";
 
+  const vintageStyle =
+    "vintage, retro, classic, nostalgic, distressed textures, heritage-inspired, aged appearance, muted colors with sepia tones.";
+
+  const corporateStyle =
+    "professional, corporate, business-like, clean, structured, conservative color scheme, conveys trust and stability.";
+
   const styleLookup: Record<string, string> = {
     Flashy: flashyStyle,
     Tech: techStyle,
@@ -139,21 +147,31 @@ export async function POST(req: Request) {
     Playful: playfulStyle,
     Abstract: abstractStyle,
     Minimal: minimalStyle,
+    Vintage: vintageStyle,
+    Corporate: corporateStyle,
   };
 
   const prompt = dedent`A single logo, high-quality, award-winning professional design, made for both digital and print media, only contains a few vector shapes, ${styleLookup[data.selectedStyle]}
 
-  Primary color is ${data.selectedPrimaryColor.toLowerCase()} and background color is ${data.selectedBackgroundColor.toLowerCase()}. The company name is ${data.companyName}, make sure to include the company name in the logo. ${data.additionalInfo ? `Additional info: ${data.additionalInfo}` : ""}`;
+  Primary color is ${data.selectedPrimaryColor} and background color is ${data.selectedBackgroundColor}. The company name is ${data.companyName}, make sure to include the company name in the logo. ${data.additionalInfo ? `Additional info: ${data.additionalInfo}` : ""}`;
 
   try {
     console.log("Generating logo with Replicate...");
+    console.log("配置信息: ", {
+      style: data.selectedStyle,
+      primaryColor: data.selectedPrimaryColor,
+      backgroundColor: data.selectedBackgroundColor,
+      width: data.width,
+      height: data.height,
+    });
+    
     // 使用Replicate API生成图像
     const model = "black-forest-labs/flux-1.1-pro";
     const input = {
       prompt: prompt,
       prompt_upsampling: true,  // 优化提示词
-      width: 768,
-      height: 768,
+      width: data.width,
+      height: data.height,
     };
     
     console.log(`Running model: ${model} with prompt: "${prompt.substring(0, 100)}..."`);
@@ -348,8 +366,8 @@ export async function POST(req: Request) {
             console.log("图像成功上传到ImgBB:", imgbbData.data.url);
             
             // 检查ImgBB返回的URL格式
-            let imageUrl = imgbbData.data.url;
-            let displayUrl = imgbbData.data.display_url;
+            const imageUrl = imgbbData.data.url;
+            const displayUrl = imgbbData.data.display_url;
             
             // 确保URL格式正确
             console.log("ImgBB返回的URL:", imageUrl);

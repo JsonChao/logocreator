@@ -10,15 +10,15 @@ import {
 import { domain } from "@/app/lib/domain";
 import { RefreshCwIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 export default function Header({ className }: { className: string }) {
   const { user, isLoaded } = useUser();
   const [creditsLoading, setCreditsLoading] = useState(false);
   
-  // 刷新用户数据以获取最新Credits
-  const refreshUserData = async () => {
+  // 刷新用户数据以获取最新Credits - 使用useCallback优化
+  const refreshUserData = useCallback(async () => {
     if (!user) return;
     setCreditsLoading(true);
     try {
@@ -29,14 +29,14 @@ export default function Header({ className }: { className: string }) {
     } finally {
       setCreditsLoading(false);
     }
-  };
+  }, [user]);
   
   // 组件加载时刷新一次用户数据
   useEffect(() => {
     if (isLoaded && user) {
       refreshUserData();
     }
-  }, [isLoaded]);
+  }, [isLoaded, user, refreshUserData]);
 
   return (
     <header className={`relative w-full ${className}`}>
