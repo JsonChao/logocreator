@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
               currentUsage = parsed[1];
               dataSource = "redis_json";
             }
-          } catch (parseError) {
+          } catch (_) {
             // 逗号分隔字符串格式
             const parts = currentLimitData.split(',');
             if (parts.length === 2) {
@@ -117,10 +117,11 @@ export async function GET(req: NextRequest) {
       userId,
     });
     
-  } catch (error: any) {
-    console.error("获取用户额度失败:", error?.message || error);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("获取用户额度失败:", errorMsg);
     return NextResponse.json(
-      { error: "获取用户额度失败", message: error?.message },
+      { error: "获取用户额度失败", message: errorMsg },
       { status: 500 }
     );
   }

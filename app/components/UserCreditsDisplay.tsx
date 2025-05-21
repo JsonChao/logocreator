@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Sparkles, RefreshCw } from "lucide-react";
 
@@ -15,7 +15,7 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
   const [lastRefreshed, setLastRefreshed] = useState(0);
 
   // 获取用户额度信息
-  const fetchUserCredits = async (forceRefresh = false) => {
+  const fetchUserCredits = useCallback(async (forceRefresh = false) => {
     if (!isSignedIn || !user) return;
     
     try {
@@ -54,14 +54,14 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [isSignedIn, user]);
 
   // 组件挂载和用户信息变化时获取额度
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       fetchUserCredits(true); // 首次加载强制刷新
     }
-  }, [isLoaded, isSignedIn, user?.id]);
+  }, [isLoaded, isSignedIn, user?.id, fetchUserCredits]);
 
   // 每60秒刷新一次额度信息
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     }, 60000);
     
     return () => clearInterval(intervalId);
-  }, [isLoaded, isSignedIn, lastRefreshed]);
+  }, [isLoaded, isSignedIn, lastRefreshed, fetchUserCredits]);
 
   // 点击刷新按钮时强制刷新
   const handleRefreshClick = async (e: React.MouseEvent) => {
