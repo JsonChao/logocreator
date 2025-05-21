@@ -211,7 +211,7 @@ export default function CreatePage() {
       console.log("Sending logo generation request...");
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2分钟超时
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时，适应生成18张图片的时间
       
       const res = await fetch("/api/generate-logo", {
         method: "POST",
@@ -292,7 +292,7 @@ export default function CreatePage() {
           
           toast({
             title: "Logo生成成功",
-            description: "生成了多个Logo方案供您选择",
+            description: "已生成18个Logo方案供您选择，处理时间较长请耐心等待",
           });
         } else {
           throw new Error("No images were generated");

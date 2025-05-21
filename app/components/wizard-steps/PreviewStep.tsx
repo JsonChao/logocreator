@@ -181,8 +181,9 @@ export default function PreviewStep({
             className="flex flex-col items-center justify-center py-24"
           >
             <Spinner className="h-20 w-20" />
-            <p className="mt-8 text-xl text-gray-600">Generating your logo, please wait...</p>
-            <p className="mt-3 text-base text-gray-500">This might take a few seconds</p>
+            <p className="mt-8 text-xl font-medium text-gray-700">正在生成您的Logo作品集...</p>
+            <p className="mt-3 text-base text-gray-600">生成18张高质量Logo需要3-5分钟时间</p>
+            <p className="mt-2 text-sm text-gray-500">AI正在精心设计多种风格的Logo方案，请耐心等待</p>
           </motion.div>
         ) : errorMessage ? (
           renderErrorState()

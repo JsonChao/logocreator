@@ -138,7 +138,7 @@ export async function POST(req: Request) {
       prompt_upsampling: true,  // 优化提示词
       width: data.width,
       height: data.height,
-      num_outputs: 3,  // 减少生成图片数量，从原来的18减至3，加快响应速度
+      num_outputs: 18,  // 增加生成图片数量至18个，提供更多选择
     };
     
     console.log(`运行模型: ${model}`);
@@ -212,8 +212,8 @@ export async function POST(req: Request) {
     // 等待预测完成
     let finalPrediction = prediction;
     let retries = 0;
-    const maxRetries = 15; // 减少最大重试次数，避免超时
-    const retryInterval = 2000; // 2秒检查一次状态
+    const maxRetries = 30; // 增加最大重试次数，以适应生成18张图片的时间
+    const retryInterval = 3000; // 3秒检查一次状态，减少API调用频率
     
     while (
       finalPrediction.status !== "succeeded" && 
