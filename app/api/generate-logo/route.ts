@@ -277,38 +277,55 @@ export async function POST(req: Request) {
 
     // 预测成功，返回结果
     console.log("生成Logo成功!");
+    console.log("输出格式:", typeof finalPrediction.output, finalPrediction.output);
     
-    if (finalPrediction.output && Array.isArray(finalPrediction.output)) {
-      // 为URLs添加时间戳以防止缓存问题
-      const timestampedUrls = finalPrediction.output.map(url => {
-        const separator = url.includes('?') ? '&' : '?';
-        return `${url}${separator}t=${Date.now()}`;
-      });
+    // 处理输出可能是单个URL字符串或URL数组的情况
+    if (finalPrediction.output) {
+      // 将任何格式的输出转换为数组
+      let outputUrls = [];
       
-      return new Response(
-        JSON.stringify({
-          display_urls: timestampedUrls,
-          company_name: data.companyName,
-          style: data.selectedStyle,
-          primary_color: data.selectedPrimaryColor,
-          background_color: data.selectedBackgroundColor,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else {
-      console.error("预测成功但没有输出或输出格式不正确:", finalPrediction);
+      if (Array.isArray(finalPrediction.output)) {
+        // 如果是数组，直接使用
+        outputUrls = finalPrediction.output;
+      } else if (typeof finalPrediction.output === 'string') {
+        // 如果是字符串，放入数组
+        outputUrls = [finalPrediction.output];
+      }
       
-      return new Response(
-        "生成成功但返回的图像链接无效，请重试。",
-        {
-          status: 500,
-          headers: { "Content-Type": "text/plain" },
-        }
-      );
+      // 确保至少有一个URL
+      if (outputUrls.length > 0) {
+        // 为URLs添加时间戳以防止缓存问题
+        const timestampedUrls = outputUrls.map(url => {
+          const separator = url.includes('?') ? '&' : '?';
+          return `${url}${separator}t=${Date.now()}`;
+        });
+        
+        return new Response(
+          JSON.stringify({
+            display_urls: timestampedUrls,
+            company_name: data.companyName,
+            style: data.selectedStyle,
+            primary_color: data.selectedPrimaryColor,
+            background_color: data.selectedBackgroundColor,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
     }
+    
+    // 如果output不是有效格式或为空
+    console.error("预测成功但没有有效的输出格式:", finalPrediction);
+    
+    return new Response(
+      "生成成功但返回的图像链接无效，请重试。",
+      {
+        status: 500,
+        headers: { "Content-Type": "text/plain" },
+      }
+    );
   } catch (error) {
     console.error("生成Logo时发生错误:", error);
     
