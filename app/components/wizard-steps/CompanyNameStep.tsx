@@ -14,7 +14,7 @@ export function CompanyNameStep({
     <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-10">
       <div className="w-full max-w-2xl space-y-8">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900">What's Your Logo Name?</h1>
+          <h1 className="text-5xl font-bold text-gray-900">What&apos;s Your Logo Name?</h1>
           <p className="mt-4 text-lg text-gray-600">Enter your company or brand name below</p>
         </div>
 

@@ -6,8 +6,8 @@ import { CompanyNameStep } from "./wizard-steps/CompanyNameStep";
 import { StyleSelectionStep } from "./wizard-steps/StyleSelectionStep";
 import { ColorSelectionStep } from "./wizard-steps/ColorSelectionStep";
 import { FontSelectionStep } from "./wizard-steps/FontSelectionStep";
-import { SizeSelectionStep } from "./wizard-steps/SizeSelectionStep";
-import { AdditionalInfoStep } from "./wizard-steps/AdditionalInfoStep";
+import SizeSelectionStep from "./wizard-steps/SizeSelectionStep";
+import AdditionalInfoStep from "./wizard-steps/AdditionalInfoStep";
 import { IndustrySelectionStep } from "./wizard-steps/IndustrySelectionStep";
 import PreviewStep from "./wizard-steps/PreviewStep";
 
@@ -76,16 +76,16 @@ export default function LogoWizard({
     if (!step.required) return true;
     
     switch(currentStep) {
-      case 0: // 公司名称
+      case 0: // Company Name
         return !!initialData.companyName.trim();
-      case 1: // 行业
-        return true; // 行业是可选的
-      case 2: // 风格
+      case 1: // Industry
+        return true; // Industry is optional
+      case 2: // Style
         return !!initialData.style;
-      case 3: // 颜色
+      case 3: // Colors
         return !!(initialData.primaryColor && initialData.backgroundColor);
-      case 4: // 字体
-        return true; // 字体是可选的
+      case 4: // Font
+        return true; // Font is optional
       default:
         return true;
     }
@@ -143,7 +143,7 @@ export default function LogoWizard({
               </button>
             ))}
             
-            {/* 连接线 */}
+            {/* Connection Line */}
             <div className="absolute left-0 top-[1.125rem] -z-0 h-0.5 w-full bg-gray-200">
               <div 
                 className="h-full bg-blue-500 transition-all duration-300"
@@ -170,7 +170,7 @@ export default function LogoWizard({
         </div>
       </div>
 
-      {/* 步骤内容 */}
+      {/* Step Content */}
       <div className="flex-grow overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -244,7 +244,7 @@ export default function LogoWizard({
         </AnimatePresence>
       </div>
 
-      {/* 导航按钮 */}
+      {/* Navigation Buttons */}
       {currentStep < 7 && (
         <div className="border-t border-gray-200 bg-white px-6 py-4 shadow-sm">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
