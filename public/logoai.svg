@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="#4F8BFF" fill-opacity="0.1"/>
+  <path d="M31.25 47.5C31.25 43.9 34.1 41 37.75 41H53.75C60.35 41 65.75 46.4 65.75 53V53C65.75 59.6 60.35 65 53.75 65H37.75C34.1 65 31.25 62.1 31.25 58.5V47.5Z" fill="#4F8BFF" fill-opacity="0.3" stroke="#4F8BFF" stroke-width="2"/>
+  <path d="M28.75 38.75L50 28.75L71.25 38.75V61.25L50 71.25L28.75 61.25V38.75Z" stroke="#4F8BFF" stroke-width="2"/>
+  <path d="M50 28.75V50M50 50V71.25M50 50L71.25 38.75M50 50L28.75 38.75" stroke="#4F8BFF" stroke-width="2"/>
+  <circle cx="50" cy="50" r="7.5" fill="#4F8BFF"/>
+</svg> 

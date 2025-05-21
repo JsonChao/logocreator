@@ -245,14 +245,27 @@ export default function Page() {
         // Process image URLs in response
         if (json.image_urls && json.image_urls.length > 0) {
           setTimeout(() => {
-            // 使用所有生成的图片URL
+            // 处理图片URL - 确保它们总是数组
+            const displayUrls = json.display_urls 
+              ? (Array.isArray(json.display_urls) ? json.display_urls : [json.display_urls]) 
+              : [];
+            
+            const imageUrls = json.image_urls 
+              ? (Array.isArray(json.image_urls) ? json.image_urls : [json.image_urls]) 
+              : [];
+            
+            // 优先使用display_urls，如果没有则使用image_urls
+            const finalUrls = displayUrls.length > 0 ? displayUrls : imageUrls;
+            
             setWizardData(prev => ({ 
               ...prev, 
-              generatedImages: json.display_urls || json.image_urls 
+              generatedImages: finalUrls
             }));
             
             // 保存到历史记录
-            json.display_urls.forEach((url: string) => saveToHistory(url));
+            if (finalUrls.length > 0) {
+              finalUrls.forEach((url: string) => saveToHistory(url));
+            }
           }, 0);
           
           // If images are temporary, show warning

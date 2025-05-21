@@ -349,12 +349,16 @@ export async function POST(req: Request) {
           const imgbbData = await imgbbResponse.json() as ImgbbResponse;
           console.log("ImgBB上传成功，获取到永久URL");
           
+          // 确保返回的URL是数组格式
+          const permanentUrl = imgbbData.data.url;
+          const displayUrls = Array.isArray(permanentUrl) ? permanentUrl : [permanentUrl];
+          
           // 返回成功响应
           return Response.json({
             image_urls: imageUrls,
-            display_urls: imgbbData.data.url,
+            display_urls: displayUrls, // 确保始终是数组格式
             backup_urls: imgbbData.data.delete_url,
-            original_urls: imgbbData.data.url,
+            original_urls: imageUrls,
             is_temporary: false
           }, { status: 200 });
         } catch (uploadError) {
