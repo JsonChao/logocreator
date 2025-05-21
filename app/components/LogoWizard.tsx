@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { CompanyNameStep } from "./wizard-steps/CompanyNameStep";
 import { StyleSelectionStep } from "./wizard-steps/StyleSelectionStep";
 import { ColorSelectionStep } from "./wizard-steps/ColorSelectionStep";
@@ -103,23 +103,22 @@ export default function LogoWizard({
   return (
     <div className="flex h-full w-full flex-col bg-gray-50">
       {/* Progress Indicator */}
-      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
-        <div className="mx-auto flex max-w-6xl flex-col">
-          {/* Step List */}
-          <div className="mb-2 hidden items-center justify-between md:flex">
+      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white py-4 shadow-sm">
+        <div className="mx-auto flex max-w-6xl flex-col px-4">
+          {/* 简洁步骤指示器 */}
+          <div className="relative flex items-center justify-between">
             {steps.map((step, index) => (
               <button 
                 key={index} 
                 onClick={() => index <= Math.max(...completedSteps, 0) ? goToStep(index) : null}
                 disabled={index > Math.max(...completedSteps, 0)}
                 className={`
-                  group relative z-10 flex flex-col items-center px-2
+                  relative z-10 flex flex-col items-center
                   ${index <= Math.max(...completedSteps, 0) ? "cursor-pointer" : "cursor-not-allowed"}
-                  ${index <= currentStep ? "text-gray-900" : "text-gray-400"}
                 `}
               >
                 <div className={`
-                  z-10 flex h-9 w-9 items-center justify-center rounded-full 
+                  z-10 flex h-8 w-8 items-center justify-center rounded-full 
                   transition-all duration-200
                   ${completedSteps.includes(index) 
                     ? "bg-blue-500 text-white" 
@@ -127,33 +126,29 @@ export default function LogoWizard({
                       ? "border-2 border-blue-500 bg-white text-blue-600" 
                       : "border-2 border-gray-300 bg-white text-gray-400"}
                 `}>
-                  {completedSteps.includes(index) ? (
-                    <CheckCircle2 className="h-5 w-5" />
-                  ) : (
-                    <span className="text-sm font-medium">{index + 1}</span>
-                  )}
+                  <span className="text-sm font-medium">{index + 1}</span>
                 </div>
                 <span className={`
-                  mt-1.5 text-xs font-medium transition-colors
+                  mt-2 text-xs font-medium
                   ${index === currentStep ? "text-blue-600" : 
-                    completedSteps.includes(index) ? "text-gray-700" : "text-gray-500"}
+                    completedSteps.includes(index) ? "text-gray-700" : "text-gray-400"}
                 `}>
                   {step.title}
                 </span>
               </button>
             ))}
             
-            {/* Connection Line */}
-            <div className="absolute left-0 top-[1.125rem] -z-0 h-0.5 w-full bg-gray-200">
+            {/* 彩虹渐变连接线 */}
+            <div className="absolute left-0 right-0 top-4 -z-0 h-0.5 w-full bg-gray-200">
               <div 
-                className="h-full bg-blue-500 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-blue-400 via-pink-500 to-yellow-300 transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
           
-          {/* Mobile Progress Bar */}
-          <div className="flex items-center justify-between md:hidden">
+          {/* 移动端进度条 */}
+          <div className="mt-4 flex items-center justify-between md:hidden">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Step {currentStep + 1}/{steps.length}</span>
               <span className="text-sm font-medium text-gray-500">{steps[currentStep].title}</span>
@@ -163,7 +158,7 @@ export default function LogoWizard({
           
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 md:hidden">
             <div 
-              className="h-full bg-blue-500 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-blue-400 via-pink-500 to-yellow-300 transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
