@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
               currentUsage = parsed[1];
               dataSource = "redis_json";
             }
-          } catch (_) {
+          } catch {
             // 逗号分隔字符串格式
             const parts = currentLimitData.split(',');
             if (parts.length === 2) {
