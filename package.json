@@ -37,6 +37,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.23",
     "@shadcn/ui": "^0.0.4",
     "@types/node": "^20",
     "@types/react": "^18",
