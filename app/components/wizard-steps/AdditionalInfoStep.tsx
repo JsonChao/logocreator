@@ -23,7 +23,7 @@ export default function AdditionalInfoStep({ value, onChange }: AdditionalInfoSt
               <h3 className="font-medium">Adding details helps AI create more relevant logos:</h3>
               <ul className="mt-2 space-y-1.5 text-sm text-blue-700">
                 <li>Describe your industry or business type</li>
-                <li>Mention specific imagery you'd like to see</li>
+                <li>Mention specific imagery you&apos;d like to see</li>
                 <li>Specify your target audience</li>
                 <li>Include special requirements or preferences</li>
               </ul>
