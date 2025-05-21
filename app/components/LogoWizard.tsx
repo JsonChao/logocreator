@@ -265,10 +265,10 @@ export default function LogoWizard({
               <Button
                 disabled={isButtonDisabled}
                 onClick={goToNextStep}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-8 text-white hover:bg-blue-700 disabled:bg-blue-300"
+                className="flex items-center gap-1.5 rounded-xl bg-blue-400 px-8 py-6 text-lg font-medium text-white hover:bg-blue-500 disabled:bg-blue-300"
               >
-                Next
-                <ArrowRight className="h-4 w-4" />
+                Continue
+                <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             )}
             
@@ -276,7 +276,7 @@ export default function LogoWizard({
               <Button
                 disabled={initialData.isLoading}
                 onClick={onGenerateLogo}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-8 text-white hover:bg-blue-700 disabled:bg-blue-300"
+                className="flex items-center gap-1.5 rounded-xl bg-blue-400 px-8 py-6 text-lg font-medium text-white hover:bg-blue-500 disabled:bg-blue-300"
               >
                 {initialData.isLoading ? "Generating..." : "Generate Logo"}
               </Button>
