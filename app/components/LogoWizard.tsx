@@ -103,7 +103,7 @@ export default function LogoWizard({
   return (
     <div className="flex h-full w-full flex-col bg-gray-50">
       {/* Progress Indicator */}
-      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white py-4 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white py-3 shadow-sm">
         <div className="mx-auto flex max-w-6xl flex-col px-4">
           {/* 简洁步骤指示器 */}
           <div className="relative flex items-center justify-between">
@@ -118,7 +118,7 @@ export default function LogoWizard({
                 `}
               >
                 <div className={`
-                  z-10 flex h-8 w-8 items-center justify-center rounded-full 
+                  z-10 flex h-7 w-7 items-center justify-center rounded-full 
                   transition-all duration-200
                   ${completedSteps.includes(index) 
                     ? "bg-blue-500 text-white" 
@@ -126,10 +126,10 @@ export default function LogoWizard({
                       ? "border-2 border-blue-500 bg-white text-blue-600" 
                       : "border-2 border-gray-300 bg-white text-gray-400"}
                 `}>
-                  <span className="text-sm font-medium">{index + 1}</span>
+                  <span className="text-xs font-medium">{index + 1}</span>
                 </div>
                 <span className={`
-                  mt-2 text-xs font-medium
+                  mt-1.5 text-[11px] font-medium
                   ${index === currentStep ? "text-blue-600" : 
                     completedSteps.includes(index) ? "text-gray-700" : "text-gray-400"}
                 `}>
@@ -139,7 +139,7 @@ export default function LogoWizard({
             ))}
             
             {/* 彩虹渐变连接线 */}
-            <div className="absolute left-0 right-0 top-4 -z-0 h-0.5 w-full bg-gray-200">
+            <div className="absolute left-0 right-0 top-3.5 -z-0 h-[1px] w-full bg-gray-200">
               <div 
                 className="h-full bg-gradient-to-r from-blue-400 via-pink-500 to-yellow-300 transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
@@ -147,8 +147,8 @@ export default function LogoWizard({
             </div>
           </div>
           
-          {/* 移动端进度条 */}
-          <div className="mt-4 flex items-center justify-between md:hidden">
+          {/* 移动端进度条 - 略微调整 */}
+          <div className="mt-3 flex items-center justify-between md:hidden">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Step {currentStep + 1}/{steps.length}</span>
               <span className="text-sm font-medium text-gray-500">{steps[currentStep].title}</span>
@@ -156,7 +156,7 @@ export default function LogoWizard({
             <span className="text-sm font-medium text-blue-600">{Math.round(progressPercent)}%</span>
           </div>
           
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 md:hidden">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-gray-200 md:hidden">
             <div 
               className="h-full bg-gradient-to-r from-blue-400 via-pink-500 to-yellow-300 transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
