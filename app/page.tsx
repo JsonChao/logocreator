@@ -57,13 +57,45 @@ export default function LandingPage() {
     router.push("/pricing");
   };
   
+  // 用户评价
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      company: "Bloom Tech Startup",
+      image: "/testimonials/user1.webp",
+      rating: 5,
+      text: "The AI logo generator saved me thousands of dollars on design costs. I generated a professional logo for my tech startup in minutes that perfectly captures our brand identity."
+    },
+    {
+      name: "Michael Chen",
+      company: "Artisan Bakery",
+      image: "/testimonials/user2.webp",
+      rating: 5,
+      text: "As a small business owner, I needed an affordable logo solution. This tool delivered beyond my expectations with a beautiful design that my customers love!"
+    },
+    {
+      name: "Emma Rodriguez",
+      company: "Fitness Coach",
+      image: "/testimonials/user3.webp",
+      rating: 4,
+      text: "I tried several AI logo generators but this one produced the most natural, professional results. The style options really helped me find exactly what I was looking for."
+    },
+    {
+      name: "David Wilson",
+      company: "Digital Marketing Agency",
+      image: "/testimonials/user4.webp",
+      rating: 5,
+      text: "As someone working in the creative field, I was skeptical about AI-generated logos. I am completely won over now. The quality and uniqueness of the designs are remarkable."
+    },
+  ];
+  
   // 自动切换评价
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [testimonials.length]);
   
   // Logo样式展示
   const logoStyles = [
@@ -158,38 +190,6 @@ export default function LandingPage() {
       title: "Customize & Download",
       description: "Fine-tune your favorite design and download in your preferred format, ready to use",
       image: "/steps/step4.webp"
-    },
-  ];
-  
-  // 用户评价
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      company: "Bloom Tech Startup",
-      image: "/testimonials/user1.webp",
-      rating: 5,
-      text: "The AI logo generator saved me thousands of dollars on design costs. I generated a professional logo for my tech startup in minutes that perfectly captures our brand identity."
-    },
-    {
-      name: "Michael Chen",
-      company: "Artisan Bakery",
-      image: "/testimonials/user2.webp",
-      rating: 5,
-      text: "As a small business owner, I needed an affordable logo solution. This tool delivered beyond my expectations with a beautiful design that my customers love!"
-    },
-    {
-      name: "Emma Rodriguez",
-      company: "Fitness Coach",
-      image: "/testimonials/user3.webp",
-      rating: 4,
-      text: "I tried several AI logo generators but this one produced the most natural, professional results. The style options really helped me find exactly what I was looking for."
-    },
-    {
-      name: "David Wilson",
-      company: "Digital Marketing Agency",
-      image: "/testimonials/user4.webp",
-      rating: 5,
-      text: "As someone working in the creative field, I was skeptical about AI-generated logos. I'm completely won over now. The quality and uniqueness of the designs are remarkable."
     },
   ];
   
@@ -353,11 +353,11 @@ export default function LandingPage() {
           >
             <div className="text-center text-sm font-medium text-gray-500">TRUSTED BY BUSINESSES WORLDWIDE</div>
             <div className="flex flex-wrap justify-center gap-8 w-full">
-              <img src="/brands/brand1.svg" alt="Brand 1" className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
-              <img src="/brands/brand2.svg" alt="Brand 2" className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
-              <img src="/brands/brand3.svg" alt="Brand 3" className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
-              <img src="/brands/brand4.svg" alt="Brand 4" className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
-              <img src="/brands/brand5.svg" alt="Brand 5" className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/brands/brand1.svg" alt="Brand 1" width={32} height={32} className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/brands/brand2.svg" alt="Brand 2" width={32} height={32} className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/brands/brand3.svg" alt="Brand 3" width={32} height={32} className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/brands/brand4.svg" alt="Brand 4" width={32} height={32} className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/brands/brand5.svg" alt="Brand 5" width={32} height={32} className="h-8 grayscale opacity-70 hover:opacity-100 transition-opacity" />
             </div>
           </motion.div>
               </div>

@@ -30,24 +30,29 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
       const response = await fetch(`/api/user-credits?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
+        console.log("获取到用户额度数据:", data);
         setRemainingCredits(data.remainingCredits);
         setLastRefreshed(Date.now());
-        
-        if (forceRefresh) {
-          console.log("已强制刷新用户额度信息", data);
-        }
       } else {
+        console.error(`API请求失败: ${response.status}`);
         throw new Error(`API请求失败: ${response.status}`);
       }
     } catch (error) {
       console.error("获取用户额度失败:", error);
       
       // 如果API请求失败，尝试从元数据中获取
-      const metadata = user.unsafeMetadata as { remaining?: number };
-      if (metadata && typeof metadata.remaining === 'number') {
-        setRemainingCredits(metadata.remaining);
+      if (user.unsafeMetadata) {
+        const metadata = user.unsafeMetadata as { remaining?: number };
+        if (metadata && typeof metadata.remaining === 'number') {
+          console.log("从用户元数据获取额度:", metadata.remaining);
+          setRemainingCredits(metadata.remaining);
+        } else {
+          // 如果元数据也没有，设置默认额度
+          console.log("未找到用户额度信息，使用默认值3");
+          setRemainingCredits(3);
+        }
       } else {
-        // 如果元数据也没有，设置默认额度
+        console.log("用户元数据不存在，使用默认值3");
         setRemainingCredits(3);
       }
     } finally {
@@ -59,20 +64,22 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
   // 组件挂载和用户信息变化时获取额度
   useEffect(() => {
     if (isLoaded && isSignedIn) {
+      console.log("用户已登录，获取额度信息");
       fetchUserCredits(true); // 首次加载强制刷新
     }
   }, [isLoaded, isSignedIn, user?.id, fetchUserCredits]);
 
-  // 每60秒刷新一次额度信息
+  // 每30秒刷新一次额度信息
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     
     const intervalId = setInterval(() => {
-      // 仅在最后刷新时间超过60秒时刷新
-      if (Date.now() - lastRefreshed > 60000) {
+      // 仅在最后刷新时间超过30秒时刷新
+      if (Date.now() - lastRefreshed > 30000) {
+        console.log("自动刷新用户额度信息");
         fetchUserCredits();
       }
-    }, 60000);
+    }, 30000);
     
     return () => clearInterval(intervalId);
   }, [isLoaded, isSignedIn, lastRefreshed, fetchUserCredits]);
@@ -84,6 +91,7 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     
     if (refreshing || loading) return;
     
+    console.log("手动刷新用户额度信息");
     setRefreshing(true);
     await fetchUserCredits(true);
   };

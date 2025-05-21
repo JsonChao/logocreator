@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
     
     // 获取当前限流值
     const currentLimitData = await redis.get(rateLimitKey);
+    console.log(`获取到的Redis数据: ${JSON.stringify(currentLimitData)}`);
     
     // 计算剩余额度
     let remainingCredits = 3; // 默认额度
@@ -58,9 +59,10 @@ export async function GET(req: NextRequest) {
         
         // 处理各种可能的数据格式
         if (Array.isArray(currentLimitData) && currentLimitData.length === 2) {
-          // 原生数组格式
+          // 原生数组格式 [timestamp, usage]
           currentUsage = currentLimitData[1];
           dataSource = "redis_array";
+          console.log(`解析为数组格式: [${currentLimitData[0]}, ${currentLimitData[1]}]`);
         } else if (typeof currentLimitData === 'string') {
           try {
             // JSON字符串格式
@@ -68,6 +70,7 @@ export async function GET(req: NextRequest) {
             if (Array.isArray(parsed) && parsed.length === 2) {
               currentUsage = parsed[1];
               dataSource = "redis_json";
+              console.log(`解析为JSON格式: [${parsed[0]}, ${parsed[1]}]`);
             }
           } catch {
             // 逗号分隔字符串格式
@@ -76,9 +79,32 @@ export async function GET(req: NextRequest) {
               currentUsage = parseInt(parts[1], 10);
               if (!isNaN(currentUsage)) {
                 dataSource = "redis_string";
+                console.log(`解析为字符串格式: [${parts[0]}, ${parts[1]}]`);
               }
             }
           }
+        } else if (typeof currentLimitData === 'object' && currentLimitData !== null) {
+          // 处理可能的对象格式
+          if ('remaining' in currentLimitData) {
+            // 直接包含remaining字段的对象
+            const remaining = Number(currentLimitData.remaining);
+            if (!isNaN(remaining)) {
+              remainingCredits = remaining;
+              dataSource = "redis_object";
+              console.log(`解析为对象格式，直接包含remaining: ${remaining}`);
+            }
+          }
+        } else if (typeof currentLimitData === 'number') {
+          // 直接是数字（可能是剩余次数或使用次数）
+          if (currentLimitData < 0) {
+            // 负数表示直接的剩余额度
+            remainingCredits = -currentLimitData;
+          } else {
+            // 正数表示已使用次数
+            remainingCredits = Math.max(0, 3 - currentLimitData);
+          }
+          dataSource = "redis_number";
+          console.log(`解析为数字格式: ${currentLimitData}, 计算剩余额度: ${remainingCredits}`);
         }
         
         // 根据使用量计算剩余额度
@@ -86,9 +112,11 @@ export async function GET(req: NextRequest) {
           if (currentUsage < 0) {
             // 负值表示预先设置的额度
             remainingCredits = -currentUsage;
+            console.log(`负值使用量，直接表示剩余额度: ${remainingCredits}`);
           } else {
             // 正值表示已使用次数
             remainingCredits = Math.max(0, 3 - currentUsage);
+            console.log(`正值使用量 ${currentUsage}，计算剩余额度: ${remainingCredits}`);
           }
         }
       } catch (error) {
@@ -97,8 +125,8 @@ export async function GET(req: NextRequest) {
       }
     }
     
-    // 如果强制刷新且Redis中数据格式有问题，重写Redis数据确保格式正确
-    if (forceRefresh && currentLimitData) {
+    // 如果强制刷新或Redis中数据格式有问题，重写Redis数据确保格式正确
+    if (forceRefresh || dataSource === "parse_error") {
       try {
         const newLimitData = [Date.now(), -remainingCredits]; // 使用新的时间戳和负值表示剩余额度
         await redis.set(rateLimitKey, JSON.stringify(newLimitData));
@@ -115,6 +143,7 @@ export async function GET(req: NextRequest) {
       updatedRedis: didUpdateRedis,
       dataSource,
       userId,
+      rawData: typeof currentLimitData === 'object' ? JSON.stringify(currentLimitData) : String(currentLimitData)
     });
     
   } catch (error: unknown) {
