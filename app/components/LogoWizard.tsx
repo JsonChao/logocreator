@@ -248,8 +248,6 @@ export default function LogoWizard({
                 onGenerateLogo={handleGenerateLogo}
                 onDownloadLogo={handleDownloadLogo}
                 onBack={goToPreviousStep}
-                imageError={imageError}
-                sizes={sizes}
               />
             )}
           </motion.div>
