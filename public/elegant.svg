@@ -1,0 +1,23 @@
+<svg width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 优雅风格logo - 使用精致的线条和精心设计的字体 -->
+  <rect width="250" height="250" fill="white"/>
+  
+  <!-- 主要装饰元素 - 优雅的花纹 -->
+  <path d="M125 60C137.5 60 147.5 70 147.5 82.5C147.5 95 137.5 105 125 105C112.5 105 102.5 95 102.5 82.5C102.5 70 112.5 60 125 60Z" fill="#F6F0EA"/>
+  <path d="M125 65C135 65 143 73 143 82.5C143 92 135 100 125 100C115 100 107 92 107 82.5C107 73 115 65 125 65Z" stroke="#A68A7B" stroke-width="1.5"/>
+  
+  <!-- 装饰线条 -->
+  <path d="M90 120C90 120 105 140 125 140C145 140 160 120 160 120" stroke="#A68A7B" stroke-width="1.5"/>
+  <path d="M80 110C80 110 100 155 125 155C150 155 170 110 170 110" stroke="#A68A7B" stroke-width="1.5"/>
+  
+  <!-- Logo文字部分 -->
+  <text x="125" y="190" font-family="serif" font-size="28" font-weight="400" fill="#4A352A" text-anchor="middle" dominant-baseline="middle">Elegant</text>
+  
+  <!-- 精致的装饰线 -->
+  <line x1="90" y1="205" x2="160" y2="205" stroke="#A68A7B" stroke-width="1"/>
+  
+  <!-- 额外装饰元素 -->
+  <circle cx="125" cy="82.5" r="4" fill="#A68A7B"/>
+  <path d="M70 60C70 60 85 40 125 40C165 40 180 60 180 60" stroke="#D1C3B8" stroke-width="1"/>
+  <path d="M65 70C65 70 85 30 125 30C165 30 185 70 185 70" stroke="#D1C3B8" stroke-width="1"/>
+</svg> 
