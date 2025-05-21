@@ -11,7 +11,7 @@ export default function Header({ className = "" }: { className?: string }) {
   return (
     <header className={`relative z-20 w-full bg-white shadow-none ${className}`} style={{ minHeight: 72 }}>
       <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 md:px-0">
-        {/* 返回按钮 */}
+        {/* Back button */}
         <button
           onClick={() => router.back()}
           className="flex size-10 items-center justify-center rounded-full transition hover:bg-gray-100 focus:outline-none"
@@ -20,7 +20,7 @@ export default function Header({ className = "" }: { className?: string }) {
           <ArrowLeft className="h-6 w-6 text-gray-500" />
         </button>
 
-        {/* 居中Logo */}
+        {/* Centered Logo */}
         <Link href="/" className="flex items-center select-none">
           <Image
             src="/logoai.svg"
@@ -33,7 +33,7 @@ export default function Header({ className = "" }: { className?: string }) {
           <span className="text-2xl font-bold tracking-tight text-gray-800">logoai</span>
         </Link>
 
-        {/* 收藏按钮 */}
+        {/* Favorite button */}
         <button
           onClick={() => setLiked((v) => !v)}
           className="flex size-10 items-center justify-center rounded-full transition hover:bg-gray-100 focus:outline-none"
@@ -46,7 +46,7 @@ export default function Header({ className = "" }: { className?: string }) {
           )}
         </button>
       </div>
-      {/* 底部渐变或细线 */}
+      {/* Bottom gradient or thin line */}
       <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-200 via-pink-200 to-yellow-100 opacity-70" />
     </header>
   );

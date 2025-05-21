@@ -103,28 +103,28 @@ export async function POST(req: Request) {
   }
 
   const flashyStyle =
-    "专业级别的Logo设计，引人注目，大胆创新，未来感十足，令人印象深刻。使用鲜艳的霓虹色彩，配以金属质感、光泽和闪亮的点缀效果。确保文字清晰可辨，适合品牌在各种媒体上使用。设计要简洁有力，避免过于复杂的元素。";
+    "Professional level logo design, eye-catching, bold, innovative, futuristic, and impressive. Uses vibrant neon colors, complemented by metallic textures, gloss, and shiny accent effects. Ensures text is clearly legible, suitable for brand use across various media. Design should be concise and powerful, avoiding overly complex elements.";
 
   const techStyle =
-    "高度精细的科技风格Logo，锐利清晰，具有电影感和照片级真实感。极简主义设计，干净流畅，采用中性色调配以微妙的强调色，纯净的线条，适当的阴影，扁平化设计。确保Logo在小尺寸下仍然清晰可辨，适合科技公司使用。";
+    "Highly refined tech-style logo, sharp and clear, with a cinematic feel and photorealistic quality. Minimalist design, clean and fluid, using neutral tones with subtle accent colors, pure lines, appropriate shadows, and flat design. Ensures the logo remains clear and legible at small sizes, suitable for tech companies.";
 
   const modernStyle =
-    "现代前卫的Logo设计，采用扁平化设计风格，几何形状，简洁线条，自然色彩搭配微妙的点缀色。巧妙利用负空间创造视觉趣味。设计要简约而不简单，传达品牌的前瞻性和创新精神。确保设计可在各种尺寸和媒介中保持一致性。";
+    "Modern, cutting-edge logo design using flat design style, geometric shapes, clean lines, and natural color combinations with subtle accent colors. Cleverly utilizes negative space to create visual interest. Design should be simple yet not simplistic, conveying the brand's forward-thinking and innovative spirit. Ensures design maintains consistency across various sizes and media.";
 
   const playfulStyle =
-    "充满活力的俏皮Logo，使用明亮大胆的色彩，圆润的形状，活泼的设计元素。设计应该引人微笑，具有亲和力和趣味性，同时保持专业水准。适合面向年轻受众或创意行业的品牌。确保字体选择与整体风格协调一致。";
+    "Energetic and playful logo using bright, bold colors, rounded shapes, and lively design elements. Design should inspire smiles, with approachability and fun while maintaining professional standards. Suitable for brands targeting younger audiences or creative industries. Ensures font choices align with the overall style.";
 
   const abstractStyle =
-    "抽象艺术风格的Logo，富有创意，使用独特的形状、图案和纹理创造视觉上引人入胜的设计。设计要大胆创新且有辨识度，能够传达品牌的独特个性。抽象元素应当与品牌名称巧妙融合，形成和谐的整体。";
+    "Abstract artistic logo style, creative, using unique shapes, patterns, and textures to create visually engaging designs. Design should be bold, innovative, and distinctive, capable of conveying the unique personality of the brand. Abstract elements should blend cleverly with the brand name, forming a harmonious whole.";
 
   const minimalStyle =
-    "极简主义Logo设计，简约、永恒、多用途。采用单色设计，巧妙利用负空间，扁平设计风格，细节极少。轻盈、柔和、微妙的视觉效果。确保设计在极简的同时仍具有品牌辨识度，可在各种背景和场景中使用。关注字体的精确排版。";
+    "Minimalist logo design, simple, timeless, and versatile. Uses monochrome design, cleverly utilizes negative space, flat design style, and minimal details. Light, soft, subtle visual effects. Ensures the design maintains brand recognizability while remaining minimal, usable in various backgrounds and scenarios. Focuses on precise typography.";
 
   const vintageStyle =
-    "复古风格Logo，带有经典怀旧感，使用做旧纹理，传承灵感设计，呈现年代感，采用柔和的复古色调。设计应当唤起特定时代的美感，同时满足现代使用需求。字体选择要符合复古主题，可考虑使用衬线字体。";
+    "Retro style logo with classic nostalgic feel, using aged textures, heritage-inspired design, vintage aesthetics, and soft retro color schemes. Design should evoke the beauty of a specific era while meeting modern usage requirements. Font choices should align with the vintage theme, considering serif fonts.";
 
   const corporateStyle =
-    "专业的企业级Logo设计，商务风格，整洁，结构化，保守配色方案，传达信任感和稳定性。设计要正式且专业，适合商业环境使用。字体要选择大气规范的无衬线字体，整体布局要平衡且易于识别。确保在各种应用场景中均可保持专业形象。";
+    "Professional corporate logo design, business style, neat, structured, with a conservative color scheme conveying trust and stability. Design should be formal and professional, suitable for business environments. Fonts should be bold and standardized sans-serif, with overall layout balanced and easily recognizable. Ensures professional image is maintained across various application scenarios.";
 
   const styleLookup: Record<string, string> = {
     Flashy: flashyStyle,
@@ -137,19 +137,19 @@ export async function POST(req: Request) {
     Corporate: corporateStyle,
   };
 
-  const prompt = dedent`创建一个单一的标志性Logo，高端专业的设计品质，荣获设计大奖级别的专业效果。该Logo应同时适用于数字媒体和印刷媒体，包含少量矢量图形元素以确保清晰度和可扩展性。
+  const prompt = dedent`Create a single iconic logo with high-end professional design quality, award-winning level professional effects. The logo should be suitable for both digital and print media, containing minimal vector graphic elements to ensure clarity and scalability.
 
-  设计风格: ${styleLookup[data.selectedStyle]}
+  Design Style: ${styleLookup[data.selectedStyle]}
   
-  主色调: ${data.selectedPrimaryColor}
-  背景色: ${data.selectedBackgroundColor}
-  公司名称: ${data.companyName}
+  Primary Color: ${data.selectedPrimaryColor}
+  Background Color: ${data.selectedBackgroundColor}
+  Company Name: ${data.companyName}
   
-  请确保Logo设计中包含公司名称，并让名称与图形元素和谐融合。设计要简洁有力，具有令人难忘的独特性，在不同尺寸和背景下都能保持辨识度。Logo应当反映品牌个性，易于识别，并且在黑白模式下仍然有效。
+  Please ensure the company name is included in the logo design and harmoniously integrated with graphic elements. The design should be concise and powerful, with memorable uniqueness, maintaining recognizability in different sizes and backgrounds. The logo should reflect the brand personality, be easily identifiable, and remain effective in black and white mode.
   
-  ${data.additionalInfo ? `额外设计要求: ${data.additionalInfo}` : ""}
+  ${data.additionalInfo ? `Additional Design Requirements: ${data.additionalInfo}` : ""}
   
-  请避免过度复杂的设计元素，确保Logo设计符合现代设计标准，可轻松用于网站、社交媒体、名片和其他品牌应用场景。`;
+  Please avoid overly complex design elements, ensuring the logo design meets modern design standards and can be easily used on websites, social media, business cards, and other brand application scenarios.`;
 
   try {
     console.log("Generating logo with Replicate...");

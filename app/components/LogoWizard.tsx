@@ -6,10 +6,10 @@ import { CompanyNameStep } from "./wizard-steps/CompanyNameStep";
 import { StyleSelectionStep } from "./wizard-steps/StyleSelectionStep";
 import { ColorSelectionStep } from "./wizard-steps/ColorSelectionStep";
 import { FontSelectionStep } from "./wizard-steps/FontSelectionStep";
-import SizeSelectionStep from "./wizard-steps/SizeSelectionStep";
-import AdditionalInfoStep from "./wizard-steps/AdditionalInfoStep";
-import PreviewStep from "./wizard-steps/PreviewStep";
+import { SizeSelectionStep } from "./wizard-steps/SizeSelectionStep";
+import { AdditionalInfoStep } from "./wizard-steps/AdditionalInfoStep";
 import { IndustrySelectionStep } from "./wizard-steps/IndustrySelectionStep";
+import PreviewStep from "./wizard-steps/PreviewStep";
 
 export interface WizardData {
   companyName: string;
@@ -45,14 +45,14 @@ export default function LogoWizard({
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   
   const steps = [
-    { title: "公司名称", component: CompanyNameStep, required: true },
-    { title: "行业", component: IndustrySelectionStep, required: false },
-    { title: "风格", component: StyleSelectionStep, required: true },
-    { title: "颜色", component: ColorSelectionStep, required: true },
-    { title: "字体", component: FontSelectionStep, required: false },
-    { title: "尺寸", component: SizeSelectionStep, required: false },
-    { title: "额外信息", component: AdditionalInfoStep, required: false },
-    { title: "预览", component: PreviewStep, required: false }
+    { title: "Company Name", component: CompanyNameStep, required: true },
+    { title: "Industry", component: IndustrySelectionStep, required: false },
+    { title: "Style", component: StyleSelectionStep, required: true },
+    { title: "Colors", component: ColorSelectionStep, required: true },
+    { title: "Font", component: FontSelectionStep, required: false },
+    { title: "Size", component: SizeSelectionStep, required: false },
+    { title: "Additional Info", component: AdditionalInfoStep, required: false },
+    { title: "Preview", component: PreviewStep, required: false }
   ];
 
   const goToNextStep = () => {
@@ -102,10 +102,10 @@ export default function LogoWizard({
 
   return (
     <div className="flex h-full w-full flex-col bg-gray-50">
-      {/* 进度指示器 */}
+      {/* Progress Indicator */}
       <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-4 shadow-sm">
         <div className="mx-auto flex max-w-6xl flex-col">
-          {/* 步骤列表 */}
+          {/* Step List */}
           <div className="mb-2 hidden items-center justify-between md:flex">
             {steps.map((step, index) => (
               <button 
@@ -152,10 +152,10 @@ export default function LogoWizard({
             </div>
           </div>
           
-          {/* 移动端进度条 */}
+          {/* Mobile Progress Bar */}
           <div className="flex items-center justify-between md:hidden">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">步骤 {currentStep + 1}/{steps.length}</span>
+              <span className="text-sm font-medium text-gray-700">Step {currentStep + 1}/{steps.length}</span>
               <span className="text-sm font-medium text-gray-500">{steps[currentStep].title}</span>
             </div>
             <span className="text-sm font-medium text-blue-600">{Math.round(progressPercent)}%</span>
@@ -255,7 +255,7 @@ export default function LogoWizard({
                 className="flex items-center gap-1.5 rounded-xl border-gray-200 px-6"
               >
                 <ArrowLeft className="h-4 w-4" />
-                上一步
+                Back
               </Button>
             ) : (
               <div></div>
@@ -267,7 +267,7 @@ export default function LogoWizard({
                 onClick={goToNextStep}
                 className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-8 text-white hover:bg-blue-700 disabled:bg-blue-300"
               >
-                下一步
+                Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             )}
@@ -278,7 +278,7 @@ export default function LogoWizard({
                 onClick={onGenerateLogo}
                 className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-8 text-white hover:bg-blue-700 disabled:bg-blue-300"
               >
-                {initialData.isLoading ? "生成中..." : "生成标志"}
+                {initialData.isLoading ? "Generating..." : "Generate Logo"}
               </Button>
             )}
           </div>

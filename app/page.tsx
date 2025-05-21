@@ -120,7 +120,7 @@ export default function Page() {
     }
   };
 
-  // 获取实际使用的颜色值
+  // Get actual color values
   const getActualPrimaryColor = () => {
     const selectedColor = primaryColors.find(c => c.name === wizardData.primaryColor);
     return selectedColor?.color === "custom" ? wizardData.customPrimaryColor : selectedColor?.color || "#0F6FFF";
@@ -131,10 +131,10 @@ export default function Page() {
     return selectedColor?.color === "custom" ? wizardData.customBackgroundColor : selectedColor?.color || "#FFFFFF";
   };
 
-  // 加载保存的偏好设置
+  // Load saved preferences
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 加载其他偏好设置
+      // Load other preferences
       const savedPreferences = localStorage.getItem("logoPreferences");
       if (savedPreferences) {
         try {
@@ -158,7 +158,7 @@ export default function Page() {
     }
   }, []);
 
-  // 保存偏好设置
+  // Save preferences
   const savePreferences = useCallback(() => {
     if (typeof window !== "undefined") {
       const preferences = {
@@ -173,12 +173,12 @@ export default function Page() {
     }
   }, [wizardData]);
 
-  // 当组件挂载时保存
+  // Save when component mounts
   useEffect(() => {
     savePreferences();
   }, [savePreferences]);
 
-  // 更新向导数据的处理函数
+  // Function to update wizard data
   const handleUpdateWizardData = (updates: Partial<WizardData>) => {
     setWizardData(prev => ({
       ...prev,
@@ -186,7 +186,7 @@ export default function Page() {
     }));
   };
 
-  // 生成Logo的异步函数
+  // Generate logo async function
   const generateLogo = async () => {
     if (!isSignedIn) {
       return;
@@ -245,7 +245,7 @@ export default function Page() {
         // Process image URLs in response
         if (json.image_urls && json.image_urls.length > 0) {
           setTimeout(() => {
-            // 处理图片URL - 确保它们总是数组
+            // Process image URLs - ensure they are always arrays
             const displayUrls = json.display_urls 
               ? (Array.isArray(json.display_urls) ? json.display_urls : [json.display_urls]) 
               : [];
@@ -254,7 +254,7 @@ export default function Page() {
               ? (Array.isArray(json.image_urls) ? json.image_urls : [json.image_urls]) 
               : [];
             
-            // 优先使用display_urls，如果没有则使用image_urls
+            // Prioritize display_urls, if none use image_urls
             const finalUrls = displayUrls.length > 0 ? displayUrls : imageUrls;
             
             setWizardData(prev => ({ 
@@ -262,7 +262,7 @@ export default function Page() {
               generatedImages: finalUrls
             }));
             
-            // 保存到历史记录
+            // Save to history
             if (finalUrls.length > 0) {
               finalUrls.forEach((url: string) => saveToHistory(url));
             }
@@ -318,7 +318,7 @@ export default function Page() {
     }
   };
 
-  // Logo下载函数
+  // Logo download function
   const handleDownloadLogo = (format: 'png' | 'svg' | 'jpg') => {
     if (!wizardData.generatedImages.length || imageError) return;
     
@@ -335,27 +335,27 @@ export default function Page() {
     }
   };
 
-  // 下载PNG图像函数
+  // Download PNG image function
   const downloadPng = () => {
     if (!wizardData.generatedImages.length || imageError) return;
     
     const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
     
-    // 使用fetch和blob下载
+    // Use fetch and blob for download
     fetch(wizardData.generatedImages[0])
       .then(response => response.blob())
       .then(blob => {
-        // 创建用于下载的blob URL
+        // Create blob URL for download
         const blobUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = blobUrl;
         link.download = fileName;
         
-        // 触发下载
+        // Trigger download
         document.body.appendChild(link);
         link.click();
         
-        // 清理
+        // Cleanup
         setTimeout(() => {
           document.body.removeChild(link);
           window.URL.revokeObjectURL(blobUrl);
@@ -369,7 +369,7 @@ export default function Page() {
       })
       .catch(error => {
         console.error("Download failed:", error);
-        // 显示错误提示
+        // Show error toast
         toast({
           title: "Download Failed",
           description: "Could not download image. Try right-clicking and selecting 'Save As...'",
@@ -378,7 +378,7 @@ export default function Page() {
       });
   };
 
-  // 下载SVG图像函数
+  // Download SVG image function
   const downloadSvg = async () => {
     if (!wizardData.generatedImages.length || imageError) return;
     
@@ -393,14 +393,14 @@ export default function Page() {
       const svgUrl = await convertToSvg(wizardData.generatedImages[0]);
       const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.svg`;
       
-      // 创建下载链接并触发下载
+      // Create download link and trigger download
       const link = document.createElement('a');
       link.href = svgUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       
-      // 清理
+      // Cleanup
       setTimeout(() => {
         document.body.removeChild(link);
         URL.revokeObjectURL(svgUrl);
@@ -423,7 +423,7 @@ export default function Page() {
     }
   };
 
-  // 下载JPG图像函数
+  // Download JPG image function
   const downloadJpg = async () => {
     if (!wizardData.generatedImages.length || imageError) return;
     
@@ -438,7 +438,7 @@ export default function Page() {
       const jpgUrl = await convertToJpg(wizardData.generatedImages[0]);
       const fileName = `${wizardData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.jpg`;
       
-      // 提取dataURL中的数据并创建Blob
+      // Extract data from dataURL and create Blob
       const base64Data = jpgUrl.split(',')[1];
       const byteCharacters = atob(base64Data);
       const byteArrays = [];
@@ -450,7 +450,7 @@ export default function Page() {
       const byteArray = new Uint8Array(byteArrays);
       const blob = new Blob([byteArray], {type: 'image/jpeg'});
       
-      // 创建下载链接
+      // Create download link
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
@@ -458,7 +458,7 @@ export default function Page() {
       document.body.appendChild(link);
       link.click();
       
-      // 清理
+      // Cleanup
       setTimeout(() => {
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
