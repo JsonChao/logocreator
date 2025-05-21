@@ -65,4 +65,256 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-blue-400 to-purple-400 rounded-full hover:from-blue-500 hover:to-purple-500 transition-all duration-300;
+  }
+
+  /* 文字选择样式 */
+  ::selection {
+    @apply bg-blue-400/30 text-blue-900;
+  }
+}
+
+/* 动画效果 */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 15px 0 rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 30px 2px rgba(59, 130, 246, 0.5); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reverse-spin {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes background-pan {
+  from { background-position: 0% center; }
+  to { background-position: -200% center; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gradient-x {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float-reverse {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(15px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* 粒子漂浮动画 */
+@keyframes particle-move {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(calc(var(--x-direction) * 50px));
+    opacity: 0;
+  }
+}
+
+/* 浮动元素动画 */
+@keyframes floating-circle {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(10px, -15px) rotate(3deg); }
+  66% { transform: translate(-10px, 10px) rotate(-3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes floating-circle-reverse {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(-10px, 10px) rotate(-3deg); }
+  66% { transform: translate(10px, -15px) rotate(3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes floating-square {
+  0% { transform: translate(0, 0) rotate(12deg); }
+  25% { transform: translate(-15px, 15px) rotate(18deg); }
+  50% { transform: translate(15px, 20px) rotate(12deg); }
+  75% { transform: translate(15px, -10px) rotate(6deg); }
+  100% { transform: translate(0, 0) rotate(12deg); }
+}
+
+@keyframes floating-triangle {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(20px, 10px) rotate(10deg); }
+  66% { transform: translate(-20px, -15px) rotate(-10deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 30s linear infinite;
+  }
+  
+  .animate-reverse-spin {
+    animation: reverse-spin 30s linear infinite;
+  }
+  
+  .animate-background-pan {
+    background-size: 200%;
+    animation: background-pan 3s linear infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+  }
+  
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 15s ease infinite;
+  }
+  
+  .animate-float-reverse {
+    animation: float-reverse 7s ease-in-out infinite;
+  }
+  
+  .glass-effect {
+    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-lg;
+  }
+
+  .glass-card {
+    @apply rounded-xl glass-effect p-6;
+  }
+  
+  .glass-button {
+    @apply glass-effect hover:bg-white/30 transition-all duration-300 
+           rounded-xl px-6 py-2 text-white font-medium;
+  }
+  
+  .gradient-border {
+    position: relative;
+    z-index: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+  }
+  
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 1px;
+    background: white;
+    border-radius: inherit;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  .glassmorphism {
+    @apply bg-white/30 backdrop-blur-md border border-white/40 shadow-xl;
+  }
+  
+  /* 粒子动画类 */
+  .particle {
+    --x-direction: random(-1, 1);
+    animation: particle-move 20s linear forwards;
+  }
+  
+  /* 浮动元素动画类 */
+  .floating-circle {
+    animation: floating-circle 20s ease-in-out infinite;
+  }
+  
+  .floating-circle-reverse {
+    animation: floating-circle-reverse 25s ease-in-out infinite;
+  }
+  
+  .floating-square {
+    animation: floating-square 30s ease-in-out infinite;
+  }
+  
+  .floating-triangle {
+    animation: floating-triangle 18s ease-in-out infinite;
+  }
+}
+
+/* 响应式设计增强 */
+@media (max-width: 640px) {
+  .particle {
+    opacity: 0.5;
+  }
+  
+  .floating-circle, .floating-circle-reverse, .floating-square, .floating-triangle {
+    opacity: 0.3;
+  }
+}
+
+/* 卡片悬浮效果 */
+.hover-card-effect {
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+  transform: perspective(1000px) rotateX(0) rotateY(0);
+}
+
+.hover-card-effect:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(5deg);
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.2);
 }

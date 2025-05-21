@@ -68,6 +68,64 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      animation: {
+        "float": "float 6s ease-in-out infinite",
+        "float-reverse": "float-reverse 7s ease-in-out infinite",
+        "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "shimmer": "shimmer 8s infinite",
+        "glow": "glow 3s ease-in-out infinite",
+        "spin-slow": "spin-slow 20s linear infinite",
+        "reverse-spin": "reverse-spin 25s linear infinite",
+        "background-pan": "background-pan 3s linear infinite",
+        "fade-in": "fade-in 0.8s ease-out forwards",
+        "gradient-x": "gradient-x 10s ease infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        "float-reverse": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(20px)" },
+        },
+        pulse: {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.05)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "0 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+        glow: {
+          "0%, 100%": { boxShadow: "0 0 15px 0 rgba(59, 130, 246, 0.3)" },
+          "50%": { boxShadow: "0 0 30px 2px rgba(59, 130, 246, 0.5)" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        "reverse-spin": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(-360deg)" },
+        },
+        "background-pan": {
+          from: { backgroundPosition: "0% center" },
+          to: { backgroundPosition: "-200% center" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "gradient-x": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
     },
   },
   plugins: [tailwindAnimate],

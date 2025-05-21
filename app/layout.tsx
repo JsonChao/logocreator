@@ -10,11 +10,11 @@ const jura = Jura({
   variable: "--font-jura",
 });
 
-const title = "LogocraftAI – 智能Logo生成器";
-const description = "使用AI技术为您的公司或品牌创建专业级别的Logo";
+const title = "LogoCraftAI - Create Beautiful Logos with AI";
+const description = "Generate professional, unique logos for your brand in seconds with AI. No design skills required.";
 const url = "https://www.logocraftai.com/";
 const ogimage = "https://www.logocraftai.com/images/logocraftai-og-image.png";
-const sitename = "LogocraftAI";
+const sitename = "LogoCraftAI";
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description,
     url: url,
     siteName: sitename,
-    locale: "zh_CN",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
@@ -53,15 +53,14 @@ export default function RootLayout({
 }>) {
   // 根据Clerk配置情况选择不同的布局包装
   const AppContent = () => (
-    <html lang="zh" className="h-full">
+    <html lang="en" className="h-full">
       <head>
         <PlausibleProvider domain="logocraftai.com" />
         <link rel="icon" href="/images/logocraftai.webp" type="image/webp" />
         <link rel="alternate icon" href="/favicon.ico" />
-        <meta name="color-scheme" content="dark" />
       </head>
       <body
-        className={`${jura.variable} dark min-h-full bg-[#343434] font-jura antialiased`}
+        className={`${jura.variable} min-h-full bg-white font-jura antialiased overflow-x-hidden`}
       >
         {children}
         <Toaster />
