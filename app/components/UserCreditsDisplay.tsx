@@ -13,6 +13,8 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(0);
+  const [resetting, setResetting] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   // 获取用户额度信息
   const fetchUserCredits = useCallback(async (forceRefresh = false) => {
@@ -107,11 +109,94 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     e.preventDefault();
     e.stopPropagation();
     
-    if (refreshing || loading) return;
+    if (refreshing || loading || resetting) return;
     
     console.log("手动刷新用户额度信息");
     setRefreshing(true);
     await fetchUserCredits(true);
+  };
+
+  // 重置用户额度
+  const resetUserCredits = async () => {
+    if (!isSignedIn || !user || refreshing || loading || resetting) return;
+    
+    try {
+      setResetting(true);
+      
+      // 调用API重置用户额度
+      const queryParams = new URLSearchParams({
+        userId: user.id,
+        resetCredits: 'true'
+      });
+      
+      console.log("重置用户额度");
+      const response = await fetch(`/api/user-credits?${queryParams.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log("重置用户额度成功:", data);
+        setRemainingCredits(data.remainingCredits);
+        setLastRefreshed(Date.now());
+        
+        // 显示重置成功的提示
+        if (typeof window !== 'undefined' && 'toast' in window) {
+          // @ts-ignore
+          window.toast?.({
+            title: "额度已重置",
+            description: `您的Logo生成额度已重置为${data.remainingCredits}次`,
+          });
+        } else {
+          alert(`额度已重置为${data.remainingCredits}次`);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error("重置用户额度失败:", errorData);
+        throw new Error(errorData.message || "重置用户额度失败");
+      }
+    } catch (error) {
+      console.error("重置用户额度出错:", error);
+      
+      // 显示错误提示
+      if (typeof window !== 'undefined' && 'toast' in window) {
+        // @ts-ignore
+        window.toast?.({
+          variant: "destructive",
+          title: "重置失败",
+          description: error instanceof Error ? error.message : "重置用户额度失败",
+        });
+      } else {
+        alert("重置用户额度失败");
+      }
+    } finally {
+      setResetting(false);
+    }
+  };
+  
+  // 处理长按事件
+  const handleTouchStart = () => {
+    if (refreshing || loading || resetting) return;
+    
+    const timer = setTimeout(() => {
+      // 长按3秒触发重置
+      console.log("长按触发重置额度");
+      resetUserCredits();
+    }, 3000);
+    
+    setLongPressTimer(timer);
+  };
+  
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+  
+  // 处理双击事件
+  const handleDoubleClick = () => {
+    if (refreshing || loading || resetting) return;
+    
+    console.log("双击触发重置额度");
+    resetUserCredits();
   };
 
   if (!isLoaded || !isSignedIn || remainingCredits === null) {
@@ -123,15 +208,21 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
       className={cn(
         "group flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 cursor-pointer hover:bg-blue-100 transition-colors",
         (loading || refreshing) && "opacity-70",
+        resetting && "bg-red-50 text-red-700",
         className
       )}
       onClick={handleRefreshClick}
-      title="点击刷新额度信息"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onDoubleClick={handleDoubleClick}
+      title={resetting ? "正在重置额度..." : "点击刷新额度信息 (双击或长按3秒重置额度)"}
     >
-      <Sparkles className="h-4 w-4 text-blue-500" />
+      <Sparkles className={cn("h-4 w-4", resetting ? "text-red-500" : "text-blue-500")} />
       <span>剩余额度: {remainingCredits}</span>
       {refreshing ? (
         <RefreshCw className="h-3 w-3 text-blue-500 animate-spin ml-1" />
+      ) : resetting ? (
+        <RefreshCw className="h-3 w-3 text-red-500 animate-spin ml-1" />
       ) : (
         <RefreshCw className={cn("h-3 w-3 ml-1 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity", loading && "animate-spin opacity-100")} />
       )}

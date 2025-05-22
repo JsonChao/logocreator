@@ -1,6 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
+import { Ratelimit } from "@upstash/ratelimit";
 
 // 创建Redis客户端实例
 const redis = new Redis({
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const queryUserId = url.searchParams.get("userId");
     const forceRefresh = url.searchParams.get("forceRefresh") === "true";
+    const resetCredits = url.searchParams.get("resetCredits") === "true";
     
     // 如果查询的是自己的信息，或者未提供ID，则使用当前用户ID或'anonymous'
     const userId = queryUserId || user?.id || 'anonymous';
@@ -38,6 +40,59 @@ export async function GET(req: NextRequest) {
       
       if (!isAdmin) {
         return NextResponse.json({ error: "无权查询其他用户的额度信息" }, { status: 403 });
+      }
+    }
+
+    // 如果请求重置额度
+    if (resetCredits) {
+      // 检查权限：只有管理员或用户自己可以重置额度
+      const isAdmin = user?.publicMetadata?.role === "admin";
+      const isSelf = user?.id === userId;
+      
+      if (isAdmin || isSelf) {
+        try {
+          console.log(`尝试重置用户 ${userId} 的额度`);
+          
+          // 创建一个新的Ratelimit实例
+          const ratelimit = new Ratelimit({
+            redis: Redis.fromEnv(),
+            limiter: Ratelimit.fixedWindow(3, "60 d"),
+            analytics: true,
+            prefix: "logocreator",
+          });
+          
+          // 清除现有的速率限制数据
+          const ratelimitKey = `ratelimit:logocreator:${userId}`;
+          await redis.del(ratelimitKey);
+          
+          // 清除旧格式的数据
+          const oldRateLimitKey = `logocreator:${userId}:rlflw`;
+          await redis.del(oldRateLimitKey);
+          
+          // 重新检查用户额度
+          const { remaining } = await ratelimit.limit(userId);
+          
+          console.log(`成功重置用户额度，新的剩余额度: ${remaining}`);
+          
+          return NextResponse.json({
+            remainingCredits: remaining,
+            updatedRedis: true,
+            dataSource: "reset_credits",
+            userId,
+            message: "用户额度已重置"
+          });
+        } catch (resetError) {
+          console.error("重置用户额度失败:", resetError);
+          return NextResponse.json(
+            { error: "重置用户额度失败", message: String(resetError) },
+            { status: 500 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          { error: "无权重置用户额度" },
+          { status: 403 }
+        );
       }
     }
 
@@ -79,6 +134,51 @@ export async function GET(req: NextRequest) {
     } catch (error) {
       console.error("尝试直接获取Upstash Ratelimit数据失败:", error);
       // 继续使用备用方法
+    }
+    
+    // 检查用户是否真的已经用完额度（通过创建临时Ratelimit实例来验证）
+    try {
+      if (process.env.UPSTASH_REDIS_REST_URL) {
+        console.log("尝试通过临时Ratelimit实例验证用户额度状态");
+        
+        // 创建临时Ratelimit实例
+        const tempRatelimit = new Ratelimit({
+          redis: Redis.fromEnv(),
+          limiter: Ratelimit.fixedWindow(3, "60 d"),
+          analytics: true,
+          prefix: "logocreator",
+        });
+        
+        // 检查用户额度状态
+        const { success: hasCredits, remaining } = await tempRatelimit.limit(userId);
+        console.log(`通过临时Ratelimit验证用户额度: hasCredits=${hasCredits}, remaining=${remaining}`);
+        
+        if (!hasCredits) {
+          // 用户确实没有额度了，显示真实状态
+          console.log("用户额度已用完，返回真实状态");
+          return NextResponse.json({ 
+            remainingCredits: 0,
+            updatedRedis: false,
+            dataSource: "temp_ratelimit_check",
+            userId,
+            rawData: "用户额度已用完"
+          });
+        } else if (remaining !== undefined) {
+          // 使用临时Ratelimit获取的剩余额度
+          console.log(`使用临时Ratelimit获取的剩余额度: ${remaining}`);
+          return NextResponse.json({ 
+            remainingCredits: remaining,
+            updatedRedis: false,
+            dataSource: "temp_ratelimit_check",
+            userId,
+            rawData: `remaining=${remaining}`
+          });
+        }
+        // 如果验证失败，继续使用原有逻辑
+      }
+    } catch (ratelimitError) {
+      console.error("临时Ratelimit验证失败:", ratelimitError);
+      // 继续使用原有逻辑
     }
     
     // 如果直接获取失败，使用原有的解析逻辑
