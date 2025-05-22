@@ -81,6 +81,37 @@ export async function POST(req: Request) {
         );
       }
       
+      // 如果用户额度验证成功，确保同步更新Redis中的用户额度信息
+      // 这样确保用户额度显示组件能获取到正确的额度
+      try {
+        // 获取@upstash/ratelimit库使用的键
+        const ratelimitKey = `ratelimit:logocreator:${user.id}`;
+        
+        // 如果Redis客户端可用，手动更新剩余额度信息以便UserCreditsDisplay能正确显示
+        if (process.env.UPSTASH_REDIS_REST_URL) {
+          console.log(`同步更新用户额度显示数据，键: ${ratelimitKey}, 剩余额度: ${remaining}`);
+          
+          // 检查当前键是否存在
+          const exists = await Redis.fromEnv().exists(ratelimitKey);
+          if (!exists) {
+            // 如果键不存在，创建一个与@upstash/ratelimit格式兼容的对象
+            await Redis.fromEnv().set(ratelimitKey, {
+              limit,
+              remaining,
+              reset
+            });
+            console.log(`创建了新的用户额度记录，剩余: ${remaining}`);
+          } else {
+            // 如果键已存在，只更新remaining字段
+            await Redis.fromEnv().hset(ratelimitKey, { remaining });
+            console.log(`更新了用户额度remaining字段为: ${remaining}`);
+          }
+        }
+      } catch (syncError) {
+        console.error("同步更新用户额度显示数据失败:", syncError);
+        // 这个错误不影响主流程，继续处理
+      }
+      
       success = hasCredits;
     } catch (error) {
       console.error("检查用户额度失败:", error);

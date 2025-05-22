@@ -53,6 +53,35 @@ export async function GET(req: NextRequest) {
     let didUpdateRedis = false;
     let dataSource = "default";
     
+    // 先尝试直接获取Upstash Ratelimit的原始数据
+    // 这是直接使用@upstash/ratelimit库生成的键
+    try {
+      const directRatelimitKey = `ratelimit:logocreator:${userId}`;
+      const upstashRatelimitData = await redis.get(directRatelimitKey);
+      console.log(`尝试直接获取Upstash Ratelimit数据: ${JSON.stringify(upstashRatelimitData)}`);
+      
+      if (upstashRatelimitData && typeof upstashRatelimitData === 'object' && upstashRatelimitData !== null) {
+        if ('remaining' in upstashRatelimitData) {
+          remainingCredits = Number(upstashRatelimitData.remaining);
+          dataSource = "direct_upstash_ratelimit";
+          console.log(`直接从Upstash Ratelimit获取剩余额度: ${remainingCredits}`);
+          
+          // 成功从直接的ratelimit数据获取额度，不需要继续处理
+          return NextResponse.json({ 
+            remainingCredits,
+            updatedRedis: false,
+            dataSource,
+            userId,
+            rawData: JSON.stringify(upstashRatelimitData)
+          });
+        }
+      }
+    } catch (error) {
+      console.error("尝试直接获取Upstash Ratelimit数据失败:", error);
+      // 继续使用备用方法
+    }
+    
+    // 如果直接获取失败，使用原有的解析逻辑
     if (currentLimitData) {
       try {
         let currentUsage: number | undefined;
