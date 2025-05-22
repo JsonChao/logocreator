@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { ensurePermanentLogoUrl } from "@/app/lib/imageStorage";
 
 // 模拟数据库存储
 // 在实际项目中，这应该使用真实的数据库，如Prisma + PostgreSQL
@@ -77,7 +78,22 @@ export async function GET() {
       ];
     }
     
-    return NextResponse.json(userLogos[userId]);
+    // 处理所有Logo URL，确保是永久URL
+    const userLogosWithPermanentUrls = await Promise.all(
+      userLogos[userId].map(async (logo) => {
+        // 检查并更新图片URL为永久URL
+        const permanentUrl = await ensurePermanentLogoUrl(logo.imageUrl);
+        
+        // 如果URL发生变化，更新存储中的URL
+        if (permanentUrl !== logo.imageUrl) {
+          logo.imageUrl = permanentUrl;
+        }
+        
+        return logo;
+      })
+    );
+    
+    return NextResponse.json(userLogosWithPermanentUrls);
   } catch (error) {
     console.error("获取用户Logo失败:", error);
     return new NextResponse("获取用户Logo时发生错误", { status: 500 });
@@ -101,6 +117,9 @@ export async function POST(req: Request) {
       return new NextResponse("缺少必要的Logo信息", { status: 400 });
     }
     
+    // 确保图片URL是永久的
+    const permanentImageUrl = await ensurePermanentLogoUrl(data.imageUrl);
+    
     // 创建新Logo记录
     const newLogo = {
       id: Date.now().toString(), // 在实际项目中使用UUID或数据库自增ID
@@ -110,7 +129,7 @@ export async function POST(req: Request) {
       style: data.style,
       primaryColor: data.primaryColor,
       backgroundColor: data.backgroundColor,
-      imageUrl: data.imageUrl,
+      imageUrl: permanentImageUrl, // 使用永久URL
       liked: data.liked || false
     };
     
@@ -156,6 +175,11 @@ export async function PUT(req: Request) {
     
     if (logoIndex === -1) {
       return new NextResponse("Logo不存在", { status: 404 });
+    }
+    
+    // 如果包含imageUrl，确保它是永久URL
+    if (data.imageUrl) {
+      data.imageUrl = await ensurePermanentLogoUrl(data.imageUrl);
     }
     
     // 更新Logo属性

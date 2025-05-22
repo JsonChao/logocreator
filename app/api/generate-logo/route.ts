@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 import dedent from "dedent";
 import Replicate from "replicate";
 import { z } from "zod";
+import { uploadToImgBB, storeLogoUrlMapping, ensurePermanentLogoUrl } from "@/app/lib/imageStorage";
 
 let ratelimit: Ratelimit | undefined;
 
@@ -15,6 +16,11 @@ const hasClerkConfig =
 export async function POST(req: Request) {
   // 只在配置了Clerk时获取当前用户
   const user = hasClerkConfig ? await currentUser() : null;
+
+  // 如果配置了Clerk但未登录，返回404
+  if (hasClerkConfig && !user) {
+    return new Response("", { status: 404 });
+  }
 
   const json = await req.json();
   const schema = z.object({
@@ -273,7 +279,36 @@ export async function POST(req: Request) {
           throw new Error("预测成功但没有返回有效的图片URL");
         }
         
-        return outputUrl;
+        // 将Replicate临时URL上传到ImgBB以获取永久URL
+        console.log(`将Replicate临时URL上传到ImgBB: ${outputUrl}`);
+        let permanentUrl = outputUrl;
+        
+        try {
+          // 检查是否配置了ImgBB API密钥
+          if (process.env.IMGBB_API_KEY) {
+            // 上传到ImgBB
+            const imgbbUrl = await uploadToImgBB(outputUrl);
+            
+            if (imgbbUrl) {
+              console.log(`成功上传到ImgBB，永久URL: ${imgbbUrl}`);
+              
+              // 存储URL映射到Redis
+              if (process.env.UPSTASH_REDIS_REST_URL) {
+                await storeLogoUrlMapping(outputUrl, imgbbUrl);
+              }
+              
+              permanentUrl = imgbbUrl;
+            } else {
+              console.warn("上传到ImgBB失败，将使用原始Replicate URL");
+            }
+          } else {
+            console.warn("未配置IMGBB_API_KEY，无法上传到ImgBB获取永久URL");
+          }
+        } catch (error) {
+          console.error("处理永久URL时出错:", error);
+        }
+        
+        return permanentUrl;
       };
       
       // 将这个请求添加到Promise数组
