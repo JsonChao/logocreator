@@ -16,11 +16,6 @@ export async function POST(req: Request) {
   // 只在配置了Clerk时获取当前用户
   const user = hasClerkConfig ? await currentUser() : null;
 
-  // 如果配置了Clerk但未登录，返回404
-  if (hasClerkConfig && !user) {
-    return new Response("", { status: 404 });
-  }
-
   const json = await req.json();
   const schema = z.object({
     companyName: z.string(),

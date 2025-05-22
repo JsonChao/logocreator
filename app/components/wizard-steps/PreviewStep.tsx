@@ -140,6 +140,17 @@ export default function PreviewStep({
 
   const toggleLike = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // 检查用户是否已登录
+    if (!isSignedIn) {
+      toast({
+        title: "需要登录",
+        description: "请登录以收藏您喜欢的Logo",
+        variant: "default",
+      });
+      return;
+    }
+    
     if (likedImages.includes(index)) {
       setLikedImages(likedImages.filter(i => i !== index));
       toast({
@@ -549,6 +560,17 @@ export default function PreviewStep({
   // 设置要下载的Logo索引
   const handleDownloadSelection = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // 检查用户是否已登录
+    if (!isSignedIn) {
+      toast({
+        title: "需要登录",
+        description: "请登录以下载Logo",
+        variant: "default",
+      });
+      return;
+    }
+    
     setDownloadIndex(index);
     setShowExportOptions(true);
   };
@@ -673,21 +695,33 @@ export default function PreviewStep({
               ))}
             </div>
             
-            {onLoadMore && isSignedIn && !showLoadMoreOptions && (
+            {onLoadMore && !showLoadMoreOptions && (
               <div className="mt-8 flex justify-start">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setMoreLogoCount(logoCount); // 默认使用和主生成相同的数量
-                    setShowLoadMoreOptions(true);
-                  }}
-                  className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
-                  disabled={isLoading || loadingMore}
-                >
-                  <span className="text-lg">查看更多Logo</span>
-                  <ChevronRightIcon className="h-4 w-4" />
-                  <ChevronRightIcon className="h-4 w-4 -ml-3" />
-                </Button>
+                {isSignedIn ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setMoreLogoCount(logoCount); // 默认使用和主生成相同的数量
+                      setShowLoadMoreOptions(true);
+                    }}
+                    className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
+                    disabled={isLoading || loadingMore}
+                  >
+                    <span className="text-lg">查看更多Logo</span>
+                    <ChevronRightIcon className="h-4 w-4" />
+                    <ChevronRightIcon className="h-4 w-4 -ml-3" />
+                  </Button>
+                ) : (
+                  <SignInButton mode="modal">
+                    <Button 
+                      variant="ghost"
+                      className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
+                    >
+                      <span className="text-lg">登录查看更多Logo</span>
+                      <ChevronRightIcon className="h-4 w-4" />
+                    </Button>
+                  </SignInButton>
+                )}
               </div>
             )}
             
@@ -817,6 +851,15 @@ export default function PreviewStep({
                           <Button 
                             className="bg-orange-500 hover:bg-orange-600 text-white"
                             onClick={() => {
+                              if (!isSignedIn) {
+                                toast({
+                                  title: "需要登录",
+                                  description: "请登录以下载Logo",
+                                  variant: "default",
+                                });
+                                return;
+                              }
+                              
                               setShowPreview(false);
                               if (previewIndex !== null) {
                                 setDownloadIndex(previewIndex);
@@ -916,23 +959,13 @@ export default function PreviewStep({
               点击下方按钮生成 {logoCount} 个专业Logo{logoCount > 1 ? '' : ''}
             </p>
             
-            {isSignedIn ? (
-              <Button
-                onClick={onGenerateLogo}
-                className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
-                disabled={isLoading}
-              >
-                {isLoading ? "生成中..." : "生成Logo"}
-              </Button>
-            ) : (
-              <SignInButton mode="modal">
-                <Button 
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
-                >
-                  登录以生成
-                </Button>
-              </SignInButton>
-            )}
+            <Button
+              onClick={onGenerateLogo}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "生成中..." : "生成Logo"}
+            </Button>
           </motion.div>
         )}
         

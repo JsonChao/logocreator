@@ -190,15 +190,6 @@ export default function CreatePage() {
 
   // Generate logo async function
   const generateLogo = async (appendToExisting: boolean = false) => {
-    if (!isSignedIn) {
-      toast({
-        title: "Login Required",
-        description: "Please sign in to generate logos",
-        variant: "default",
-      });
-      return;
-    }
-
     // 清除之前的错误，如果是追加模式则保留现有图片
     setWizardData(prev => ({ 
       ...prev, 
