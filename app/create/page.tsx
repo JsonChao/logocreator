@@ -188,7 +188,7 @@ export default function CreatePage() {
   };
 
   // Generate logo async function
-  const generateLogo = async () => {
+  const generateLogo = async (appendToExisting: boolean = false) => {
     if (!isSignedIn) {
       toast({
         title: "Login Required",
@@ -198,14 +198,18 @@ export default function CreatePage() {
       return;
     }
 
-    // 清除之前的错误和结果
+    // 清除之前的错误，如果是追加模式则保留现有图片
     setWizardData(prev => ({ 
       ...prev, 
       isLoading: true,
       errorMessage: "",
-      generatedImages: []
+      // 如果是追加模式，保留现有图片数组，否则清空
+      generatedImages: appendToExisting ? prev.generatedImages : []
     }));
-    setImageError(false);
+    
+    if (!appendToExisting) {
+      setImageError(false);
+    }
 
     try {
       console.log("Sending logo generation request...");
@@ -280,19 +284,31 @@ export default function CreatePage() {
         console.log("Generation successful, received data:", data);
         
         if (data.display_urls && data.display_urls.length > 0) {
-          setWizardData(prev => ({
-            ...prev,
-            isLoading: false,
-            generatedImages: data.display_urls,
-            errorMessage: ""
-          }));
+          setWizardData(prev => {
+            // 如果是追加模式，将新图片添加到现有数组
+            const updatedImages = appendToExisting
+              ? [...prev.generatedImages, ...data.display_urls]
+              : data.display_urls;
+            
+            return {
+              ...prev,
+              isLoading: false,
+              generatedImages: updatedImages,
+              errorMessage: ""
+            };
+          });
           
-          // Save first image to history
-          saveToHistory(data.display_urls[0]);
+          // 只在非追加模式下保存到历史记录
+          if (!appendToExisting) {
+            saveToHistory(data.display_urls[0]);
+          }
           
+          // 根据模式显示不同的成功提示
           toast({
             title: "Logo生成成功",
-            description: "已生成18个Logo方案供您选择，处理时间较长请耐心等待",
+            description: appendToExisting 
+              ? "已为您加载更多Logo设计方案" 
+              : "已生成Logo方案供您选择，处理时间较长请耐心等待",
           });
         } else {
           throw new Error("No images were generated");
@@ -337,6 +353,11 @@ export default function CreatePage() {
         description: errorMessage,
       });
     }
+  };
+
+  // 加载更多Logo的函数
+  const loadMoreLogos = async () => {
+    await generateLogo(true);
   };
 
   // Logo download function
@@ -510,12 +531,13 @@ export default function CreatePage() {
         <LogoWizard
           data={wizardData}
           onUpdateData={handleUpdateWizardData}
-          generateLogo={generateLogo}
+          generateLogo={() => generateLogo(false)}
           downloadPng={downloadPng}
           downloadSvg={downloadSvg}
           downloadJpg={downloadJpg}
           imageError={imageError}
           sizes={imageSizes}
+          onLoadMore={loadMoreLogos}
         />
       </main>
       

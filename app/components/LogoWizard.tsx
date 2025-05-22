@@ -37,6 +37,7 @@ interface LogoWizardProps {
   downloadJpg?: () => Promise<void>;
   sizes?: Array<{ name: string; width: number; height: number }>;
   imageError?: boolean;
+  onLoadMore?: () => Promise<void>;
 }
 
 export default function LogoWizard({
@@ -50,7 +51,8 @@ export default function LogoWizard({
   downloadSvg,
   downloadJpg,
   sizes,
-  imageError
+  imageError,
+  onLoadMore
 }: LogoWizardProps) {
   // Compatible with old and new API
   const wizardData = data || initialData || {
@@ -201,7 +203,7 @@ export default function LogoWizard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
-            className="h-full w-full"
+            className="mx-auto container py-6"
           >
             {currentStep === 0 && (
               <CompanyNameStep
@@ -248,6 +250,7 @@ export default function LogoWizard({
                 onGenerateLogo={handleGenerateLogo}
                 onDownloadLogo={handleDownloadLogo}
                 onBack={goToPreviousStep}
+                onLoadMore={onLoadMore}
               />
             )}
           </motion.div>

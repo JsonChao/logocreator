@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon } from "lucide-react";
+import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -16,6 +16,7 @@ interface PreviewStepProps {
   onGenerateLogo: () => void;
   onDownloadLogo: (format: "png" | "svg" | "jpg") => void;
   onBack?: () => void;
+  onLoadMore?: () => void;
 }
 
 export default function PreviewStep({
@@ -25,7 +26,8 @@ export default function PreviewStep({
   errorMessage,
   onGenerateLogo,
   onDownloadLogo,
-  onBack
+  onBack,
+  onLoadMore
 }: PreviewStepProps) {
   const { isSignedIn } = useUser();
   const [showExportOptions, setShowExportOptions] = useState(false);
@@ -33,6 +35,7 @@ export default function PreviewStep({
   const [likedImages, setLikedImages] = useState<number[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRetryActive, setAutoRetryActive] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const handleRetry = async () => {
     setRetryCount(prev => prev + 1);
@@ -89,6 +92,28 @@ export default function PreviewStep({
       description: "You can share this link with others",
       variant: "default",
     });
+  };
+
+  const handleLoadMore = async () => {
+    if (!onLoadMore || isLoading || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      await onLoadMore();
+      toast({
+        title: "加载更多Logo",
+        description: "正在为您生成更多Logo设计方案",
+      });
+    } catch (error) {
+      console.error("Failed to load more logos:", error);
+      toast({
+        variant: "destructive",
+        title: "加载失败",
+        description: error instanceof Error ? error.message : "请稍后重试",
+      });
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   // Function to display error messages
@@ -257,6 +282,30 @@ export default function PreviewStep({
                 </motion.div>
               ))}
             </div>
+            
+            {onLoadMore && isSignedIn && (
+              <div className="mt-8 flex justify-start">
+                <Button
+                  variant="ghost"
+                  onClick={handleLoadMore}
+                  className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
+                  disabled={isLoading || loadingMore}
+                >
+                  {loadingMore ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner className="h-4 w-4" />
+                      <span>加载中...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-lg">See More Logos</span>
+                      <ChevronRightIcon className="h-4 w-4" />
+                      <ChevronRightIcon className="h-4 w-4 -ml-3" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
             
             {selectedImageIndex !== null && (
               <motion.div 
