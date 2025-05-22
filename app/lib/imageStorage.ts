@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-import FormData from 'form-data';
 import { Redis } from '@upstash/redis';
 
 // 初始化Redis客户端
@@ -27,9 +25,12 @@ export async function uploadToImgBB(imageUrl: string): Promise<string | null> {
       throw new Error(`获取原始图片失败: ${imageResponse.status} ${imageResponse.statusText}`);
     }
     
-    // 获取图片Buffer
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    // 获取图片Blob
+    const imageBlob = await imageResponse.blob();
+    
+    // 使用Web API的ArrayBuffer
+    const arrayBuffer = await imageBlob.arrayBuffer();
+    const base64Image = Buffer.from(arrayBuffer).toString('base64');
 
     // 创建FormData对象
     const formData = new FormData();
@@ -42,14 +43,14 @@ export async function uploadToImgBB(imageUrl: string): Promise<string | null> {
     // 发送请求到ImgBB
     const uploadResponse = await fetch('https://api.imgbb.com/1/upload', {
       method: 'POST',
-      body: formData as any,
+      body: formData,
     });
 
     if (!uploadResponse.ok) {
       throw new Error(`ImgBB上传失败: ${uploadResponse.status} ${uploadResponse.statusText}`);
     }
 
-    const uploadResult = await uploadResponse.json() as any;
+    const uploadResult = await uploadResponse.json();
     
     // 检查上传结果
     if (uploadResult.success && uploadResult.data && uploadResult.data.url) {
