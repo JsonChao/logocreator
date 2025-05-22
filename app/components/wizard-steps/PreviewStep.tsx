@@ -853,10 +853,10 @@ export default function PreviewStep({
             </Dialog>
             
             {/* Logo下载选项弹窗 */}
-            <Popover open={showExportOptions} onOpenChange={setShowExportOptions}>
-              <PopoverContent className="w-56 p-3">
+            <Dialog open={showExportOptions} onOpenChange={setShowExportOptions}>
+              <DialogContent className="w-72 p-4">
                 <div className="flex flex-col gap-2">
-                  <h3 className="font-semibold mb-2">选择下载格式</h3>
+                  <h3 className="font-semibold mb-2 text-center">选择下载格式</h3>
                   <Button 
                     variant="ghost" 
                     className="justify-start text-base" 
@@ -891,8 +891,8 @@ export default function PreviewStep({
                     <span className="ml-2 text-sm text-gray-500">(压缩)</span>
                   </Button>
                 </div>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
           </>
         ) : (
           <motion.div 
