@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Github, Twitter, Instagram, Facebook, Mail, Heart } from "lucide-react";
+import { Github, Twitter, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -18,12 +18,6 @@ export default function Footer() {
               </a>
               <a href="#" aria-label="Twitter" className="text-gray-400 hover:text-blue-500 transition-colors">
                 <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" aria-label="Instagram" className="text-gray-400 hover:text-pink-600 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" aria-label="Facebook" className="text-gray-400 hover:text-blue-600 transition-colors">
-                <Facebook className="h-5 w-5" />
               </a>
             </div>
           </div>
