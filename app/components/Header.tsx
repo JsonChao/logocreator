@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Menu, X } from "lucide-react";
+import { ArrowLeft, Sparkles, Menu, X, History } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -86,6 +86,15 @@ export default function Header({ className = "" }: { className?: string }) {
             >
               Blog
             </Link>
+            {isSignedIn && (
+              <Link 
+                href="/history" 
+                className="font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-blue-50 flex items-center gap-1"
+              >
+                <History className="h-4 w-4" />
+                我的Logo
+              </Link>
+            )}
             <div className="pl-4 flex items-center space-x-3">
               {isSignedIn ? (
                 <>
@@ -164,6 +173,16 @@ export default function Header({ className = "" }: { className?: string }) {
             >
               Blog
             </Link>
+            {isSignedIn && (
+              <Link 
+                href="/history" 
+                className="block font-medium text-gray-700 hover:text-blue-600 px-3 py-3 rounded-md hover:bg-blue-50 flex items-center gap-1"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <History className="h-4 w-4" />
+                我的Logo
+              </Link>
+            )}
             
             {isSignedIn ? (
               <div className="flex flex-col items-center pt-4 pb-2 space-y-3">

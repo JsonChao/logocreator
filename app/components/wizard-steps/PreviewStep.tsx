@@ -1,14 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon, EyeIcon, EditIcon, ShoppingCartIcon } from "lucide-react";
+import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon, EyeIcon, EditIcon, ShoppingCartIcon, XIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Spinner from "../Spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+interface PreviewScene {
+  id: string;
+  name: string;
+  description: string;
+  backgroundUrl?: string;
+  imageUrl?: string;
+}
 
 interface PreviewStepProps {
   generatedImages: string[];
@@ -48,6 +56,60 @@ export default function PreviewStep({
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [downloadIndex, setDownloadIndex] = useState<number | null>(0);
+
+  // 用于预览场景
+  const [previewScenes, setPreviewScenes] = useState<PreviewScene[]>([
+    { 
+      id: 'logo',
+      name: 'Logo', 
+      imageUrl: '', // 动态设置
+      description: '标准Logo显示'
+    },
+    { 
+      id: 'business-card',
+      name: '名片', 
+      backgroundUrl: '/preview-scenes/business-card.jpg',
+      description: '专业名片设计'
+    },
+    { 
+      id: 'tshirt',
+      name: 'T恤', 
+      backgroundUrl: '/preview-scenes/tshirt.jpg',
+      description: '团队服装定制'
+    },
+    { 
+      id: 'coffee-cup',
+      name: '咖啡杯', 
+      backgroundUrl: '/preview-scenes/coffee-cup.jpg',
+      description: '品牌周边产品'
+    },
+    { 
+      id: 'shopping-bag',
+      name: '购物袋', 
+      backgroundUrl: '/preview-scenes/shopping-bag.jpg',
+      description: '购物袋设计'
+    },
+    { 
+      id: 'billboard',
+      name: '广告牌', 
+      backgroundUrl: '/preview-scenes/billboard.jpg',
+      description: '户外广告展示'
+    },
+    { 
+      id: 'signage',
+      name: '门牌', 
+      backgroundUrl: '/preview-scenes/signage.jpg',
+      description: '公司门牌设计'
+    },
+    { 
+      id: 'website',
+      name: '网站', 
+      backgroundUrl: '/preview-scenes/website.jpg',
+      description: '网站品牌展示'
+    }
+  ]);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const handleRetry = async () => {
     setRetryCount(prev => prev + 1);
@@ -409,13 +471,80 @@ export default function PreviewStep({
   const handlePreview = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setPreviewIndex(index);
+    setCurrentSceneIndex(0); // 重置为第一个场景
     setShowPreview(true);
   };
 
-  // 关闭预览
-  const closePreview = () => {
-    setShowPreview(false);
+  // 切换到下一个场景
+  const nextScene = () => {
+    setCurrentSceneIndex((prev) => 
+      prev < previewScenes.length - 1 ? prev + 1 : prev
+    );
   };
+
+  // 切换到上一个场景
+  const prevScene = () => {
+    setCurrentSceneIndex((prev) => 
+      prev > 0 ? prev - 1 : prev
+    );
+  };
+
+  // 处理滑动
+  useEffect(() => {
+    const container = previewContainerRef.current;
+    if (!container) return;
+
+    let startX: number;
+    let scrollLeft: number;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = container.scrollLeft;
+      container.style.cursor = 'grabbing';
+    };
+
+    const handleMouseUp = () => {
+      container.style.cursor = 'grab';
+    };
+
+    const handleMouseLeave = () => {
+      container.style.cursor = 'grab';
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!(e.buttons === 1)) return;
+      
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 2; // 滑动速度
+      container.scrollLeft = scrollLeft - walk;
+    };
+
+    container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('mouseup', handleMouseUp);
+    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [showPreview]);
+
+  // 当预览索引变化时，更新第一个场景的图像URL
+  useEffect(() => {
+    if (previewIndex !== null && previewIndex >= 0 && generatedImages[previewIndex]) {
+      setPreviewScenes(prev => {
+        const updated = [...prev];
+        updated[0] = {
+          ...updated[0],
+          imageUrl: generatedImages[previewIndex]
+        };
+        return updated;
+      });
+    }
+  }, [previewIndex, generatedImages]);
 
   // 设置要下载的Logo索引
   const handleDownloadSelection = (index: number, e: React.MouseEvent) => {
@@ -562,48 +691,163 @@ export default function PreviewStep({
               </div>
             )}
             
-            {/* 预览Logo的对话框 */}
+            {/* 预览Logo的全屏模态框 - 类似竞品设计 */}
             <Dialog open={showPreview} onOpenChange={setShowPreview}>
-              <DialogContent className="sm:max-w-2xl">
-                <DialogTitle>Logo 预览</DialogTitle>
-                <DialogDescription>
-                  {companyName} - 设计 #{previewIndex !== null ? previewIndex + 1 : ''}
-                </DialogDescription>
-                {previewIndex !== null && previewIndex >= 0 && previewIndex < generatedImages.length && (
-                  <div className="relative aspect-square w-full max-h-[60vh] overflow-hidden bg-gray-50 border rounded-xl">
-                    <Image
-                      src={generatedImages[previewIndex]}
-                      alt={`${companyName} logo design ${previewIndex + 1}`}
-                      fill
-                      className="object-contain p-4"
-                      unoptimized
-                    />
-                  </div>
-                )}
-                <div className="flex justify-between mt-6">
+              <DialogContent className="max-w-full w-full h-[calc(100vh-40px)] p-0 border-0 rounded-none bg-white overflow-hidden">
+                <div className="relative w-full h-full">
+                  {/* 关闭按钮 */}
                   <Button
-                    variant="outline"
-                    onClick={closePreview}
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-4 z-50 text-gray-700 hover:text-gray-900 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
+                    onClick={() => setShowPreview(false)}
                   >
-                    关闭
+                    <XIcon className="h-6 w-6" />
                   </Button>
-                  {previewIndex !== null && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="flex items-center gap-2"
-                        onClick={(e) => {
-                          closePreview();
-                          if (previewIndex !== null) {
-                            handleDownloadSelection(previewIndex, e as unknown as React.MouseEvent);
-                          }
+
+                  {/* 左右切换按钮 */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-gray-700 hover:text-gray-900 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
+                    onClick={prevScene}
+                    disabled={currentSceneIndex === 0}
+                  >
+                    <ChevronLeftIcon className="h-8 w-8" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-gray-700 hover:text-gray-900 bg-white/80 hover:bg-white/90 rounded-full shadow-md"
+                    onClick={nextScene}
+                    disabled={currentSceneIndex === previewScenes.length - 1}
+                  >
+                    <ChevronRightIcon className="h-8 w-8" />
+                  </Button>
+
+                  {/* 横向滚动容器 */}
+                  <div 
+                    ref={previewContainerRef}
+                    className="w-full h-full overflow-x-scroll overflow-y-hidden whitespace-nowrap scroll-smooth cursor-grab hide-scrollbar"
+                    style={{ scrollBehavior: 'smooth' }}
+                  >
+                    {previewScenes.map((scene, index) => (
+                      <div 
+                        key={scene.id}
+                        className="inline-block w-full h-full"
+                        style={{ 
+                          minWidth: '100%',
+                          display: index === currentSceneIndex ? 'block' : 'none'
                         }}
                       >
-                        <ShoppingCartIcon className="h-4 w-4" />
-                        <span>购买此Logo</span>
-                      </Button>
-                    </div>
-                  )}
+                        {index === 0 ? (
+                          // 第一个场景是纯Logo展示
+                          <div className="flex items-center justify-center h-full w-full bg-gray-50">
+                            {previewIndex !== null && previewIndex >= 0 && previewIndex < generatedImages.length && (
+                              <div className="relative w-3/4 h-3/4 max-w-3xl max-h-3xl">
+                                <Image
+                                  src={generatedImages[previewIndex]}
+                                  alt={`${companyName} logo design ${previewIndex + 1}`}
+                                  fill
+                                  className="object-contain"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          // 其他场景是Logo应用在不同背景中
+                          <div className="relative h-full w-full">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              {scene.backgroundUrl && (
+                                <Image
+                                  src={scene.backgroundUrl}
+                                  alt={scene.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              )}
+                            </div>
+                            
+                            {/* Logo叠加层 - 不同场景可能有不同的位置和大小 */}
+                            {previewIndex !== null && previewIndex >= 0 && previewIndex < generatedImages.length && (
+                              <div className={`absolute ${
+                                scene.id === 'business-card' ? 'top-[40%] left-[55%] w-[20%] h-[20%]' :
+                                scene.id === 'coffee-cup' ? 'top-[40%] left-[40%] w-[35%] h-[35%]' :
+                                scene.id === 'tshirt' ? 'top-[35%] left-[50%] -translate-x-1/2 w-[40%] h-[40%]' :
+                                scene.id === 'shopping-bag' ? 'top-[40%] right-[15%] w-[40%] h-[40%]' :
+                                scene.id === 'billboard' ? 'top-[30%] left-[50%] -translate-x-1/2 w-[60%] h-[40%]' :
+                                scene.id === 'signage' ? 'top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[70%] h-[40%]' :
+                                'top-[40%] left-[50%] -translate-x-1/2 w-[40%] h-[40%]'
+                              }`}>
+                                <div className="relative w-full h-full">
+                                  <Image
+                                    src={generatedImages[previewIndex]}
+                                    alt={`${companyName} logo on ${scene.name}`}
+                                    fill
+                                    className="object-contain"
+                                    style={{
+                                      filter: scene.id === 'signage' ? 'brightness(0.9) contrast(1.1)' : 'none'
+                                    }}
+                                    unoptimized
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* 场景底部操作按钮 */}
+                        <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-4">
+                          <Button 
+                            variant="outline"
+                            className="bg-white/90 border-gray-300 text-green-600 hover:text-green-800 hover:bg-white"
+                            onClick={() => {
+                              toast({
+                                title: "编辑功能",
+                                description: "即将开放，敬请期待！",
+                              });
+                            }}
+                          >
+                            <EditIcon className="h-4 w-4 mr-2" />
+                            编辑
+                          </Button>
+                          
+                          <Button 
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                            onClick={() => {
+                              setShowPreview(false);
+                              if (previewIndex !== null) {
+                                setDownloadIndex(previewIndex);
+                                setShowExportOptions(true);
+                              }
+                            }}
+                          >
+                            <ShoppingCartIcon className="h-4 w-4 mr-2" />
+                            购买
+                          </Button>
+                        </div>
+                        
+                        {/* 场景索引指示器 */}
+                        <div className="absolute bottom-24 left-0 right-0 flex justify-center space-x-2">
+                          {previewScenes.map((_, i) => (
+                            <div 
+                              key={i} 
+                              className={`rounded-full ${currentSceneIndex === i ? 'w-3 h-3 bg-blue-500' : 'w-2 h-2 bg-gray-300'}`}
+                              onClick={() => setCurrentSceneIndex(i)}
+                            />
+                          ))}
+                        </div>
+                        
+                        {/* 场景名称和描述 */}
+                        <div className="absolute top-6 left-0 right-0 text-center">
+                          <h3 className="text-xl font-bold">{companyName} - {scene.name}</h3>
+                          <p className="text-sm text-gray-600">{scene.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>

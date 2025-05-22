@@ -322,6 +322,39 @@ export async function POST(req: Request) {
     
     console.log(`最终返回 ${timestampedUrls.length} 张Logo图片!`);
     
+    // 如果用户已登录，将生成的Logo保存到历史记录
+    if (user) {
+      try {
+        // 保存第一张Logo到用户历史记录
+        const mainLogoUrl = timestampedUrls[0];
+        
+        // 调用保存Logo的API
+        const saveResponse = await fetch(new URL('/api/user-logos', req.url).toString(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            companyName: data.companyName,
+            style: data.selectedStyle,
+            primaryColor: data.selectedPrimaryColor,
+            backgroundColor: data.selectedBackgroundColor,
+            imageUrl: mainLogoUrl,
+            liked: false
+          }),
+        });
+        
+        if (!saveResponse.ok) {
+          console.error("保存Logo到历史记录失败:", await saveResponse.text());
+        } else {
+          console.log("成功保存Logo到用户历史记录");
+        }
+      } catch (error) {
+        console.error("保存Logo到历史记录时出错:", error);
+        // 不阻止API返回成功生成的图片
+      }
+    }
+    
     return new Response(
       JSON.stringify({
         display_urls: timestampedUrls,
