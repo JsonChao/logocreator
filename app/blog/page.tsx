@@ -1,7 +1,11 @@
+"use client";
+
 import React from 'react';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
   title: 'Blog | LogocraftAI',
@@ -85,98 +89,104 @@ export default function BlogPage() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">LogocraftAI Blog</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore the latest insights and expertise in logo design, brand strategy, and visual marketing
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-12 pt-32">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">LogocraftAI Blog</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Explore the latest insights and expertise in logo design, brand strategy, and visual marketing
+            </p>
+          </div>
 
-        {/* Category navigation */}
-        <div className="flex justify-center flex-wrap gap-2 mb-10">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-            All
-          </button>
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            Design Trends
-          </button>
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            AI Technology
-          </button>
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            Design Tips
-          </button>
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            Case Studies
-          </button>
-        </div>
+          {/* Category navigation */}
+          <div className="flex justify-center flex-wrap gap-2 mb-10">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+              All
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+              Design Trends
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+              AI Technology
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+              Design Tips
+            </button>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+              Case Studies
+            </button>
+          </div>
 
-        {/* Blog post list */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
-            <article key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-              <div className="relative h-48">
-                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">Loading image</span>
+          {/* Blog post list */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post) => (
+              <article key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                <div className="relative h-48">
+                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">Loading image</span>
+                  </div>
+                  {/* Note: In a real project, ensure these image files exist */}
+                  {/* <Image
+                    src={post.coverImage}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                  /> */}
                 </div>
-                {/* Note: In a real project, ensure these image files exist */}
-                {/* <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  fill
-                  className="object-cover"
-                /> */}
-              </div>
-              <div className="p-5">
-                <div className="flex items-center text-sm text-gray-500 mb-3">
-                  <span>{formatDate(post.date)}</span>
-                  <span className="mx-2">•</span>
-                  <span>{post.readTime}</span>
-                  <span className="mx-2">•</span>
-                  <span className="text-blue-600">{post.category}</span>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  <Link href={`/blog/${post.id}`} className="hover:text-blue-600 transition-colors">
-                    {post.title}
+                <div className="p-5">
+                  <div className="flex items-center text-sm text-gray-500 mb-3">
+                    <span>{formatDate(post.date)}</span>
+                    <span className="mx-2">•</span>
+                    <span>{post.readTime}</span>
+                    <span className="mx-2">•</span>
+                    <span className="text-blue-600">{post.category}</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <Link href={`/blog/${post.id}`} className="hover:text-blue-600 transition-colors">
+                      {post.title}
+                    </Link>
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    {post.excerpt}
+                  </p>
+                  <Link href={`/blog/${post.id}`} className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors">
+                    Read More
+                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </Link>
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  {post.excerpt}
-                </p>
-                <Link href={`/blog/${post.id}`} className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors">
-                  Read More
-                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                </div>
+              </article>
+            ))}
+          </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center mt-12">
-          <nav className="inline-flex rounded-md shadow">
-            <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-l-md">
-              Previous
-            </a>
-            <a href="#" className="py-2 px-4 bg-blue-600 text-white font-medium border border-blue-600">
-              1
-            </a>
-            <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-              2
-            </a>
-            <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-              3
-            </a>
-            <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md">
-              Next
-            </a>
-          </nav>
+          {/* Pagination */}
+          <div className="flex justify-center mt-12">
+            <nav className="inline-flex rounded-md shadow">
+              <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-l-md">
+                Previous
+              </a>
+              <a href="#" className="py-2 px-4 bg-blue-600 text-white font-medium border border-blue-600">
+                1
+              </a>
+              <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                2
+              </a>
+              <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                3
+              </a>
+              <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md">
+                Next
+              </a>
+            </nav>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+      
+      <Footer />
+    </div>
   );
 } 
