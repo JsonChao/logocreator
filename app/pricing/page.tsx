@@ -16,55 +16,52 @@ export default function PricingPage() {
     console.log(`Purchase plan: ${plan}`);
     if (!isSignedIn) return;
     
-    // TODO: 实现支付逻辑
+    // TODO: Implement payment logic
     router.push("/create");
   };
   
   const plans = [
     {
-      name: "基础套餐",
-      nameEn: "BASIC PLAN",
+      name: "BASIC PLAN",
       price: "US$4.99",
       tokens: 100,
-      description: "适合初次尝试Logo生成，无需大量生成",
-      idealFor: "适合初次探索AI Logo生成，无需大量批量制作",
+      description: "Perfect for first-time logo creation with no need for bulk generation",
+      idealFor: "Ideal for exploring AI logo creation without bulk generation needs",
       features: [
-        "生成标准分辨率Logo",
-        "无水印导出",
-        "PNG和JPG格式下载",
-        "基础样式选择"
+        "Generate standard resolution logos",
+        "Export without watermarks",
+        "PNG and JPG format downloads",
+        "Basic style selection"
       ]
     },
     {
-      name: "中级套餐",
-      nameEn: "INTERMEDIATE PLAN",
+      name: "INTERMEDIATE PLAN",
       price: "US$15.99",
       tokens: 350,
-      description: "更多生成次数，适合经常使用",
-      idealFor: "适合需要频繁生成Logo的用户",
+      description: "More generations for regular users",
+      idealFor: "Perfect for users who need to create logos frequently",
       features: [
-        "生成高分辨率Logo",
-        "无水印导出",
-        "PNG、JPG和SVG格式下载",
-        "更多样式选择",
-        "优先生成队列"
+        "Generate high-resolution logos",
+        "Export without watermarks",
+        "PNG, JPG and SVG format downloads",
+        "More style options",
+        "Priority generation queue"
       ],
       popular: true
     },
     {
-      name: "高级套餐",
-      nameEn: "ADVANCED PLAN",
+      name: "ADVANCED PLAN",
       price: "US$34.99",
       tokens: 900,
-      description: "海量生成次数，适合专业用户",
-      idealFor: "适合需要大量生成Logo的专业用户",
+      description: "Maximum generation capacity for professional users",
+      idealFor: "Designed for professionals who need bulk logo creation",
       features: [
-        "生成超高分辨率Logo",
-        "无水印导出",
-        "所有格式下载",
-        "全部样式和功能",
-        "最高优先级生成队列",
-        "批量生成功能"
+        "Generate ultra-high resolution logos",
+        "Export without watermarks",
+        "All format downloads",
+        "All styles and features",
+        "Highest priority generation queue",
+        "Batch generation capability"
       ]
     }
   ];
@@ -73,8 +70,8 @@ export default function PricingPage() {
     <div className="flex min-h-screen flex-col bg-gray-900">
       <Header />
       
-      <main className="container mx-auto px-4 py-16">
-        {/* 标题部分 */}
+      <main className="container mx-auto px-4 pt-32 pb-16">
+        {/* Title section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,14 +79,14 @@ export default function PricingPage() {
           className="text-center mb-16"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            通过我们的AI工具创建更多Logo
+            Create More Logos with Our AI Tool
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            选择适合您的方案，生成独特的Logo。无论您是刚起步还是需要定期创建，我们灵活的产品都能轻松满足您的品牌需求。
+            Choose a plan that fits your needs and generate unique logos. Whether you're just starting out or need regular creations, our flexible offerings will easily meet your branding requirements.
           </p>
         </motion.div>
         
-        {/* 价格卡片容器 */}
+        {/* Pricing cards container */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
@@ -101,15 +98,15 @@ export default function PricingPage() {
             >
               {plan.popular && (
                 <div className="bg-blue-500 py-2 text-center">
-                  <span className="text-white font-semibold">最受欢迎</span>
+                  <span className="text-white font-semibold">Most Popular</span>
                 </div>
               )}
               
               <div className="p-8">
                 <div className="mb-6">
-                  <h3 className="text-lg font-bold text-gray-600">{plan.nameEn}</h3>
+                  <h3 className="text-lg font-bold text-gray-600">{plan.name}</h3>
                   <div className="text-5xl font-bold mt-2">{plan.price}</div>
-                  <div className="text-xl font-bold text-gray-700 mt-2">{plan.tokens} 个TOKEN</div>
+                  <div className="text-xl font-bold text-gray-700 mt-2">{plan.tokens} TOKENS</div>
                 </div>
                 
                 <Button
@@ -120,7 +117,7 @@ export default function PricingPage() {
                       : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
                   }`}
                 >
-                  {isSignedIn ? "购买" : "登录后购买"}
+                  {isSignedIn ? "Purchase" : "Sign in to Purchase"}
                 </Button>
                 
                 <p className="mt-6 text-center text-gray-600">
@@ -142,34 +139,34 @@ export default function PricingPage() {
           ))}
         </div>
         
-        {/* 常见问题 */}
+        {/* FAQ section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-24 max-w-3xl mx-auto"
         >
-          <h2 className="text-3xl font-bold text-white text-center mb-12">常见问题</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-12">Frequently Asked Questions</h2>
           
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">什么是Token？</h3>
-              <p className="text-gray-300">Token是我们平台中用于生成Logo的基本单位。每生成一个Logo消耗一个Token。购买套餐后，您可以根据自己的需求使用这些Token生成您喜欢的Logo。</p>
+              <h3 className="text-xl font-semibold text-white mb-3">What are Tokens?</h3>
+              <p className="text-gray-300">Tokens are the basic units used for generating logos on our platform. Each logo generation consumes one token. After purchasing a plan, you can use these tokens to generate logos according to your needs.</p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Token有过期时间吗？</h3>
-              <p className="text-gray-300">没有，您购买的Token永不过期，可以在任何时间使用。</p>
+              <h3 className="text-xl font-semibold text-white mb-3">Do Tokens expire?</h3>
+              <p className="text-gray-300">No, your purchased tokens never expire and can be used at any time.</p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">如何获得更多Token？</h3>
-              <p className="text-gray-300">您可以随时购买任何套餐获取更多Token。我们也会不定期推出优惠活动，关注我们获取最新信息。</p>
+              <h3 className="text-xl font-semibold text-white mb-3">How can I get more Tokens?</h3>
+              <p className="text-gray-300">You can purchase any plan at any time to get more tokens. We also occasionally offer promotions - follow us to stay updated on the latest offers.</p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">是否提供退款？</h3>
-              <p className="text-gray-300">作为数字产品，我们不提供退款。您可以先体验免费版本，了解产品的基本功能后再购买。我们致力于提供高质量的服务，确保您的投资值得。</p>
+              <h3 className="text-xl font-semibold text-white mb-3">Do you offer refunds?</h3>
+              <p className="text-gray-300">As a digital product, we don't offer refunds. You can try our free version first to understand the basic features before purchasing. We are committed to providing high-quality service to ensure your investment is worthwhile.</p>
             </div>
           </div>
         </motion.div>
