@@ -359,6 +359,15 @@ export default function CreatePage() {
 
   // 加载更多Logo的函数
   const loadMoreLogos = async () => {
+    console.log(`正在加载更多Logo，数量: ${wizardData.logoCount}`);
+    
+    // 添加调试输出
+    console.log("当前状态:", JSON.stringify({
+      companyName: wizardData.companyName,
+      style: wizardData.style,
+      logoCount: wizardData.logoCount
+    }));
+    
     await generateLogo(true);
   };
 

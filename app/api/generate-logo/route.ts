@@ -148,7 +148,7 @@ export async function POST(req: Request) {
     
     // 批量生成多张图片 - 使用用户选择的数量
     const desiredImageCount = data.logoCount; // Use user-selected count
-    const batchSize = Math.min(6, desiredImageCount); // Adjust batch size based on requested count
+    const batchSize = Math.min(3, desiredImageCount); // 减小单批次大小以确保每批都能成功
     const batches = Math.ceil(desiredImageCount / batchSize);
     
     console.log(`将生成 ${desiredImageCount} 张Logo图片，分 ${batches} 批次处理`);
@@ -168,8 +168,14 @@ export async function POST(req: Request) {
           ", elegant design", 
           ", creative concept", 
           ", bold appearance", 
-          ", professional look"
-        ][i % 6];
+          ", professional look",
+          ", distinctive brand", 
+          ", geometric style", 
+          ", artistic approach",
+          ", dynamic feel",
+          ", sleek finish",
+          ", premium quality"
+        ][i % 12];
         
         const input = {
           prompt: basePrompt + uniqueSuffix,

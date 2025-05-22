@@ -109,6 +109,9 @@ export default function PreviewStep({
       // 在执行onLoadMore之前，先更新主logoCount
       onLogoCountChange(moreLogoCount);
       
+      // 添加等待时间让logoCount更新在状态中生效
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await onLoadMore();
       toast({
         title: "加载更多Logo",
