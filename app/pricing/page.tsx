@@ -20,6 +20,20 @@ export default function PricingPage() {
     router.push("/create");
   };
   
+  // Floating elements for background
+  const FloatingElements = () => {
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="floating-circle bg-blue-400/10 w-64 h-64 rounded-full absolute top-1/4 -left-20"></div>
+        <div className="floating-circle-reverse bg-purple-400/10 w-96 h-96 rounded-full absolute top-1/3 -right-32"></div>
+        <div className="floating-square bg-blue-300/10 w-48 h-48 absolute bottom-1/4 left-1/4 rotate-12"></div>
+        <div className="floating-triangle w-0 h-0 absolute bottom-1/3 right-1/4">
+          <div className="w-0 h-0 border-l-[40px] border-r-[40px] border-b-[70px] border-l-transparent border-r-transparent border-b-blue-300/10"></div>
+        </div>
+      </div>
+    );
+  };
+  
   const plans = [
     {
       name: "BASIC PLAN",
@@ -67,10 +81,16 @@ export default function PricingPage() {
   ];
   
   return (
-    <div className="flex min-h-screen flex-col bg-gray-900">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-gray-900 via-gray-900 to-gray-800 relative overflow-hidden">
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/10 via-transparent to-purple-900/10 pointer-events-none"></div>
+      
+      {/* Add floating elements */}
+      <FloatingElements />
+      
       <Header />
       
-      <main className="container mx-auto px-4 pt-32 pb-16">
+      <main className="container mx-auto px-4 pt-32 pb-16 relative z-10">
         {/* Title section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -78,7 +98,7 @@ export default function PricingPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-6">
             Create More Logos with Our AI Tool
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -94,10 +114,10 @@ export default function PricingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              className={`rounded-3xl overflow-hidden bg-white ${plan.popular ? 'md:-mt-4 md:mb-4 border-4 border-blue-500' : ''}`}
+              className={`rounded-3xl overflow-hidden bg-white backdrop-blur-sm shadow-xl ${plan.popular ? 'md:-mt-4 md:mb-4 border-4 border-blue-500' : 'border border-gray-200'}`}
             >
               {plan.popular && (
-                <div className="bg-blue-500 py-2 text-center">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-2 text-center">
                   <span className="text-white font-semibold">Most Popular</span>
                 </div>
               )}
@@ -105,15 +125,15 @@ export default function PricingPage() {
               <div className="p-8">
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-gray-600">{plan.name}</h3>
-                  <div className="text-5xl font-bold mt-2">{plan.price}</div>
-                  <div className="text-xl font-bold text-gray-700 mt-2">{plan.tokens} TOKENS</div>
+                  <div className="text-5xl font-bold mt-2 text-gray-800">{plan.price}</div>
+                  <div className="text-xl font-bold text-blue-600 mt-2">{plan.tokens} TOKENS</div>
                 </div>
                 
                 <Button
                   onClick={() => handlePurchase(plan.name)}
-                  className={`w-full py-6 text-lg font-bold rounded-xl ${
+                  className={`w-full py-6 text-lg font-bold rounded-xl transition-all duration-300 ${
                     plan.popular 
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white' 
                       : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
                   }`}
                 >
@@ -146,26 +166,26 @@ export default function PricingPage() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-24 max-w-3xl mx-auto"
         >
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 text-center mb-12">Frequently Asked Questions</h2>
           
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">What are Tokens?</h3>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-gray-700/30 shadow-lg">
+              <h3 className="text-xl font-semibold text-blue-300 mb-3">What are Tokens?</h3>
               <p className="text-gray-300">Tokens are the basic units used for generating logos on our platform. Each logo generation consumes one token. After purchasing a plan, you can use these tokens to generate logos according to your needs.</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Do Tokens expire?</h3>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-gray-700/30 shadow-lg">
+              <h3 className="text-xl font-semibold text-blue-300 mb-3">Do Tokens expire?</h3>
               <p className="text-gray-300">No, your purchased tokens never expire and can be used at any time.</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">How can I get more Tokens?</h3>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-gray-700/30 shadow-lg">
+              <h3 className="text-xl font-semibold text-blue-300 mb-3">How can I get more Tokens?</h3>
               <p className="text-gray-300">You can purchase any plan at any time to get more tokens. We also occasionally offer promotions - follow us to stay updated on the latest offers.</p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Do you offer refunds?</h3>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-gray-700/30 shadow-lg">
+              <h3 className="text-xl font-semibold text-blue-300 mb-3">Do you offer refunds?</h3>
               <p className="text-gray-300">As a digital product, we don't offer refunds. You can try our free version first to understand the basic features before purchasing. We are committed to providing high-quality service to ensure your investment is worthwhile.</p>
             </div>
           </div>
