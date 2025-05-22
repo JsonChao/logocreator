@@ -41,6 +41,8 @@ export default function PreviewStep({
   const [retryCount, setRetryCount] = useState(0);
   const [autoRetryActive, setAutoRetryActive] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showLoadMoreOptions, setShowLoadMoreOptions] = useState(false);
+  const [moreLogoCount, setMoreLogoCount] = useState(logoCount);
 
   const handleRetry = async () => {
     setRetryCount(prev => prev + 1);
@@ -74,15 +76,15 @@ export default function PreviewStep({
     if (likedImages.includes(index)) {
       setLikedImages(likedImages.filter(i => i !== index));
       toast({
-        title: "Removed from Favorites",
-        description: "You can add it back to favorites anytime",
+        title: "已从收藏夹移除",
+        description: "您可以随时将其添加回收藏夹",
         variant: "default",
       });
     } else {
       setLikedImages([...likedImages, index]);
       toast({
-        title: "Added to Favorites",
-        description: "You can view all favorites in your account",
+        title: "已添加到收藏夹",
+        description: "您可以在您的账户中查看所有收藏",
         variant: "default",
       });
     }
@@ -93,8 +95,8 @@ export default function PreviewStep({
     // In actual implementation should generate a real sharing link
     navigator.clipboard.writeText(`https://logocreator.ai/share/${companyName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`);
     toast({
-      title: "Link Copied to Clipboard",
-      description: "You can share this link with others",
+      title: "链接已复制到剪贴板",
+      description: "您可以与他人分享此链接",
       variant: "default",
     });
   };
@@ -104,17 +106,23 @@ export default function PreviewStep({
     
     setLoadingMore(true);
     try {
+      // 在执行onLoadMore之前，先更新主logoCount
+      onLogoCountChange(moreLogoCount);
+      
       await onLoadMore();
       toast({
-        title: "Loading More Logos",
-        description: "Generating additional logo design options for you",
+        title: "加载更多Logo",
+        description: `正在为您生成${moreLogoCount}个额外的Logo设计方案`,
       });
+      
+      // 关闭数量选择对话框
+      setShowLoadMoreOptions(false);
     } catch (error) {
-      console.error("Failed to load more logos:", error);
+      console.error("加载更多Logo失败:", error);
       toast({
         variant: "destructive",
-        title: "Loading Failed",
-        description: error instanceof Error ? error.message : "Please try again later",
+        title: "加载失败",
+        description: error instanceof Error ? error.message : "请稍后再试",
       });
     } finally {
       setLoadingMore(false);
@@ -130,6 +138,18 @@ export default function PreviewStep({
   const decrementLogoCount = () => {
     if (logoCount > 1) {
       onLogoCountChange(logoCount - 1);
+    }
+  };
+
+  const incrementMoreLogoCount = () => {
+    if (moreLogoCount < 12) {
+      setMoreLogoCount(moreLogoCount + 1);
+    }
+  };
+
+  const decrementMoreLogoCount = () => {
+    if (moreLogoCount > 1) {
+      setMoreLogoCount(moreLogoCount - 1);
     }
   };
 
@@ -155,14 +175,14 @@ export default function PreviewStep({
         <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-red-100 text-red-600">
           <AlertCircleIcon size={48} />
         </div>
-        <h3 className="mb-3 text-2xl font-semibold text-gray-900">Logo Generation Failed</h3>
+        <h3 className="mb-3 text-2xl font-semibold text-gray-900">Logo生成失败</h3>
         <p className="mb-8 max-w-md text-center text-lg text-gray-600">
           {isQueueFullError ? (
-            "Replicate service is temporarily busy. Please wait a few minutes and try again."
+            "Replicate服务暂时繁忙。请等待几分钟后重试。"
           ) : isTimeoutError ? (
-            "The generation request timed out. This may be due to server congestion. Please try again later."
+            "生成请求超时。这可能是由于服务器拥堵。请稍后再试。"
           ) : (
-            errorMessage || "An unknown error occurred. Please try again later."
+            errorMessage || "发生未知错误。请稍后再试。"
           )}
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -171,7 +191,7 @@ export default function PreviewStep({
             className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
             disabled={isLoading || autoRetryActive}
           >
-            {isLoading ? "Retrying..." : "Retry Now"}
+            {isLoading ? "重试中..." : "立即重试"}
           </Button>
           {isQueueFullError && (
             <Button
@@ -183,18 +203,18 @@ export default function PreviewStep({
               {autoRetryActive ? (
                 <div className="flex items-center gap-2">
                   <Spinner className="h-5 w-5" />
-                  <span>Waiting for retry...</span>
+                  <span>等待重试中...</span>
                 </div>
               ) : (
-                "Auto Retry in 30s"
+                "30秒后自动重试"
               )}
             </Button>
           )}
         </div>
         {retryCount > 0 && (
           <p className="mt-4 text-base text-gray-500">
-            Retried {retryCount} times.
-            {isQueueFullError ? " Service still busy, consider trying a different logo style or trying again later." : ""}
+            已重试 {retryCount} 次。
+            {isQueueFullError ? " 服务仍然繁忙，建议尝试不同的Logo风格或稍后再试。" : ""}
           </p>
         )}
       </motion.div>
@@ -211,12 +231,12 @@ export default function PreviewStep({
       >
         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
           <ImageIcon className="mr-2 text-blue-500" size={20} />
-          Select Number of Logos to Generate
+          选择要生成的Logo数量
         </h3>
         
         <div className="flex flex-col space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-gray-600">Choose how many logo variations you want to create (1-12)</p>
+            <p className="text-gray-600">选择您想创建的Logo变体数量 (1-12)</p>
             <div className="flex items-center">
               <Button 
                 variant="outline" 
@@ -262,12 +282,110 @@ export default function PreviewStep({
           <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg mt-2">
             <p>
               {logoCount <= 3 ? 
-                "Generate a few focused options (fastest generation time)" : 
+                "生成少量精选方案 (最快生成时间)" : 
                 logoCount <= 6 ? 
-                "Balanced selection of design variations (recommended)" : 
-                "Explore a wide range of design possibilities (longer generation time)"
+                "平衡的设计变体选择 (推荐)" : 
+                "探索广泛的设计可能性 (生成时间较长)"
               }
             </p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // 创建一个渲染加载更多数量选择器的函数
+  const renderLoadMoreQuantitySelector = () => {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm"
+      >
+        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <ImageIcon className="mr-2 text-blue-500" size={20} />
+          选择要加载的额外Logo数量
+        </h3>
+        
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">选择您想要额外创建的Logo变体数量 (1-12)</p>
+            <div className="flex items-center">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={decrementMoreLogoCount}
+                disabled={moreLogoCount <= 1 || loadingMore}
+                className="h-8 w-8 rounded-full"
+              >
+                <MinusIcon className="h-4 w-4" />
+              </Button>
+              
+              <span className="mx-4 font-bold text-xl w-6 text-center">{moreLogoCount}</span>
+              
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={incrementMoreLogoCount}
+                disabled={moreLogoCount >= 12 || loadingMore}
+                className="h-8 w-8 rounded-full"
+              >
+                <PlusIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <Slider
+              value={[moreLogoCount]}
+              min={1}
+              max={12}
+              step={1}
+              onValueChange={(value) => setMoreLogoCount(value[0])}
+              disabled={loadingMore}
+              className="mx-1"
+            />
+            <div className="flex justify-between mt-2 text-xs text-gray-500">
+              <span>1</span>
+              <span>6</span>
+              <span>12</span>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg mt-2">
+            <p>
+              {moreLogoCount <= 3 ? 
+                "生成少量精选方案 (最快生成时间)" : 
+                moreLogoCount <= 6 ? 
+                "平衡的设计变体选择 (推荐)" : 
+                "探索广泛的设计可能性 (生成时间较长)"
+              }
+            </p>
+          </div>
+          
+          <div className="flex gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowLoadMoreOptions(false)}
+              className="flex-1"
+              disabled={loadingMore}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleLoadMore}
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+              disabled={loadingMore}
+            >
+              {loadingMore ? (
+                <div className="flex items-center gap-2">
+                  <Spinner className="h-4 w-4" />
+                  <span>加载中...</span>
+                </div>
+              ) : (
+                `加载 ${moreLogoCount} 个更多Logo`
+              )}
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -283,9 +401,9 @@ export default function PreviewStep({
         className="w-full max-w-6xl space-y-10"
       >
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900">Your Logo Gallery</h1>
+          <h1 className="text-5xl font-bold text-gray-900">您的Logo画廊</h1>
           {generatedImages.length > 0 && (
-            <p className="mt-4 text-xl text-gray-600">Click on a logo to view detailed options</p>
+            <p className="mt-4 text-xl text-gray-600">点击一个Logo查看详细选项</p>
           )}
         </div>
         
@@ -296,14 +414,20 @@ export default function PreviewStep({
             className="flex flex-col items-center justify-center py-24"
           >
             <Spinner className="h-20 w-20" />
-            <p className="mt-8 text-xl font-medium text-gray-700">Generating your logo collection...</p>
-            <p className="mt-3 text-base text-gray-600">Generating {logoCount} high-quality logos takes 2-{Math.round(logoCount * 0.5)} minutes</p>
-            <p className="mt-2 text-sm text-gray-500">AI is carefully crafting multiple style variations for your logo, please be patient</p>
+            <p className="mt-8 text-xl font-medium text-gray-700">正在生成您的Logo集合...</p>
+            <p className="mt-3 text-base text-gray-600">生成 {logoCount} 个高质量Logo需要2-{Math.round(logoCount * 0.5)}分钟</p>
+            <p className="mt-2 text-sm text-gray-500">AI正在精心制作多种风格的Logo变体，请耐心等待</p>
           </motion.div>
         ) : errorMessage ? (
           renderErrorState()
         ) : generatedImages.length > 0 ? (
           <>
+            {showLoadMoreOptions && (
+              <div className="mb-8">
+                {renderLoadMoreQuantitySelector()}
+              </div>
+            )}
+            
             <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
               {generatedImages.map((imageUrl, index) => (
                 <motion.div
@@ -359,12 +483,12 @@ export default function PreviewStep({
                   {selectedImageIndex === index && (
                     <div className="absolute bottom-0 left-0 right-0 flex justify-between bg-gradient-to-t from-black/40 to-transparent p-4 text-white">
                       <div className="text-base font-medium">
-                        Design #{index + 1}
+                        设计 #{index + 1}
                       </div>
                       {likedImages.includes(index) && (
                         <div className="flex items-center text-sm">
                           <HeartIcon className="mr-1 h-4 w-4 fill-white" />
-                          Favorited
+                          已收藏
                         </div>
                       )}
                     </div>
@@ -373,26 +497,20 @@ export default function PreviewStep({
               ))}
             </div>
             
-            {onLoadMore && isSignedIn && (
+            {onLoadMore && isSignedIn && !showLoadMoreOptions && (
               <div className="mt-8 flex justify-start">
                 <Button
                   variant="ghost"
-                  onClick={handleLoadMore}
+                  onClick={() => {
+                    setMoreLogoCount(logoCount); // 默认使用和主生成相同的数量
+                    setShowLoadMoreOptions(true);
+                  }}
                   className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
                   disabled={isLoading || loadingMore}
                 >
-                  {loadingMore ? (
-                    <div className="flex items-center gap-2">
-                      <Spinner className="h-4 w-4" />
-                      <span>Loading...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="text-lg">See More Logos</span>
-                      <ChevronRightIcon className="h-4 w-4" />
-                      <ChevronRightIcon className="h-4 w-4 -ml-3" />
-                    </>
-                  )}
+                  <span className="text-lg">查看更多Logo</span>
+                  <ChevronRightIcon className="h-4 w-4" />
+                  <ChevronRightIcon className="h-4 w-4 -ml-3" />
                 </Button>
               </div>
             )}
@@ -406,7 +524,7 @@ export default function PreviewStep({
                 <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">{companyName}</h3>
-                    <p className="mt-2 text-base text-gray-500">Design #{selectedImageIndex + 1} · Multiple logo versions generated for you</p>
+                    <p className="mt-2 text-base text-gray-500">设计 #{selectedImageIndex + 1} · 为您生成的多个Logo版本</p>
                   </div>
                   
                   <div className="flex flex-wrap gap-3">
@@ -416,7 +534,7 @@ export default function PreviewStep({
                       onClick={copyShareLink}
                     >
                       <Share2Icon className="h-5 w-5" />
-                      <span>Share</span>
+                      <span>分享</span>
                     </Button>
                     
                     {isSignedIn ? (
@@ -427,7 +545,7 @@ export default function PreviewStep({
                         disabled={isLoading}
                       >
                         <RefreshCwIcon className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
-                        <span>{isLoading ? "Generating..." : "Regenerate"}</span>
+                        <span>{isLoading ? "生成中..." : "重新生成"}</span>
                       </Button>
                     ) : (
                       <SignInButton mode="modal">
@@ -436,7 +554,7 @@ export default function PreviewStep({
                           className="flex items-center gap-2 rounded-xl border-gray-200 px-5 py-2.5 text-base"
                         >
                           <RefreshCwIcon className="h-5 w-5" />
-                          <span>Sign in to Regenerate</span>
+                          <span>登录以重新生成</span>
                         </Button>
                       </SignInButton>
                     )}
@@ -446,13 +564,13 @@ export default function PreviewStep({
                         {isSignedIn ? (
                           <Button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-base text-white hover:bg-blue-700">
                             <DownloadIcon className="h-5 w-5" />
-                            <span>Download</span>
+                            <span>下载</span>
                           </Button>
                         ) : (
                           <SignInButton mode="modal">
                             <Button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-base text-white hover:bg-blue-700">
                               <DownloadIcon className="h-5 w-5" />
-                              <span>Sign in to Download</span>
+                              <span>登录以下载</span>
                             </Button>
                           </SignInButton>
                         )}
@@ -468,8 +586,8 @@ export default function PreviewStep({
                                 setShowExportOptions(false);
                               }}
                             >
-                              PNG Format
-                              <span className="ml-2 text-sm text-gray-500">(Bitmap)</span>
+                              PNG格式
+                              <span className="ml-2 text-sm text-gray-500">(位图)</span>
                             </Button>
                             <Button 
                               variant="ghost" 
@@ -479,8 +597,8 @@ export default function PreviewStep({
                                 setShowExportOptions(false);
                               }}
                             >
-                              SVG Format
-                              <span className="ml-2 text-sm text-gray-500">(Vector)</span>
+                              SVG格式
+                              <span className="ml-2 text-sm text-gray-500">(矢量)</span>
                             </Button>
                             <Button 
                               variant="ghost" 
@@ -490,8 +608,8 @@ export default function PreviewStep({
                                 setShowExportOptions(false);
                               }}
                             >
-                              JPG Format
-                              <span className="ml-2 text-sm text-gray-500">(Compressed)</span>
+                              JPG格式
+                              <span className="ml-2 text-sm text-gray-500">(压缩)</span>
                             </Button>
                           </div>
                         </PopoverContent>
@@ -513,15 +631,15 @@ export default function PreviewStep({
             <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Image
                 src="/logo-placeholder.svg"
-                alt="Logo placeholder"
+                alt="Logo占位图"
                 width={56}
                 height={56}
                 className="opacity-70"
               />
             </div>
-            <h3 className="mb-3 text-2xl font-semibold text-gray-900">No Logo Generated Yet</h3>
+            <h3 className="mb-3 text-2xl font-semibold text-gray-900">尚未生成Logo</h3>
             <p className="mb-10 max-w-md text-center text-lg text-gray-600">
-              Click the button below to generate {logoCount} professional logo{logoCount > 1 ? 's' : ''}
+              点击下方按钮生成 {logoCount} 个专业Logo{logoCount > 1 ? '' : ''}
             </p>
             
             {isSignedIn ? (
@@ -530,14 +648,14 @@ export default function PreviewStep({
                 className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? "Generating..." : "Generate Logos"}
+                {isLoading ? "生成中..." : "生成Logo"}
               </Button>
             ) : (
               <SignInButton mode="modal">
                 <Button 
                   className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
                 >
-                  Sign in to Generate
+                  登录以生成
                 </Button>
               </SignInButton>
             )}
@@ -552,7 +670,7 @@ export default function PreviewStep({
               className="flex items-center gap-2 rounded-xl border-gray-200 px-8 py-3 text-lg font-medium"
             >
               <ChevronLeftIcon className="h-5 w-5" />
-              Back
+              返回
             </Button>
           </div>
         )}
