@@ -78,50 +78,61 @@ export async function POST(req: Request) {
   // 检查用户额度（仅当配置了Clerk和ratelimit且有用户时）
   if (hasClerkConfig && user && ratelimit) {
     try {
-      // 首先尝试手动从用户额度管理脚本使用的键中读取最新值
-      const userCreditsKey = `logocreator:${user.id}:rlflw`;
-      let manualCredits = null;
+      // 创建Redis客户端实例
+      const redis = Redis.fromEnv();
       
-      try {
-        if (process.env.UPSTASH_REDIS_REST_URL) {
-          const redis = Redis.fromEnv();
-          manualCredits = await redis.get(userCreditsKey);
-          console.log(`从脚本键(${userCreditsKey})读取的用户额度: ${manualCredits}`);
+      // 直接从Redis读取用户额度数据
+      const directRatelimitKey = `ratelimit:logocreator:${user.id}`;
+      const upstashRatelimitData = await redis.get(directRatelimitKey);
+      
+      console.log(`直接读取的用户额度数据: ${JSON.stringify(upstashRatelimitData)}`);
+      
+      // 检查数据是否有效并且用户有剩余额度
+      if (upstashRatelimitData && 
+          typeof upstashRatelimitData === 'object' && 
+          upstashRatelimitData !== null &&
+          'remaining' in upstashRatelimitData && 
+          Number(upstashRatelimitData.remaining) > 0) {
+        
+        // 用户有剩余额度，允许生成
+        console.log(`用户 ${user.id} 直接从Redis检查额度: 剩余=${upstashRatelimitData.remaining}`);
+        
+        // 使用ratelimit.limit()扣减额度
+        const { success: hasCredits, limit, reset, remaining } = await ratelimit.limit(user.id);
+        console.log(`ratelimit.limit()结果: success=${hasCredits}, remaining=${remaining}`);
+        
+        // 如果ratelimit.limit()显示没有额度，但Redis数据显示有，则可能是数据不一致
+        if (!hasCredits && Number(upstashRatelimitData.remaining) > 0) {
+          console.log(`检测到Redis数据不一致！强制更新ratelimit数据`);
           
-          // 如果找到了脚本管理的额度信息，同步到ratelimit键
-          if (manualCredits !== null && typeof manualCredits === 'number' && manualCredits > 0) {
-            const ratelimitKey = `ratelimit:logocreator:${user.id}`;
-            // 检查当前的ratelimit键状态
-            const currentRatelimit = await redis.get(ratelimitKey);
-            
-            if (currentRatelimit) {
-              // 如果ratelimit键存在，更新remaining字段
-              const updatedRatelimit = {
-                ...currentRatelimit,
-                remaining: manualCredits
-              };
-              await redis.set(ratelimitKey, updatedRatelimit);
-              console.log(`已将ratelimit键(${ratelimitKey})的额度同步为: ${manualCredits}`);
-            }
-          }
+          // 强制更新ratelimit数据
+          const updatedRatelimit = {
+            ...upstashRatelimitData,
+            remaining: Number(upstashRatelimitData.remaining) - 1 // 扣减一次额度
+          };
+          
+          await redis.set(directRatelimitKey, updatedRatelimit);
+          console.log(`已强制更新用户额度数据: ${JSON.stringify(updatedRatelimit)}`);
+          success = true;
+        } else {
+          // 使用ratelimit.limit()的结果
+          success = hasCredits;
         }
-      } catch (syncError) {
-        console.error("尝试同步用户额度失败:", syncError);
-        // 继续使用常规方法检查
-      }
-      
-      // 现在使用ratelimit库检查额度
-      const { success: hasCredits, limit, reset, remaining } = await ratelimit.limit(user.id);
-      console.log(`用户 ${user.id} 额度状态: 剩余=${remaining}, 总额=${limit}, 重置时间=${new Date(reset).toLocaleString()}`);
-      
-      if (!hasCredits) {
-        return new Response(
-          "您的Logo生成额度已用完。请等待下个月或升级套餐获取更多额度。",
-          {
-            status: 429, // Too Many Requests
-            headers: { "Content-Type": "text/plain" },
-          }
-        );
+      } else {
+        // 使用常规方法检查额度
+        const { success: hasCredits, limit, reset, remaining } = await ratelimit.limit(user.id);
+        console.log(`用户 ${user.id} 额度状态: 剩余=${remaining}, 总额=${limit}, 重置时间=${new Date(reset).toLocaleString()}`);
+        
+        if (!hasCredits) {
+          return new Response(
+            "Your logo generation credits have been depleted. Please wait until next month or upgrade your plan for more credits.",
+            {
+              status: 429, // Too Many Requests
+              headers: { "Content-Type": "text/plain" },
+            }
+          );
+        }
+        success = hasCredits;
       }
       
       // 如果用户额度验证成功，确保同步更新Redis中的用户额度信息
@@ -132,30 +143,20 @@ export async function POST(req: Request) {
         
         // 如果Redis客户端可用，手动更新剩余额度信息以便UserCreditsDisplay能正确显示
         if (process.env.UPSTASH_REDIS_REST_URL) {
+          // 重新获取当前额度状态
+          const { remaining } = await ratelimit.limit(user.id);
           console.log(`同步更新用户额度显示数据，键: ${ratelimitKey}, 剩余额度: ${remaining}`);
           
           // 检查当前键是否存在
-          const exists = await Redis.fromEnv().exists(ratelimitKey);
+          const exists = await redis.exists(ratelimitKey);
           if (!exists) {
-            // 如果键不存在，创建一个与@upstash/ratelimit格式兼容的对象
-            await Redis.fromEnv().set(ratelimitKey, {
-              limit,
-              remaining,
-              reset
-            });
-            console.log(`创建了新的用户额度记录，剩余: ${remaining}`);
-          } else {
-            // 如果键已存在，只更新remaining字段
-            await Redis.fromEnv().hset(ratelimitKey, { remaining });
-            console.log(`更新了用户额度remaining字段为: ${remaining}`);
+            console.log(`未找到用户额度数据，跳过同步`);
           }
         }
       } catch (syncError) {
         console.error("同步更新用户额度显示数据失败:", syncError);
         // 这个错误不影响主流程，继续处理
       }
-      
-      success = hasCredits;
     } catch (error) {
       console.error("检查用户额度失败:", error);
       // 继续处理，但记录错误
