@@ -44,7 +44,7 @@ export default function AboutPage() {
             </div>
             <div className="relative h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center p-8">
               <Image
-                src="/images/logocraftai-logo.svg"
+                src="/images/logocraftai.webp"
                 alt="LogocraftAI Logo"
                 width={400}
                 height={400}
