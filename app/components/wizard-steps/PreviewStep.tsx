@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon } from "lucide-react";
+import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon, EyeIcon, EditIcon, ShoppingCartIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -443,12 +443,7 @@ export default function PreviewStep({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className={`group relative cursor-pointer overflow-hidden rounded-2xl border-2 bg-white transition duration-300 hover:shadow-lg ${
-                    selectedImageIndex === index 
-                      ? "border-blue-500 ring-2 ring-blue-200 shadow-md" 
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
-                  onClick={() => setSelectedImageIndex(index)}
+                  className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 bg-white transition duration-300 hover:shadow-lg"
                 >
                   <div className="relative aspect-square overflow-hidden bg-gray-50">
                     <Image
@@ -460,25 +455,13 @@ export default function PreviewStep({
                     />
                   </div>
                   
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 transition-all group-hover:bg-opacity-30">
-                    <div className="transform scale-90 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-                      {selectedImageIndex !== index && (
-                        <Button
-                          variant="secondary"
-                          className="bg-white px-6 py-2 text-base shadow-lg"
-                        >
-                          Select
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="absolute right-3 top-3 flex space-x-2">
+                  {/* 在图片右上角显示收藏按钮 */}
+                  <div className="absolute right-3 top-3">
                     <button 
                       className={`rounded-full p-2 shadow-md transition ${
                         likedImages.includes(index) 
                           ? "bg-red-500 text-white" 
-                          : "bg-white text-gray-400 opacity-0 group-hover:opacity-100"
+                          : "bg-white text-gray-400"
                       }`}
                       onClick={(e) => toggleLike(index, e)}
                     >
@@ -488,19 +471,47 @@ export default function PreviewStep({
                     </button>
                   </div>
                   
-                  {selectedImageIndex === index && (
-                    <div className="absolute bottom-0 left-0 right-0 flex justify-between bg-gradient-to-t from-black/40 to-transparent p-4 text-white">
-                      <div className="text-base font-medium">
-                        设计 #{index + 1}
-                      </div>
-                      {likedImages.includes(index) && (
-                        <div className="flex items-center text-sm">
-                          <HeartIcon className="mr-1 h-4 w-4 fill-white" />
-                          已收藏
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* 底部按钮栏，类似第二张图片中的设计 */}
+                  <div className="flex justify-center space-x-2 py-3 border-t">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                      onClick={() => setSelectedImageIndex(index)}
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                      <span>预览</span>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-500 hover:text-green-700 flex items-center gap-1"
+                      onClick={() => {
+                        /* 这里可以添加编辑功能 */
+                        toast({
+                          title: "编辑功能",
+                          description: "即将开放，敬请期待！",
+                        });
+                      }}
+                    >
+                      <EditIcon className="h-4 w-4" />
+                      <span>编辑</span>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-orange-500 hover:text-orange-700 flex items-center gap-1"
+                      onClick={() => {
+                        setSelectedImageIndex(index);
+                        setShowExportOptions(true);
+                      }}
+                    >
+                      <ShoppingCartIcon className="h-4 w-4" />
+                      <span>购买</span>
+                    </Button>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -532,7 +543,7 @@ export default function PreviewStep({
                 <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">{companyName}</h3>
-                    <p className="mt-2 text-base text-gray-500">设计 #{selectedImageIndex + 1} · 为您生成的多个Logo版本</p>
+                    <p className="mt-2 text-base text-gray-500">设计 #{selectedImageIndex + 1}</p>
                   </div>
                   
                   <div className="flex flex-wrap gap-3">
