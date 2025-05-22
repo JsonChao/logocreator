@@ -37,15 +37,14 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          <div className="relative h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden">
-            {/* In a real project, there would be a company photo here */}
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">Company Image</div>
-            {/* <Image
-              src="/about/team.jpg"
-              alt="LogocraftAI Team"
-              fill
-              className="object-cover"
-            /> */}
+          <div className="relative h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center p-8">
+            <Image
+              src="/images/logocraftai-logo.svg"
+              alt="LogocraftAI Logo"
+              width={400}
+              height={400}
+              className="object-contain"
+            />
           </div>
         </div>
 
