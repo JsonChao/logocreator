@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon, EyeIcon, EditIcon, ShoppingCartIcon, XIcon } from "lucide-react";
+import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon, EyeIcon, EditIcon, XIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -665,8 +665,8 @@ export default function PreviewStep({
                       className="text-orange-500 hover:text-orange-700 flex items-center gap-1"
                       onClick={(e) => handleDownloadSelection(index, e)}
                     >
-                      <ShoppingCartIcon className="h-4 w-4" />
-                      <span>购买</span>
+                      <DownloadIcon className="h-4 w-4" />
+                      <span>下载</span>
                     </Button>
                   </div>
                 </motion.div>
@@ -824,8 +824,8 @@ export default function PreviewStep({
                               }
                             }}
                           >
-                            <ShoppingCartIcon className="h-4 w-4 mr-2" />
-                            购买
+                            <DownloadIcon className="h-4 w-4 mr-2" />
+                            下载
                           </Button>
                         </div>
                         
