@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Slider } from "@/components/ui/slider";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface PreviewStepProps {
   generatedImages: string[];
@@ -36,13 +37,17 @@ export default function PreviewStep({
 }: PreviewStepProps) {
   const { isSignedIn } = useUser();
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(0);
   const [likedImages, setLikedImages] = useState<number[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   const [autoRetryActive, setAutoRetryActive] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showLoadMoreOptions, setShowLoadMoreOptions] = useState(false);
   const [moreLogoCount, setMoreLogoCount] = useState(logoCount);
+  
+  // 用于预览对话框
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [downloadIndex, setDownloadIndex] = useState<number | null>(0);
 
   const handleRetry = async () => {
     setRetryCount(prev => prev + 1);
@@ -400,6 +405,32 @@ export default function PreviewStep({
     );
   };
 
+  // 预览Logo
+  const handlePreview = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreviewIndex(index);
+    setShowPreview(true);
+  };
+
+  // 关闭预览
+  const closePreview = () => {
+    setShowPreview(false);
+  };
+
+  // 设置要下载的Logo索引
+  const handleDownloadSelection = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDownloadIndex(index);
+    setShowExportOptions(true);
+  };
+
+  // 实际使用所选Logo的索引进行下载
+  const handleDownloadLogo = (format: "png" | "svg" | "jpg") => {
+    if (downloadIndex !== null) {
+      onDownloadLogo(format);
+    }
+  };
+
   return (
     <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-12">
       <motion.div 
@@ -411,7 +442,7 @@ export default function PreviewStep({
         <div className="text-center">
           <h1 className="text-5xl font-bold text-gray-900">您的Logo画廊</h1>
           {generatedImages.length > 0 && (
-            <p className="mt-4 text-xl text-gray-600">点击一个Logo查看详细选项</p>
+            <p className="mt-4 text-xl text-gray-600">选择一个Logo进行预览或下载</p>
           )}
         </div>
         
@@ -477,7 +508,7 @@ export default function PreviewStep({
                       variant="ghost"
                       size="sm"
                       className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
-                      onClick={() => setSelectedImageIndex(index)}
+                      onClick={(e) => handlePreview(index, e)}
                     >
                       <EyeIcon className="h-4 w-4" />
                       <span>预览</span>
@@ -487,8 +518,8 @@ export default function PreviewStep({
                       variant="ghost"
                       size="sm"
                       className="text-green-500 hover:text-green-700 flex items-center gap-1"
-                      onClick={() => {
-                        /* 这里可以添加编辑功能 */
+                      onClick={(e) => {
+                        e.stopPropagation();
                         toast({
                           title: "编辑功能",
                           description: "即将开放，敬请期待！",
@@ -503,10 +534,7 @@ export default function PreviewStep({
                       variant="ghost"
                       size="sm"
                       className="text-orange-500 hover:text-orange-700 flex items-center gap-1"
-                      onClick={() => {
-                        setSelectedImageIndex(index);
-                        setShowExportOptions(true);
-                      }}
+                      onClick={(e) => handleDownloadSelection(index, e)}
                     >
                       <ShoppingCartIcon className="h-4 w-4" />
                       <span>购买</span>
@@ -534,110 +562,93 @@ export default function PreviewStep({
               </div>
             )}
             
-            {selectedImageIndex !== null && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-12 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm"
-              >
-                <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{companyName}</h3>
-                    <p className="mt-2 text-base text-gray-500">设计 #{selectedImageIndex + 1}</p>
+            {/* 预览Logo的对话框 */}
+            <Dialog open={showPreview} onOpenChange={setShowPreview}>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogTitle>Logo 预览</DialogTitle>
+                <DialogDescription>
+                  {companyName} - 设计 #{previewIndex !== null ? previewIndex + 1 : ''}
+                </DialogDescription>
+                {previewIndex !== null && previewIndex >= 0 && previewIndex < generatedImages.length && (
+                  <div className="relative aspect-square w-full max-h-[60vh] overflow-hidden bg-gray-50 border rounded-xl">
+                    <Image
+                      src={generatedImages[previewIndex]}
+                      alt={`${companyName} logo design ${previewIndex + 1}`}
+                      fill
+                      className="object-contain p-4"
+                      unoptimized
+                    />
                   </div>
-                  
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2 rounded-xl border-gray-200 px-5 py-2.5 text-base"
-                      onClick={copyShareLink}
-                    >
-                      <Share2Icon className="h-5 w-5" />
-                      <span>分享</span>
-                    </Button>
-                    
-                    {isSignedIn ? (
+                )}
+                <div className="flex justify-between mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={closePreview}
+                  >
+                    关闭
+                  </Button>
+                  {previewIndex !== null && (
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
-                        className="flex items-center gap-2 rounded-xl border-gray-200 px-5 py-2.5 text-base"
-                        onClick={() => onGenerateLogo()}
-                        disabled={isLoading}
+                        className="flex items-center gap-2"
+                        onClick={(e) => {
+                          closePreview();
+                          if (previewIndex !== null) {
+                            handleDownloadSelection(previewIndex, e as unknown as React.MouseEvent);
+                          }
+                        }}
                       >
-                        <RefreshCwIcon className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
-                        <span>{isLoading ? "生成中..." : "重新生成"}</span>
+                        <ShoppingCartIcon className="h-4 w-4" />
+                        <span>购买此Logo</span>
                       </Button>
-                    ) : (
-                      <SignInButton mode="modal">
-                        <Button
-                          variant="outline"
-                          className="flex items-center gap-2 rounded-xl border-gray-200 px-5 py-2.5 text-base"
-                        >
-                          <RefreshCwIcon className="h-5 w-5" />
-                          <span>登录以重新生成</span>
-                        </Button>
-                      </SignInButton>
-                    )}
-                    
-                    <Popover open={showExportOptions} onOpenChange={setShowExportOptions}>
-                      <PopoverTrigger asChild>
-                        {isSignedIn ? (
-                          <Button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-base text-white hover:bg-blue-700">
-                            <DownloadIcon className="h-5 w-5" />
-                            <span>下载</span>
-                          </Button>
-                        ) : (
-                          <SignInButton mode="modal">
-                            <Button className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-base text-white hover:bg-blue-700">
-                              <DownloadIcon className="h-5 w-5" />
-                              <span>登录以下载</span>
-                            </Button>
-                          </SignInButton>
-                        )}
-                      </PopoverTrigger>
-                      {isSignedIn && (
-                        <PopoverContent className="w-56 p-3">
-                          <div className="flex flex-col gap-2">
-                            <Button 
-                              variant="ghost" 
-                              className="justify-start text-base" 
-                              onClick={() => {
-                                onDownloadLogo('png');
-                                setShowExportOptions(false);
-                              }}
-                            >
-                              PNG格式
-                              <span className="ml-2 text-sm text-gray-500">(位图)</span>
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              className="justify-start text-base" 
-                              onClick={() => {
-                                onDownloadLogo('svg');
-                                setShowExportOptions(false);
-                              }}
-                            >
-                              SVG格式
-                              <span className="ml-2 text-sm text-gray-500">(矢量)</span>
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              className="justify-start text-base" 
-                              onClick={() => {
-                                onDownloadLogo('jpg');
-                                setShowExportOptions(false);
-                              }}
-                            >
-                              JPG格式
-                              <span className="ml-2 text-sm text-gray-500">(压缩)</span>
-                            </Button>
-                          </div>
-                        </PopoverContent>
-                      )}
-                    </Popover>
-                  </div>
+                    </div>
+                  )}
                 </div>
-              </motion.div>
-            )}
+              </DialogContent>
+            </Dialog>
+            
+            {/* Logo下载选项弹窗 */}
+            <Popover open={showExportOptions} onOpenChange={setShowExportOptions}>
+              <PopoverContent className="w-56 p-3">
+                <div className="flex flex-col gap-2">
+                  <h3 className="font-semibold mb-2">选择下载格式</h3>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start text-base" 
+                    onClick={() => {
+                      handleDownloadLogo('png');
+                      setShowExportOptions(false);
+                    }}
+                  >
+                    PNG格式
+                    <span className="ml-2 text-sm text-gray-500">(位图)</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start text-base" 
+                    onClick={() => {
+                      handleDownloadLogo('svg');
+                      setShowExportOptions(false);
+                    }}
+                  >
+                    SVG格式
+                    <span className="ml-2 text-sm text-gray-500">(矢量)</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start text-base" 
+                    onClick={() => {
+                      handleDownloadLogo('jpg');
+                      setShowExportOptions(false);
+                    }}
+                  >
+                    JPG格式
+                    <span className="ml-2 text-sm text-gray-500">(压缩)</span>
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </>
         ) : (
           <motion.div 
