@@ -21,20 +21,8 @@ export default function Header({ className = "" }: { className?: string }) {
 
   const links = [
     {
-      href: "/",
-      label: "首页",
-    },
-    {
-      href: "/styles",
-      label: "样式库",
-    },
-    {
       href: "/pricing",
       label: "价格",
-    },
-    {
-      href: "/examples",
-      label: "示例",
     },
     {
       href: "/about",
