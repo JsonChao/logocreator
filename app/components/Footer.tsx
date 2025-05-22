@@ -15,7 +15,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
@@ -34,23 +34,8 @@ export default function Footer() {
             <h3 className="text-gray-900 font-semibold mb-4">产品</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/styles" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  Logo样式库
-                </Link>
-              </li>
-              <li>
-                <Link href="/examples" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  成功案例
-                </Link>
-              </li>
-              <li>
                 <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
                   价格方案
-                </Link>
-              </li>
-              <li>
-                <Link href="/api" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  API接口
                 </Link>
               </li>
             </ul>
@@ -70,39 +55,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  招聘
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
                   联系我们
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="col-span-1">
-            <h3 className="text-gray-900 font-semibold mb-4">法律</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/terms" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  服务条款
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  隐私政策
-                </Link>
-              </li>
-              <li>
-                <Link href="/cookies" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  Cookie政策
-                </Link>
-              </li>
-              <li>
-                <Link href="/licenses" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  许可证
                 </Link>
               </li>
             </ul>
