@@ -69,6 +69,24 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     }
   }, [isLoaded, isSignedIn, user?.id, fetchUserCredits]);
 
+  // 添加事件监听器，响应刷新用户额度的请求
+  useEffect(() => {
+    // 定义事件处理函数
+    const handleRefreshEvent = (event: CustomEvent) => {
+      console.log("收到刷新用户额度事件");
+      const forceRefresh = event.detail?.forceRefresh === true;
+      fetchUserCredits(forceRefresh);
+    };
+
+    // 添加事件监听器
+    window.addEventListener('refreshUserCredits', handleRefreshEvent as EventListener);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener('refreshUserCredits', handleRefreshEvent as EventListener);
+    };
+  }, [fetchUserCredits]);
+
   // 每30秒刷新一次额度信息
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;

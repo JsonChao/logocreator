@@ -190,6 +190,15 @@ export default function CreatePage() {
 
   // Generate logo async function
   const generateLogo = async (appendToExisting: boolean = false) => {
+    if (!isSignedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please sign in to generate logos",
+        variant: "default",
+      });
+      return;
+    }
+
     // 清除之前的错误，如果是追加模式则保留现有图片
     setWizardData(prev => ({ 
       ...prev, 
@@ -294,6 +303,16 @@ export default function CreatePage() {
           // 只在非追加模式下保存到历史记录
           if (!appendToExisting) {
             saveToHistory(data.display_urls[0]);
+          }
+          
+          // 生成成功后，立即刷新用户额度信息
+          try {
+            // 触发一个自定义事件，通知UserCreditsDisplay组件刷新
+            const refreshEvent = new CustomEvent('refreshUserCredits', { detail: { forceRefresh: true } });
+            window.dispatchEvent(refreshEvent);
+            console.log("已触发用户额度刷新事件");
+          } catch (error) {
+            console.error("触发用户额度刷新事件失败:", error);
           }
           
           // 根据模式显示不同的成功提示

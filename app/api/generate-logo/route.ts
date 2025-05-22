@@ -62,13 +62,38 @@ export async function POST(req: Request) {
     );
   }
 
+  // 应用速率限制（仅当配置了Clerk和ratelimit且有用户时）
+  let success = true;
+  
+  // 检查用户额度（仅当配置了Clerk和ratelimit且有用户时）
+  if (hasClerkConfig && user && ratelimit) {
+    try {
+      const { success: hasCredits, limit, reset, remaining } = await ratelimit.limit(user.id);
+      console.log(`用户 ${user.id} 额度状态: 剩余=${remaining}, 总额=${limit}, 重置时间=${new Date(reset).toLocaleString()}`);
+      
+      if (!hasCredits) {
+        return new Response(
+          "您的Logo生成额度已用完。请等待下个月或升级套餐获取更多额度。",
+          {
+            status: 429, // Too Many Requests
+            headers: { "Content-Type": "text/plain" },
+          }
+        );
+      }
+      
+      success = hasCredits;
+    } catch (error) {
+      console.error("检查用户额度失败:", error);
+      // 继续处理，但记录错误
+    }
+  } else {
+    console.log("用户额度检查跳过: hasClerkConfig=", hasClerkConfig, ", user=", !!user, ", ratelimit=", !!ratelimit);
+  }
+
   // 创建Replicate客户端实例
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN,
   });
-
-  // 应用速率限制（仅当配置了Clerk和ratelimit且有用户时）
-  let success = true;
 
   const flashyStyle =
     "Professional level logo design, eye-catching, bold, innovative, futuristic, and impressive. Uses vibrant neon colors, complemented by metallic textures, gloss, and shiny accent effects. Ensures text is clearly legible, suitable for brand use across various media. Design should be concise and powerful, avoiding overly complex elements.";
@@ -94,6 +119,18 @@ export async function POST(req: Request) {
   const professionalStyle =
     "Professional corporate logo design, business style, neat, structured, with a conservative color scheme conveying trust and stability. Design should be formal and professional, suitable for business environments. Fonts should be bold and standardized sans-serif, with overall layout balanced and easily recognizable. Ensures professional image is maintained across various application scenarios.";
 
+  const vintageStyle =
+    "Vintage or retro logo design that evokes nostalgia and classic aesthetics. Features handcrafted look, aged textures, and classic typography styles inspired by specific eras like the 50s, 60s, or 70s. Uses muted color palettes, distressed effects, and classic iconography. Perfect for brands wanting to convey heritage, tradition, or timeless craftsmanship.";
+
+  const luxuryStyle =
+    "Premium luxury logo design with exquisite details and opulent aesthetics. Features gold or metallic accents, sophisticated color scheme primarily using black, gold, and deep rich colors. Uses refined typography, often with custom letterforms. May incorporate subtle patterns or emblems. Ensures a sense of exclusivity and high-end positioning suitable for luxury brands.";
+
+  const artDecoStyle =
+    "Art Deco inspired logo design characterized by geometric symmetry, bold lines, and decorative elements. Features distinctive aesthetic drawing from the 1920s and 30s with strong vertical lines, zigzag forms, and bold geometric patterns. Uses rich colors with metallic accents of gold, silver, or bronze. Perfect for brands seeking to convey glamour and artistic sophistication.";
+
+  const organicStyle =
+    "Natural and organic logo design with flowing lines and nature-inspired elements. Features botanical motifs, hand-drawn aesthetics, and earthy color palettes. Avoids rigid geometry in favor of fluid, asymmetrical forms that suggest growth and natural movement. Suitable for eco-friendly brands, wellness products, or businesses connected to nature.";
+
   const styleLookup: Record<string, string> = {
     flashy: flashyStyle,
     tech: techStyle,
@@ -103,6 +140,10 @@ export async function POST(req: Request) {
     minimal: minimalStyle,
     elegant: elegantStyle,
     professional: professionalStyle,
+    vintage: vintageStyle,
+    luxury: luxuryStyle,
+    artdeco: artDecoStyle,
+    organic: organicStyle,
   };
 
   // 确保风格名称小写以匹配字典键
