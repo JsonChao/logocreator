@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: '关于我们 | LogocraftAI',
-  description: '了解LogocraftAI的故事、使命和我们如何利用AI技术帮助创业者和企业创建专业品牌标识。',
+  title: 'About Us | LogocraftAI',
+  description: 'Learn about LogocraftAI\'s story, mission, and how we use AI technology to help entrepreneurs and businesses create professional brand identities.',
 };
 
 export default function AboutPage() {
@@ -13,36 +13,36 @@ export default function AboutPage() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
-            让每个品牌都拥有专业Logo
+            Professional Logos for Every Brand
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            LogocraftAI致力于利用尖端AI技术，使专业级别的Logo设计变得简单易行且人人可及。
+            LogocraftAI is dedicated to using cutting-edge AI technology to make professional-level logo design simple, accessible, and affordable for everyone.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              我们的故事
+              Our Story
             </h2>
             <div className="prose prose-lg">
               <p>
-                LogocraftAI源于一个简单的观察：创业者和小企业主往往难以获得高质量的Logo设计，而不需要支付高昂的设计费用或掌握复杂的设计软件。
+                LogocraftAI began with a simple observation: entrepreneurs and small business owners often struggle to obtain high-quality logo designs without paying hefty design fees or mastering complex design software.
               </p>
               <p>
-                2023年，我们的创始团队决定利用最新的AI生成模型，创建一个直观的平台，让每个人都能轻松设计专业的Logo。我们的目标是民主化Logo设计过程，同时保持创意和个性化。
+                In 2023, our founding team decided to leverage the latest AI generation models to create an intuitive platform where anyone could easily design professional logos. Our goal was to democratize the logo design process while maintaining creativity and personalization.
               </p>
               <p>
-                今天，LogocraftAI已经帮助数千名企业家和企业创建了独特而专业的品牌标识，我们的使命仍在继续扩展。
+                Today, LogocraftAI has helped thousands of entrepreneurs and businesses create unique and professional brand identities, and our mission continues to expand.
               </p>
             </div>
           </div>
           <div className="relative h-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden">
-            {/* 在实际项目中，这里应该放置公司照片 */}
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">公司图片</div>
+            {/* In a real project, there would be a company photo here */}
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400">Company Image</div>
             {/* <Image
               src="/about/team.jpg"
-              alt="LogocraftAI团队"
+              alt="LogocraftAI Team"
               fill
               className="object-cover"
             /> */}
@@ -51,7 +51,7 @@ export default function AboutPage() {
 
         <div className="mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
-            我们的价值观
+            Our Values
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -60,9 +60,9 @@ export default function AboutPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">创新</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Innovation</h3>
               <p className="text-gray-600">
-                我们不断推动AI设计的边界，将最新技术转化为直观、强大的设计工具。
+                We constantly push the boundaries of AI design, transforming the latest technology into intuitive, powerful design tools.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -71,9 +71,9 @@ export default function AboutPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">包容性</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Inclusivity</h3>
               <p className="text-gray-600">
-                我们相信每个企业，无论规模大小，都应该能够获得高质量的品牌设计资源。
+                We believe every business, regardless of size, should have access to high-quality brand design resources.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -82,9 +82,9 @@ export default function AboutPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">品质</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Quality</h3>
               <p className="text-gray-600">
-                我们坚持设计的卓越标准，确保我们的用户能够获得专业、现代且独特的Logo。
+                We uphold the highest standards of design excellence, ensuring our users receive professional, modern, and unique logos.
               </p>
             </div>
           </div>
@@ -92,29 +92,29 @@ export default function AboutPage() {
 
         <div className="mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
-            我们的技术
+            Our Technology
           </h2>
           <div className="bg-gray-50 p-8 rounded-lg">
             <div className="prose prose-lg max-w-none">
               <p>
-                LogocraftAI结合了多种先进技术，打造无缝的Logo创建体验：
+                LogocraftAI combines multiple advanced technologies to create a seamless logo creation experience:
               </p>
               <ul>
                 <li>
-                  <strong>AI生成模型</strong>：我们使用Replicate API的Flux Pro 1.1模型，这是一种先进的图像生成系统，经过专门微调以创建商业Logo。
+                  <strong>AI Generation Models</strong>: We use Replicate API's Flux Pro 1.1 model, an advanced image generation system specifically fine-tuned to create commercial logos.
                 </li>
                 <li>
-                  <strong>响应式设计工具</strong>：我们的Logo在各种设备和媒体上都能保持清晰锐利，从移动应用到大型广告牌。
+                  <strong>Responsive Design Tools</strong>: Our logos remain crisp and sharp across various devices and media, from mobile apps to large billboards.
                 </li>
                 <li>
-                  <strong>实时编辑</strong>：用户可以即时调整颜色、样式和布局，实时查看更改效果。
+                  <strong>Real-time Editing</strong>: Users can instantly adjust colors, styles, and layouts, seeing changes in real-time.
                 </li>
                 <li>
-                  <strong>云存储</strong>：所有设计都安全存储，用户可以随时返回编辑或下载。
+                  <strong>Cloud Storage</strong>: All designs are securely stored, allowing users to return and edit or download them at any time.
                 </li>
               </ul>
               <p>
-                我们的开发团队持续改进和优化这些技术，确保LogocraftAI始终提供业内最先进的Logo设计体验。
+                Our development team continuously improves and optimizes these technologies, ensuring LogocraftAI always provides the most advanced logo design experience in the industry.
               </p>
             </div>
           </div>
@@ -122,16 +122,16 @@ export default function AboutPage() {
 
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-            准备好创建您的Logo了吗？
+            Ready to Create Your Logo?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            加入成千上万的企业家和品牌经理的行列，使用LogocraftAI创建专业的Logo设计。
+            Join thousands of entrepreneurs and brand managers using LogocraftAI to create professional logo designs.
           </p>
           <a 
             href="/create" 
             className="inline-flex items-center justify-center bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            立即开始设计
+            Start Designing Now
           </a>
         </div>
       </div>

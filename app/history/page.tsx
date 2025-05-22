@@ -36,7 +36,7 @@ export default function HistoryPage() {
   const [previewLogo, setPreviewLogo] = useState<LogoHistory | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   
-  // 从API获取用户的Logo历史
+  // Fetch user's logo history from API
   useEffect(() => {
     const fetchLogoHistory = async () => {
       if (!isSignedIn) {
@@ -49,17 +49,17 @@ export default function HistoryPage() {
         const response = await fetch('/api/user-logos');
         
         if (!response.ok) {
-          throw new Error(`请求失败：${response.status}`);
+          throw new Error(`Request failed: ${response.status}`);
         }
         
         const data = await response.json();
         setLogoHistory(data);
         setLikedLogos(data.filter((logo: LogoHistory) => logo.liked));
       } catch (error) {
-        console.error("获取Logo历史记录失败:", error);
+        console.error("Failed to fetch logo history:", error);
         toast({
-          title: "获取Logo历史记录失败",
-          description: error instanceof Error ? error.message : "请稍后重试",
+          title: "Failed to fetch logo history",
+          description: error instanceof Error ? error.message : "Please try again later",
           variant: "destructive",
         });
       } finally {
@@ -70,17 +70,17 @@ export default function HistoryPage() {
     fetchLogoHistory();
   }, [isSignedIn]);
   
-  // 切换收藏状态
+  // Toggle favorite status
   const toggleLike = async (id: string) => {
     try {
-      // 乐观更新UI
+      // Optimistically update UI
       setLogoHistory(prev => 
         prev.map(logo => 
           logo.id === id ? { ...logo, liked: !logo.liked } : logo
         )
       );
       
-      // 更新收藏列表
+      // Update favorites list
       const updatedHistory = [...logoHistory];
       const logoIndex = updatedHistory.findIndex(logo => logo.id === id);
       const toggledLogo = updatedHistory[logoIndex];
@@ -88,7 +88,7 @@ export default function HistoryPage() {
       if (toggledLogo) {
         const newLikedState = !toggledLogo.liked;
         
-        // 更新API
+        // Update API
         const response = await fetch('/api/user-logos', {
           method: 'PUT',
           headers: {
@@ -101,30 +101,30 @@ export default function HistoryPage() {
         });
         
         if (!response.ok) {
-          throw new Error(`请求失败：${response.status}`);
+          throw new Error(`Request failed: ${response.status}`);
         }
         
-        // 更新收藏列表
+        // Update favorites list
         if (newLikedState) {
-          // 添加到收藏
+          // Add to favorites
           setLikedLogos(prev => [...prev, { ...toggledLogo, liked: true }]);
           toast({
-            title: "已添加到收藏夹",
-            description: "Logo已添加到您的收藏夹",
+            title: "Added to favorites",
+            description: "Logo has been added to your favorites",
           });
         } else {
-          // 从收藏中移除
+          // Remove from favorites
           setLikedLogos(prev => prev.filter(logo => logo.id !== id));
           toast({
-            title: "已从收藏夹移除",
-            description: "Logo已从您的收藏夹中移除",
+            title: "Removed from favorites",
+            description: "Logo has been removed from your favorites",
           });
         }
       }
     } catch (error) {
-      console.error("更新收藏状态失败:", error);
+      console.error("Failed to update favorite status:", error);
       
-      // 回滚UI更改
+      // Rollback UI changes
       setLogoHistory(prev => 
         prev.map(logo => 
           logo.id === id ? { ...logo, liked: !logo.liked } : logo
@@ -132,38 +132,38 @@ export default function HistoryPage() {
       );
       
       toast({
-        title: "更新收藏状态失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "Failed to update favorite status",
+        description: error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
     }
   };
   
-  // 删除Logo
+  // Delete logo
   const deleteLogo = async (id: string) => {
     try {
-      // 乐观更新UI
+      // Optimistically update UI
       const logoToDelete = logoHistory.find(logo => logo.id === id);
       setLogoHistory(prev => prev.filter(logo => logo.id !== id));
       setLikedLogos(prev => prev.filter(logo => logo.id !== id));
       
-      // 调用API删除
+      // Call API to delete
       const response = await fetch(`/api/user-logos?id=${id}`, {
         method: 'DELETE',
       });
       
       if (!response.ok) {
-        throw new Error(`请求失败：${response.status}`);
+        throw new Error(`Request failed: ${response.status}`);
       }
       
       toast({
-        title: "Logo已删除",
-        description: "Logo已从您的历史记录中删除",
+        title: "Logo deleted",
+        description: "Logo has been deleted from your history",
       });
     } catch (error) {
-      console.error("删除Logo失败:", error);
+      console.error("Failed to delete logo:", error);
       
-      // 回滚UI更改
+      // Rollback UI changes
       const logoToRestore = logoHistory.find(logo => logo.id === id);
       if (logoToRestore) {
         setLogoHistory(prev => [...prev, logoToRestore]);
@@ -173,29 +173,29 @@ export default function HistoryPage() {
       }
       
       toast({
-        title: "删除Logo失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "Failed to delete logo",
+        description: error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
     }
   };
   
-  // 预览Logo
+  // Preview logo
   const previewLogoHandler = (logo: LogoHistory) => {
     setPreviewLogo(logo);
     setShowPreview(true);
   };
   
-  // 下载Logo
+  // Download logo
   const downloadLogo = async (logo: LogoHistory, format: 'png' | 'svg' | 'jpg') => {
     try {
       toast({
-        title: `正在下载 ${format.toUpperCase()}`,
-        description: `${logo.companyName} Logo正在下载中...`,
+        title: `Downloading ${format.toUpperCase()}`,
+        description: `${logo.companyName} logo is being downloaded...`,
       });
       
-      // 在实际项目中，这里应该调用下载API
-      // 简单模拟下载过程
+      // In a real project, there should be a download API call here
+      // Simple download simulation
       const response = await fetch(logo.imageUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -208,20 +208,20 @@ export default function HistoryPage() {
       document.body.removeChild(a);
       
       toast({
-        title: "下载成功",
-        description: `${logo.companyName} Logo已下载为${format.toUpperCase()}格式`,
+        title: "Download successful",
+        description: `${logo.companyName} logo has been downloaded in ${format.toUpperCase()} format`,
       });
     } catch (error) {
-      console.error("下载Logo失败:", error);
+      console.error("Failed to download logo:", error);
       toast({
-        title: "下载失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "Download failed",
+        description: error instanceof Error ? error.message : "Please try again later",
         variant: "destructive",
       });
     }
   };
   
-  // 按照选择的方式排序Logo
+  // Sort logos according to selected method
   const sortedLogos = [...logoHistory].sort((a, b) => {
     switch (sortOption) {
       case "newest":
@@ -237,14 +237,14 @@ export default function HistoryPage() {
     }
   });
 
-  // 没有登录时的视图
+  // View when not logged in
   if (!isSignedIn && !loading) {
     return (
       <div className="container mx-auto px-4 py-24 flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold text-center mb-8">Logo历史记录</h1>
-        <p className="text-xl text-center text-gray-600 mb-8">请登录以查看您的Logo历史记录</p>
+        <h1 className="text-4xl font-bold text-center mb-8">Logo History</h1>
+        <p className="text-xl text-center text-gray-600 mb-8">Please log in to view your logo history</p>
         <Button asChild>
-          <Link href="/">返回首页</Link>
+          <Link href="/">Return to Home</Link>
         </Button>
       </div>
     );
@@ -256,10 +256,10 @@ export default function HistoryPage() {
         <Button variant="ghost" asChild className="mr-4">
           <Link href="/">
             <ChevronLeftIcon className="mr-2 h-4 w-4" />
-            返回首页
+            Return to Home
           </Link>
         </Button>
-        <h1 className="text-4xl font-bold">我的Logo</h1>
+        <h1 className="text-4xl font-bold">My Logos</h1>
       </div>
       
       {loading ? (
@@ -271,30 +271,30 @@ export default function HistoryPage() {
           <div className="flex items-center justify-between mb-8">
             <Tabs defaultValue="all" className="w-[400px]">
               <TabsList>
-                <TabsTrigger value="all">所有Logo</TabsTrigger>
-                <TabsTrigger value="favorites">我的收藏</TabsTrigger>
+                <TabsTrigger value="all">All Logos</TabsTrigger>
+                <TabsTrigger value="favorites">My Favorites</TabsTrigger>
               </TabsList>
               <TabsContent value="all">
                 <div className="flex items-center mt-4">
-                  <p className="text-gray-600 mr-4">共 {logoHistory.length} 个Logo</p>
+                  <p className="text-gray-600 mr-4">Total: {logoHistory.length} logos</p>
                   <Select value={sortOption} onValueChange={setSortOption}>
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="排序方式" />
+                      <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="newest">最新优先</SelectItem>
-                      <SelectItem value="oldest">最早优先</SelectItem>
-                      <SelectItem value="nameAZ">公司名称 (A-Z)</SelectItem>
-                      <SelectItem value="nameZA">公司名称 (Z-A)</SelectItem>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="nameAZ">Company Name (A-Z)</SelectItem>
+                      <SelectItem value="nameZA">Company Name (Z-A)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 {logoHistory.length === 0 ? (
                   <div className="text-center py-16">
-                    <p className="text-gray-500 mb-4">您还没有创建任何Logo</p>
+                    <p className="text-gray-500 mb-4">You haven't created any logos yet</p>
                     <Button asChild>
-                      <Link href="/create">创建第一个Logo</Link>
+                      <Link href="/create">Create Your First Logo</Link>
                     </Button>
                   </div>
                 ) : (
@@ -315,12 +315,12 @@ export default function HistoryPage() {
               
               <TabsContent value="favorites">
                 <div className="flex items-center mt-4">
-                  <p className="text-gray-600">共 {likedLogos.length} 个收藏的Logo</p>
+                  <p className="text-gray-600">Total: {likedLogos.length} favorited logos</p>
                 </div>
                 
                 {likedLogos.length === 0 ? (
                   <div className="text-center py-16">
-                    <p className="text-gray-500">您还没有收藏任何Logo</p>
+                    <p className="text-gray-500">You haven't favorited any logos yet</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
@@ -340,13 +340,13 @@ export default function HistoryPage() {
             </Tabs>
             
             <Button asChild className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/create">创建新Logo</Link>
+              <Link href="/create">Create New Logo</Link>
             </Button>
           </div>
         </>
       )}
       
-      {/* Logo预览对话框 */}
+      {/* Logo preview dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-3xl">
           {previewLogo && (
@@ -368,7 +368,7 @@ export default function HistoryPage() {
                   className="flex items-center gap-2"
                 >
                   <DownloadIcon className="h-4 w-4" />
-                  下载PNG
+                  Download PNG
                 </Button>
                 <Button 
                   variant="outline" 
@@ -376,7 +376,7 @@ export default function HistoryPage() {
                   className="flex items-center gap-2"
                 >
                   <DownloadIcon className="h-4 w-4" />
-                  下载SVG
+                  Download SVG
                 </Button>
                 <Button 
                   variant="outline" 
@@ -384,20 +384,20 @@ export default function HistoryPage() {
                   className="flex items-center gap-2"
                 >
                   <DownloadIcon className="h-4 w-4" />
-                  下载JPG
+                  Download JPG
                 </Button>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4 w-full">
                 <div>
-                  <p className="text-sm text-gray-500">创建日期</p>
+                  <p className="text-sm text-gray-500">Created On</p>
                   <p>{new Date(previewLogo.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">风格</p>
+                  <p className="text-sm text-gray-500">Style</p>
                   <p className="capitalize">{previewLogo.style}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">主色</p>
+                  <p className="text-sm text-gray-500">Primary Color</p>
                   <div className="flex items-center">
                     <div 
                       className="w-4 h-4 rounded-full mr-2"
@@ -407,7 +407,7 @@ export default function HistoryPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">背景色</p>
+                  <p className="text-sm text-gray-500">Background Color</p>
                   <div className="flex items-center">
                     <div 
                       className="w-4 h-4 rounded-full mr-2 border border-gray-200"
@@ -425,7 +425,7 @@ export default function HistoryPage() {
   );
 }
 
-// Logo卡片组件
+// Logo card component
 function LogoCard({ 
   logo, 
   onPreview, 
@@ -451,7 +451,7 @@ function LogoCard({
         <CardTitle className="text-lg truncate">{logo.companyName}</CardTitle>
         <CardDescription className="flex justify-between items-center">
           <span>
-            创建于 {new Date(logo.createdAt).toLocaleDateString()}
+            Created on {new Date(logo.createdAt).toLocaleDateString()}
           </span>
           <Button
             variant="ghost"
@@ -478,7 +478,7 @@ function LogoCard({
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
             <Button variant="secondary" size="sm" className="bg-white">
               <EyeIcon className="h-4 w-4 mr-1" />
-              预览
+              Preview
             </Button>
           </div>
         </div>
@@ -488,9 +488,9 @@ function LogoCard({
               className="w-3 h-3 rounded-full mr-1"
               style={{ backgroundColor: logo.primaryColor }}
             ></div>
-            <span>主色</span>
+            <span>Primary</span>
           </div>
-          <div>风格: <span className="capitalize">{logo.style}</span></div>
+          <div>Style: <span className="capitalize">{logo.style}</span></div>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between">
@@ -501,7 +501,7 @@ function LogoCard({
             onClick={() => onPreview(logo)}
           >
             <EyeIcon className="h-4 w-4 mr-1" />
-            预览
+            Preview
           </Button>
           <Button 
             variant="outline" 
@@ -509,7 +509,7 @@ function LogoCard({
             onClick={() => setShowOptions(!showOptions)}
           >
             <DownloadIcon className="h-4 w-4 mr-1" />
-            下载
+            Download
           </Button>
         </div>
         <Button
@@ -525,7 +525,7 @@ function LogoCard({
         </Button>
       </CardFooter>
       
-      {/* 下载选项 */}
+      {/* Download options */}
       {showOptions && (
         <div className="absolute bottom-16 left-4 bg-white rounded-md shadow-lg border border-gray-200 p-2 z-10">
           <Button 
@@ -537,7 +537,7 @@ function LogoCard({
               setShowOptions(false);
             }}
           >
-            PNG格式
+            PNG Format
           </Button>
           <Button 
             variant="ghost" 
@@ -548,7 +548,7 @@ function LogoCard({
               setShowOptions(false);
             }}
           >
-            SVG格式
+            SVG Format
           </Button>
           <Button 
             variant="ghost" 
@@ -559,7 +559,7 @@ function LogoCard({
               setShowOptions(false);
             }}
           >
-            JPG格式
+            JPG Format
           </Button>
         </div>
       )}

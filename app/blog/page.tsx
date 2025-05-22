@@ -4,11 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '博客 | LogocraftAI',
-  description: '发现Logo设计、品牌策略和视觉营销的最新趋势、技巧和最佳实践。',
+  title: 'Blog | LogocraftAI',
+  description: 'Discover the latest trends, tips, and best practices in logo design, brand strategy, and visual marketing.',
 };
 
-// 博客文章类型定义
+// Blog post type definition
 type BlogPost = {
   id: string;
   title: string;
@@ -20,108 +20,108 @@ type BlogPost = {
 };
 
 export default function BlogPage() {
-  // 模拟博客文章数据
+  // Mock blog post data
   const blogPosts: BlogPost[] = [
     {
       id: 'logo-design-trends-2023',
-      title: '2023年Logo设计趋势：简约风格持续流行',
-      excerpt: '探索今年主导设计界的最新Logo趋势，从极简主义到色彩渐变，了解品牌如何适应不断变化的视觉语言。',
+      title: '2023 Logo Design Trends: Minimalist Style Continues to Dominate',
+      excerpt: 'Explore the latest logo trends dominating the design world this year, from minimalism to color gradients, and learn how brands are adapting to evolving visual language.',
       coverImage: '/blog/logo-trends.jpg',
       date: '2023-10-15',
-      readTime: '6分钟',
-      category: '设计趋势'
+      readTime: '6 min',
+      category: 'Design Trends'
     },
     {
       id: 'ai-logo-design',
-      title: 'AI如何革新Logo设计过程',
-      excerpt: '人工智能正在改变设计师的工作方式。了解AI工具如何补充人类创造力，简化设计流程，并为品牌带来新的可能性。',
+      title: 'How AI is Revolutionizing the Logo Design Process',
+      excerpt: 'Artificial intelligence is changing how designers work. Learn how AI tools complement human creativity, streamline design processes, and open new possibilities for brands.',
       coverImage: '/blog/ai-design.jpg',
       date: '2023-09-28',
-      readTime: '8分钟',
-      category: 'AI技术'
+      readTime: '8 min',
+      category: 'AI Technology'
     },
     {
       id: 'logo-psychology',
-      title: 'Logo设计中的心理学：形状与感知',
-      excerpt: '深入探讨不同形状如何影响消费者对品牌的感知，以及如何利用这些心理原理创建更有效的Logo。',
+      title: 'The Psychology of Logo Design: Shapes and Perception',
+      excerpt: 'Dive deep into how different shapes influence consumer perception of brands and how to leverage these psychological principles to create more effective logos.',
       coverImage: '/blog/logo-psychology.jpg',
       date: '2023-09-12',
-      readTime: '7分钟',
-      category: '设计心理学'
+      readTime: '7 min',
+      category: 'Design Psychology'
     },
     {
       id: 'rebranding-success',
-      title: '成功品牌重塑的5个案例研究',
-      excerpt: '分析五个知名品牌如何通过Logo和品牌视觉形象的重新设计成功实现品牌转型，以及我们能从中学到什么。',
+      title: '5 Case Studies of Successful Rebranding',
+      excerpt: 'Analyze how five well-known brands successfully transformed through logo and visual identity redesigns, and what we can learn from their approaches.',
       coverImage: '/blog/rebranding.jpg',
       date: '2023-08-25',
-      readTime: '10分钟',
-      category: '案例研究'
+      readTime: '10 min',
+      category: 'Case Studies'
     },
     {
       id: 'logo-versatility',
-      title: '如何设计适应各种媒介的多功能Logo',
-      excerpt: '从社交媒体头像到大型广告牌，了解如何创建在各种大小和背景下都能保持效果的灵活Logo设计。',
+      title: 'How to Design Versatile Logos for Various Media',
+      excerpt: 'From social media avatars to large billboards, learn how to create flexible logo designs that remain effective across different sizes and backgrounds.',
       coverImage: '/blog/versatile-logo.jpg',
       date: '2023-08-10',
-      readTime: '5分钟',
-      category: '设计技巧'
+      readTime: '5 min',
+      category: 'Design Tips'
     },
     {
       id: 'color-theory',
-      title: 'Logo设计中的色彩理论基础',
-      excerpt: '掌握色彩心理学和色彩组合的基本原则，学习如何选择能有效传达品牌信息的颜色方案。',
+      title: 'Fundamentals of Color Theory in Logo Design',
+      excerpt: 'Master the basic principles of color psychology and color combinations, learning how to choose color schemes that effectively communicate your brand message.',
       coverImage: '/blog/color-theory.jpg',
       date: '2023-07-22',
-      readTime: '9分钟',
-      category: '色彩理论'
+      readTime: '9 min',
+      category: 'Color Theory'
     }
   ];
 
-  // 格式化日期函数
+  // Format date function
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('zh-CN', options);
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   return (
     <main className="container mx-auto px-4 py-12">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">LogocraftAI博客</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">LogocraftAI Blog</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            探索Logo设计、品牌策略和视觉营销的最新见解和专业知识
+            Explore the latest insights and expertise in logo design, brand strategy, and visual marketing
           </p>
         </div>
 
-        {/* 分类导航 */}
+        {/* Category navigation */}
         <div className="flex justify-center flex-wrap gap-2 mb-10">
           <button className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-            全部
+            All
           </button>
           <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            设计趋势
+            Design Trends
           </button>
           <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            AI技术
+            AI Technology
           </button>
           <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            设计技巧
+            Design Tips
           </button>
           <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            案例研究
+            Case Studies
           </button>
         </div>
 
-        {/* 博客文章列表 */}
+        {/* Blog post list */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogPosts.map((post) => (
             <article key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
               <div className="relative h-48">
                 <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">图片加载中</span>
+                  <span className="text-gray-400">Loading image</span>
                 </div>
-                {/* 注意：在实际项目中，确保这些图片文件存在 */}
+                {/* Note: In a real project, ensure these image files exist */}
                 {/* <Image
                   src={post.coverImage}
                   alt={post.title}
@@ -146,7 +146,7 @@ export default function BlogPage() {
                   {post.excerpt}
                 </p>
                 <Link href={`/blog/${post.id}`} className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors">
-                  阅读更多
+                  Read More
                   <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
@@ -156,11 +156,11 @@ export default function BlogPage() {
           ))}
         </div>
 
-        {/* 分页 */}
+        {/* Pagination */}
         <div className="flex justify-center mt-12">
           <nav className="inline-flex rounded-md shadow">
             <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-l-md">
-              上一页
+              Previous
             </a>
             <a href="#" className="py-2 px-4 bg-blue-600 text-white font-medium border border-blue-600">
               1
@@ -172,7 +172,7 @@ export default function BlogPage() {
               3
             </a>
             <a href="#" className="py-2 px-4 bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md">
-              下一页
+              Next
             </a>
           </nav>
         </div>
