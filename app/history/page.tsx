@@ -261,14 +261,14 @@ export default function HistoryPage() {
       <Header />
       
       <div className="container mx-auto px-4 py-24 pt-32">
-        <div className="flex items-center mb-8">
-          <Button variant="ghost" asChild className="mr-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 mb-8">
+          <Button variant="ghost" asChild className="mr-2 h-9 px-2 md:px-4 w-fit">
             <Link href="/">
-              <ChevronLeftIcon className="mr-2 h-4 w-4" />
-              Return to Home
+              <ChevronLeftIcon className="h-4 w-4 mr-2" />
+              <span>Home</span>
             </Link>
           </Button>
-          <h1 className="text-4xl font-bold">My Logos</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">My Logos</h1>
         </div>
         
         {loading ? (
@@ -277,37 +277,39 @@ export default function HistoryPage() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-8">
-              <Tabs defaultValue="all" className="w-[400px]">
-                <TabsList>
-                  <TabsTrigger value="all">All Logos</TabsTrigger>
-                  <TabsTrigger value="favorites">My Favorites</TabsTrigger>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+              <Tabs defaultValue="all" className="w-full md:w-auto">
+                <TabsList className="w-full md:w-auto grid grid-cols-2">
+                  <TabsTrigger value="all" className="rounded-md">All Logos</TabsTrigger>
+                  <TabsTrigger value="favorites" className="rounded-md">My Favorites</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all">
-                  <div className="flex items-center mt-4">
-                    <p className="text-gray-600 mr-4">Total: {logoHistory.length} logos</p>
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Sort by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="newest">Newest First</SelectItem>
-                        <SelectItem value="oldest">Oldest First</SelectItem>
-                        <SelectItem value="nameAZ">Company Name (A-Z)</SelectItem>
-                        <SelectItem value="nameZA">Company Name (Z-A)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
+                    <p className="text-sm text-gray-600">Total: {logoHistory.length} logos</p>
+                    <div className="flex-1 sm:max-w-[180px]">
+                      <Select value={sortOption} onValueChange={setSortOption}>
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="newest">Newest First</SelectItem>
+                          <SelectItem value="oldest">Oldest First</SelectItem>
+                          <SelectItem value="nameAZ">Company Name (A-Z)</SelectItem>
+                          <SelectItem value="nameZA">Company Name (Z-A)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   
                   {logoHistory.length === 0 ? (
-                    <div className="text-center py-16">
+                    <div className="text-center py-12 bg-gray-50 rounded-lg mt-6">
                       <p className="text-gray-500 mb-4">You haven't created any logos yet</p>
-                      <Button asChild>
+                      <Button asChild className="bg-blue-600 hover:bg-blue-700">
                         <Link href="/create">Create Your First Logo</Link>
                       </Button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
                       {sortedLogos.map((logo) => (
                         <LogoCard 
                           key={logo.id}
@@ -324,15 +326,15 @@ export default function HistoryPage() {
                 
                 <TabsContent value="favorites">
                   <div className="flex items-center mt-4">
-                    <p className="text-gray-600">Total: {likedLogos.length} favorited logos</p>
+                    <p className="text-sm text-gray-600">Total: {likedLogos.length} favorited logos</p>
                   </div>
                   
                   {likedLogos.length === 0 ? (
-                    <div className="text-center py-16">
+                    <div className="text-center py-12 bg-gray-50 rounded-lg mt-6">
                       <p className="text-gray-500">You haven't favorited any logos yet</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
                       {likedLogos.map((logo) => (
                         <LogoCard 
                           key={logo.id}
@@ -348,7 +350,7 @@ export default function HistoryPage() {
                 </TabsContent>
               </Tabs>
               
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Button asChild className="bg-blue-600 hover:bg-blue-700 shrink-0 w-full md:w-auto">
                 <Link href="/create">Create New Logo</Link>
               </Button>
             </div>
@@ -357,69 +359,72 @@ export default function HistoryPage() {
         
         {/* Logo preview dialog */}
         <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-lg">
             {previewLogo && (
               <div className="flex flex-col items-center">
-                <h2 className="text-2xl font-bold mb-4">{previewLogo.companyName}</h2>
-                <div className="relative w-full aspect-square mb-6">
+                <h2 className="text-xl font-bold mb-4">{previewLogo.companyName}</h2>
+                <div className="relative w-full aspect-square mb-4 bg-gray-50 rounded-lg overflow-hidden">
                   <Image
                     src={previewLogo.imageUrl}
                     alt={previewLogo.companyName}
                     fill
-                    className="object-contain"
+                    className="object-contain p-4"
                     unoptimized
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <div className="flex flex-wrap gap-2 w-full justify-center mb-2">
                   <Button 
                     variant="outline" 
                     onClick={() => downloadLogo(previewLogo, 'png')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1.5 h-9 text-sm"
+                    size="sm"
                   >
-                    <DownloadIcon className="h-4 w-4" />
-                    Download PNG
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                    PNG
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => downloadLogo(previewLogo, 'svg')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1.5 h-9 text-sm"
+                    size="sm"
                   >
-                    <DownloadIcon className="h-4 w-4" />
-                    Download SVG
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                    SVG
                   </Button>
                   <Button 
                     variant="outline" 
                     onClick={() => downloadLogo(previewLogo, 'jpg')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-1.5 h-9 text-sm"
+                    size="sm"
                   >
-                    <DownloadIcon className="h-4 w-4" />
-                    Download JPG
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                    JPG
                   </Button>
                 </div>
-                <div className="mt-6 grid grid-cols-2 gap-4 w-full">
-                  <div>
-                    <p className="text-sm text-gray-500">Created On</p>
+                <div className="mt-4 grid grid-cols-2 gap-3 w-full text-sm">
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-500 mb-1">Created On</p>
                     <p>{new Date(previewLogo.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Style</p>
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-500 mb-1">Style</p>
                     <p className="capitalize">{previewLogo.style}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Primary Color</p>
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-500 mb-1">Primary Color</p>
                     <div className="flex items-center">
                       <div 
-                        className="w-4 h-4 rounded-full mr-2"
+                        className="w-3 h-3 rounded-full mr-1.5"
                         style={{ backgroundColor: previewLogo.primaryColor }}
                       ></div>
                       {previewLogo.primaryColor}
                     </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Background Color</p>
+                  <div className="p-2 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-500 mb-1">Background Color</p>
                     <div className="flex items-center">
                       <div 
-                        className="w-4 h-4 rounded-full mr-2 border border-gray-200"
+                        className="w-3 h-3 rounded-full mr-1.5 border border-gray-200"
                         style={{ backgroundColor: previewLogo.backgroundColor }}
                       ></div>
                       {previewLogo.backgroundColor}
@@ -453,49 +458,62 @@ function LogoCard({
 }) {
   const [showOptions, setShowOptions] = useState(false);
   
+  // 格式化日期为更简洁的格式 (YYYY-MM-DD)
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-lg border border-gray-200 overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow"
+      className="relative rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col h-full"
     >
-      <CardHeader className="p-4 pb-0">
-        <CardTitle className="text-lg truncate">{logo.companyName}</CardTitle>
-        <CardDescription className="flex justify-between items-center">
-          <span>
-            Created on {new Date(logo.createdAt).toLocaleDateString()}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-8 w-8 rounded-full ${logo.liked ? 'text-red-500' : 'text-gray-400'}`}
-            onClick={() => onLike(logo.id)}
-          >
-            <HeartIcon className={`h-5 w-5 ${logo.liked ? 'fill-current' : ''}`} />
-          </Button>
-        </CardDescription>
+      <CardHeader className="p-4 pb-2 flex flex-row justify-between items-start">
+        <div>
+          <CardTitle className="text-lg font-medium">{logo.companyName}</CardTitle>
+          <CardDescription className="text-xs text-gray-500 mt-1">
+            Created on {formatDate(logo.createdAt)}
+          </CardDescription>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`h-8 w-8 rounded-full ${logo.liked ? 'text-red-500' : 'text-gray-400'}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLike(logo.id);
+          }}
+        >
+          <HeartIcon className={`h-5 w-5 ${logo.liked ? 'fill-current' : ''}`} />
+        </Button>
       </CardHeader>
+      
       <CardContent 
-        className="p-4 cursor-pointer relative"
+        className="p-4 pt-2 pb-2 cursor-pointer flex-grow"
         onClick={() => onPreview(logo)}
       >
-        <div className="relative w-full h-44 bg-gray-50 rounded-md mb-2">
-          <Image
-            src={logo.imageUrl}
-            alt={logo.companyName}
-            fill
-            className="object-contain p-4"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
-            <Button variant="secondary" size="sm" className="bg-white">
-              <EyeIcon className="h-4 w-4 mr-1" />
-              Preview
-            </Button>
+        <div className="bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center aspect-square mb-3">
+          <div className="relative w-full h-full">
+            <Image
+              src={logo.imageUrl}
+              alt={logo.companyName}
+              fill
+              className="object-contain p-4"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-5 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+              <Button variant="secondary" size="sm" className="bg-white shadow-sm">
+                <EyeIcon className="h-4 w-4 mr-1" />
+                Preview
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="flex items-center text-sm text-gray-500 mt-2">
-          <div className="flex items-center mr-4">
+        
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center">
             <div 
               className="w-3 h-3 rounded-full mr-1"
               style={{ backgroundColor: logo.primaryColor }}
@@ -505,29 +523,38 @@ function LogoCard({
           <div>Style: <span className="capitalize">{logo.style}</span></div>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex justify-between">
+      
+      <CardFooter className="p-3 pt-2 flex justify-between items-center border-t border-gray-100 mt-auto">
         <div className="flex space-x-2">
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => onPreview(logo)}
+            className="h-8 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview(logo);
+            }}
           >
-            <EyeIcon className="h-4 w-4 mr-1" />
+            <EyeIcon className="h-3.5 w-3.5 mr-1" />
             Preview
           </Button>
           <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowOptions(!showOptions)}
+            variant="outline"
+            size="sm" 
+            className="h-8 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowOptions(!showOptions);
+            }}
           >
-            <DownloadIcon className="h-4 w-4 mr-1" />
+            <DownloadIcon className="h-3.5 w-3.5 mr-1" />
             Download
           </Button>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-gray-500 hover:text-red-500"
+          className="h-8 w-8 text-gray-400 hover:text-red-500"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(logo.id);
@@ -543,8 +570,9 @@ function LogoCard({
           <Button 
             variant="ghost" 
             size="sm"
-            className="w-full justify-start"
-            onClick={() => {
+            className="w-full justify-start text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
               onDownload(logo, 'png');
               setShowOptions(false);
             }}
@@ -554,8 +582,9 @@ function LogoCard({
           <Button 
             variant="ghost" 
             size="sm"
-            className="w-full justify-start"
-            onClick={() => {
+            className="w-full justify-start text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
               onDownload(logo, 'svg');
               setShowOptions(false);
             }}
@@ -565,8 +594,9 @@ function LogoCard({
           <Button 
             variant="ghost" 
             size="sm"
-            className="w-full justify-start"
-            onClick={() => {
+            className="w-full justify-start text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
               onDownload(logo, 'jpg');
               setShowOptions(false);
             }}
