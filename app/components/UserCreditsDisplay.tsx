@@ -16,14 +16,14 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
   const [resetting, setResetting] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // 获取用户额度信息
+  // Fetch user credits information
   const fetchUserCredits = useCallback(async (forceRefresh = false) => {
     if (!isSignedIn || !user) return;
     
     try {
       setLoading(true);
       
-      // 直接从API获取最新额度信息
+      // Get latest credits info directly from API
       const queryParams = new URLSearchParams({
         userId: user.id,
         ...(forceRefresh ? { forceRefresh: 'true' } : {})
@@ -32,29 +32,29 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
       const response = await fetch(`/api/user-credits?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        console.log("获取到用户额度数据:", data);
+        console.log("Received user credits data:", data);
         setRemainingCredits(data.remainingCredits);
         setLastRefreshed(Date.now());
       } else {
-        console.error(`API请求失败: ${response.status}`);
-        throw new Error(`API请求失败: ${response.status}`);
+        console.error(`API request failed: ${response.status}`);
+        throw new Error(`API request failed: ${response.status}`);
       }
     } catch (error) {
-      console.error("获取用户额度失败:", error);
+      console.error("Failed to fetch user credits:", error);
       
-      // 如果API请求失败，尝试从元数据中获取
+      // If API request fails, try to get from metadata
       if (user.unsafeMetadata) {
         const metadata = user.unsafeMetadata as { remaining?: number };
         if (metadata && typeof metadata.remaining === 'number') {
-          console.log("从用户元数据获取额度:", metadata.remaining);
+          console.log("Getting credits from user metadata:", metadata.remaining);
           setRemainingCredits(metadata.remaining);
         } else {
-          // 如果元数据也没有，设置默认额度
-          console.log("未找到用户额度信息，使用默认值3");
+          // If metadata doesn't have it either, set default credits
+          console.log("No user credits information found, using default value 3");
           setRemainingCredits(3);
         }
       } else {
-        console.log("用户元数据不存在，使用默认值3");
+        console.log("User metadata doesn't exist, using default value 3");
         setRemainingCredits(3);
       }
     } finally {
@@ -63,40 +63,40 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     }
   }, [isSignedIn, user]);
 
-  // 组件挂载和用户信息变化时获取额度
+  // Fetch credits when component mounts and user info changes
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      console.log("用户已登录，获取额度信息");
-      fetchUserCredits(true); // 首次加载强制刷新
+      console.log("User is logged in, fetching credits info");
+      fetchUserCredits(true); // Force refresh on first load
     }
   }, [isLoaded, isSignedIn, user?.id, fetchUserCredits]);
 
-  // 添加事件监听器，响应刷新用户额度的请求
+  // Add event listener to respond to refresh user credits requests
   useEffect(() => {
-    // 定义事件处理函数
+    // Define event handler
     const handleRefreshEvent = (event: CustomEvent) => {
-      console.log("收到刷新用户额度事件");
+      console.log("Received refresh user credits event");
       const forceRefresh = event.detail?.forceRefresh === true;
       fetchUserCredits(forceRefresh);
     };
 
-    // 添加事件监听器
+    // Add event listener
     window.addEventListener('refreshUserCredits', handleRefreshEvent as EventListener);
 
-    // 清理函数
+    // Cleanup function
     return () => {
       window.removeEventListener('refreshUserCredits', handleRefreshEvent as EventListener);
     };
   }, [fetchUserCredits]);
 
-  // 每30秒刷新一次额度信息
+  // Refresh credits every 30 seconds
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     
     const intervalId = setInterval(() => {
-      // 仅在最后刷新时间超过30秒时刷新
+      // Only refresh if last refresh was more than 30 seconds ago
       if (Date.now() - lastRefreshed > 30000) {
-        console.log("自动刷新用户额度信息");
+        console.log("Auto-refreshing user credits info");
         fetchUserCredits();
       }
     }, 30000);
@@ -104,80 +104,80 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     return () => clearInterval(intervalId);
   }, [isLoaded, isSignedIn, lastRefreshed, fetchUserCredits]);
 
-  // 点击刷新按钮时强制刷新
+  // Force refresh when refresh button is clicked
   const handleRefreshClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (refreshing || loading || resetting) return;
     
-    console.log("手动刷新用户额度信息");
+    console.log("Manually refreshing user credits info");
     setRefreshing(true);
     await fetchUserCredits(true);
   };
 
-  // 重置用户额度
+  // Reset user credits
   const resetUserCredits = async () => {
     if (!isSignedIn || !user || refreshing || loading || resetting) return;
     
     try {
       setResetting(true);
       
-      // 调用API重置用户额度
+      // Call API to reset user credits
       const queryParams = new URLSearchParams({
         userId: user.id,
         resetCredits: 'true'
       });
       
-      console.log("重置用户额度");
+      console.log("Resetting user credits");
       const response = await fetch(`/api/user-credits?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        console.log("重置用户额度成功:", data);
+        console.log("Reset user credits successful:", data);
         setRemainingCredits(data.remainingCredits);
         setLastRefreshed(Date.now());
         
-        // 显示重置成功的提示
+        // Show reset success notification
         if (typeof window !== 'undefined' && 'toast' in window) {
           // @ts-ignore
           window.toast?.({
-            title: "额度已重置",
-            description: `您的Logo生成额度已重置为${data.remainingCredits}次`,
+            title: "Credits Reset",
+            description: `Your logo generation credits have been reset to ${data.remainingCredits}`,
           });
         } else {
-          alert(`额度已重置为${data.remainingCredits}次`);
+          alert(`Credits reset to ${data.remainingCredits}`);
         }
       } else {
         const errorData = await response.json();
-        console.error("重置用户额度失败:", errorData);
-        throw new Error(errorData.message || "重置用户额度失败");
+        console.error("Failed to reset user credits:", errorData);
+        throw new Error(errorData.message || "Failed to reset user credits");
       }
     } catch (error) {
-      console.error("重置用户额度出错:", error);
+      console.error("Error resetting user credits:", error);
       
-      // 显示错误提示
+      // Show error notification
       if (typeof window !== 'undefined' && 'toast' in window) {
         // @ts-ignore
         window.toast?.({
           variant: "destructive",
-          title: "重置失败",
-          description: error instanceof Error ? error.message : "重置用户额度失败",
+          title: "Reset Failed",
+          description: error instanceof Error ? error.message : "Failed to reset user credits",
         });
       } else {
-        alert("重置用户额度失败");
+        alert("Failed to reset user credits");
       }
     } finally {
       setResetting(false);
     }
   };
   
-  // 处理长按事件
+  // Handle long press event
   const handleTouchStart = () => {
     if (refreshing || loading || resetting) return;
     
     const timer = setTimeout(() => {
-      // 长按3秒触发重置
-      console.log("长按触发重置额度");
+      // Trigger reset after 3 seconds of long press
+      console.log("Long press triggered reset");
       resetUserCredits();
     }, 3000);
     
@@ -191,11 +191,11 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
     }
   };
   
-  // 处理双击事件
+  // Handle double click event
   const handleDoubleClick = () => {
     if (refreshing || loading || resetting) return;
     
-    console.log("双击触发重置额度");
+    console.log("Double click triggered reset");
     resetUserCredits();
   };
 
@@ -215,10 +215,10 @@ export default function UserCreditsDisplay({ className }: UserCreditsDisplayProp
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onDoubleClick={handleDoubleClick}
-      title={resetting ? "正在重置额度..." : "点击刷新额度信息 (双击或长按3秒重置额度)"}
+      title={resetting ? "Resetting credits..." : "Click to refresh credits (double-click or long press for 3 seconds to reset)"}
     >
       <Sparkles className={cn("h-4 w-4", resetting ? "text-red-500" : "text-blue-500")} />
-      <span>剩余额度: {remainingCredits}</span>
+      <span>Credits: {remainingCredits}</span>
       {refreshing ? (
         <RefreshCw className="h-3 w-3 text-blue-500 animate-spin ml-1" />
       ) : resetting ? (

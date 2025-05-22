@@ -5,7 +5,7 @@ import { Instagram, Twitter, Facebook, Github } from "lucide-react";
 export default function Footer() {
   const pathname = usePathname();
   
-  // 不在创建页面显示页脚
+  // Don't show footer on the create page
   if (pathname === "/create") {
     return null;
   }
@@ -26,37 +26,37 @@ export default function Footer() {
               </div>
             </Link>
             <p className="mt-4 text-gray-600 text-sm">
-              强大的AI驱动Logo生成工具，帮助您在几分钟内创建专业级Logo设计。
+              Powerful AI-driven logo generation tool that helps you create professional-level logo designs in minutes.
             </p>
           </div>
           
           <div className="col-span-1">
-            <h3 className="text-gray-900 font-semibold mb-4">产品</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Product</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  价格方案
+                  Pricing
                 </Link>
               </li>
             </ul>
           </div>
           
           <div className="col-span-1">
-            <h3 className="text-gray-900 font-semibold mb-4">公司</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  关于我们
+                  About Us
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  博客
+                  Blog
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
-                  联系我们
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -65,7 +65,7 @@ export default function Footer() {
         
         <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-600 text-sm">
-            © {currentYear} LogoCreator AI. 保留所有权利。
+            © {currentYear} LogoCreator AI. All rights reserved.
           </p>
           
           <div className="flex space-x-4 mt-4 md:mt-0">

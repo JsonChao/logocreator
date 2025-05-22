@@ -14,7 +14,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   
-  // 动态粒子效果 (简化版本)
+  // Dynamic particle effect (simplified version)
   const Particles = () => {
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -36,7 +36,7 @@ export default function LandingPage() {
     );
   };
   
-  // 浮动元素
+  // Floating elements
   const FloatingElements = () => {
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -58,7 +58,7 @@ export default function LandingPage() {
     router.push("/pricing");
   };
   
-  // 用户评价
+  // User testimonials
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -90,7 +90,7 @@ export default function LandingPage() {
     },
   ];
   
-  // 自动切换评价
+  // Auto-switch testimonials
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
@@ -98,7 +98,7 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, [testimonials.length]);
   
-  // Logo样式展示
+  // Logo style showcase
   const logoStyles = [
     {
       name: "Modern",
@@ -132,7 +132,7 @@ export default function LandingPage() {
     },
   ];
   
-  // 产品特点
+  // Product features
   const features = [
     {
       title: "AI-Powered Logo Generation",
@@ -166,7 +166,7 @@ export default function LandingPage() {
     },
   ];
   
-  // 使用步骤
+  // Usage steps
   const steps = [
     {
       number: "01",
@@ -194,7 +194,7 @@ export default function LandingPage() {
     },
   ];
   
-  // 常见问题
+  // Frequently asked questions
   const faqs = [
     {
       question: "How does the AI logo generator work?",
@@ -222,7 +222,7 @@ export default function LandingPage() {
     },
   ];
   
-  // 价格计划简介
+  // Pricing plans overview
   const pricingPlans = [
     {
       name: "BASIC PLAN",
@@ -294,33 +294,32 @@ export default function LandingPage() {
                 className="text-center lg:text-left"
               >
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                  使用 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">AI</span> 创建精美Logo
+                  Create Beautiful Logos with <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">AI</span>
                 </h1>
                 <p className="text-xl text-gray-600 mb-8">
-                  通过人工智能在几秒钟内生成专业级别的Logo设计，完全自定义且高质量
+                  Generate professional-level logo designs in seconds with artificial intelligence, fully customizable and high quality
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <Link href="/create">
                     <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-6 text-lg font-medium rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all">
-                      开始创建Logo
+                      Start Creating
                     </Button>
                   </Link>
                 </div>
-              <div className="mt-8 flex items-center justify-center lg:justify-start">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden">
-                      <Image src={`/avatars/avatar${i}.webp`} alt="User" width={40} height={40} />
-                    </div>
-                  ))}
+                <div className="mt-8 flex items-center justify-center lg:justify-start">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden">
+                        <Image src={`/avatars/avatar${i}.webp`} alt="User" width={40} height={40} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="ml-4 text-sm text-gray-600">
+                    <span className="font-semibold text-gray-900">4.9/5</span> from 2,000+ reviews
+                  </div>
                 </div>
-                <div className="ml-4 text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">4.9/5</span> from 2,000+ reviews
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* ... rest of the code ... */}
+              </motion.div>
+            </div>
           </div>
         </section>
         

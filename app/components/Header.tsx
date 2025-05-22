@@ -22,11 +22,11 @@ export default function Header({ className = "" }: { className?: string }) {
   const links = [
     {
       href: "/pricing",
-      label: "价格",
+      label: "Pricing",
     },
     {
       href: "/about",
-      label: "关于我们",
+      label: "About Us",
     },
   ];
 
@@ -82,7 +82,7 @@ export default function Header({ className = "" }: { className?: string }) {
                 className="font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-blue-50 flex items-center gap-1"
               >
                 <History className="h-4 w-4" />
-                我的Logo
+                My Logos
               </Link>
             )}
 
@@ -104,7 +104,7 @@ export default function Header({ className = "" }: { className?: string }) {
                   <Button 
                     className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white shadow-md hover:shadow-lg"
                   >
-                    登录
+                    Sign In
                   </Button>
                 </SignInButton>
               )}
@@ -160,7 +160,7 @@ export default function Header({ className = "" }: { className?: string }) {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <History className="h-4 w-4" />
-                    我的Logo
+                    My Logos
                   </Link>
                 )}
               </div>
@@ -169,7 +169,7 @@ export default function Header({ className = "" }: { className?: string }) {
             {isSignedIn ? (
               <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200">
                 <div className="text-sm font-medium text-gray-500">
-                  已登录
+                  Signed In
                 </div>
                 <UserButton afterSignOutUrl="/" />
               </div>
@@ -177,7 +177,7 @@ export default function Header({ className = "" }: { className?: string }) {
               <div className="px-4 py-4 border-t border-gray-200">
                 <SignInButton mode="modal">
                   <Button className="w-full bg-gradient-to-r from-blue-600 to-violet-600">
-                    登录
+                    Sign In
                   </Button>
                 </SignInButton>
               </div>
