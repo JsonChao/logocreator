@@ -1,66 +1,132 @@
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Github, Twitter, Heart } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Instagram, Twitter, Facebook, Github } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+  
+  // 不在创建页面显示页脚
+  if (pathname === "/create") {
+    return null;
+  }
+  
+  const currentYear = new Date().getFullYear();
+  
   return (
-    <footer className="mt-auto border-t border-gray-100 bg-white">
+    <footer className="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-gray-900">LogocraftAI</h3>
-            <p className="text-gray-600 text-sm">
-              Transform your brand with AI-powered logo creation. Professional, unique logos in seconds.
+          <div className="col-span-1 md:col-span-1">
+            <Link href="/" className="flex items-center">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+                LogoCreator
+              </span>
+              <div className="ml-1 py-1 px-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold rounded">
+                AI
+              </div>
+            </Link>
+            <p className="mt-4 text-gray-600 text-sm">
+              强大的AI驱动Logo生成工具，帮助您在几分钟内创建专业级Logo设计。
             </p>
-            <div className="flex space-x-4 pt-2">
-              <a href="#" aria-label="Github" className="text-gray-400 hover:text-gray-900 transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" aria-label="Twitter" className="text-gray-400 hover:text-blue-500 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-            </div>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900 mb-4">Product</h3>
-            <ul className="space-y-2 text-gray-600">
-              <li><Link href="/create" className="hover:text-blue-600 transition-colors">Create Logo</Link></li>
-              <li><Link href="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Examples</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Testimonials</a></li>
+          <div className="col-span-1">
+            <h3 className="text-gray-900 font-semibold mb-4">产品</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/styles" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Logo样式库
+                </Link>
+              </li>
+              <li>
+                <Link href="/examples" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  成功案例
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  价格方案
+                </Link>
+              </li>
+              <li>
+                <Link href="/api" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  API接口
+                </Link>
+              </li>
             </ul>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900 mb-4">Resources</h3>
-            <ul className="space-y-2 text-gray-600">
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Logo Design Guide</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Brand Identity Tips</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Color Psychology</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Blog</a></li>
+          <div className="col-span-1">
+            <h3 className="text-gray-900 font-semibold mb-4">公司</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  关于我们
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  博客
+                </Link>
+              </li>
+              <li>
+                <Link href="/careers" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  招聘
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  联系我们
+                </Link>
+              </li>
             </ul>
           </div>
           
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900 mb-4">Company</h3>
-            <ul className="space-y-2 text-gray-600">
-              <li><a href="#" className="hover:text-blue-600 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Contact</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Terms of Service</a></li>
+          <div className="col-span-1">
+            <h3 className="text-gray-900 font-semibold mb-4">法律</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/terms" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  服务条款
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  隐私政策
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  Cookie政策
+                </Link>
+              </li>
+              <li>
+                <Link href="/licenses" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  许可证
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
         
-        <div className="border-t border-gray-100 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} LogocraftAI. All rights reserved.
+        <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-gray-600 text-sm">
+            © {currentYear} LogoCreator AI. 保留所有权利。
           </p>
-          <div className="flex items-center mt-4 md:mt-0">
-            <span className="text-gray-500 text-sm flex items-center">
-              Made with <Heart className="h-4 w-4 text-red-500 mx-1" /> in California
-            </span>
+          
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-500 transition-colors">
+              <Twitter className="h-5 w-5" />
+            </a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-500 transition-colors">
+              <Facebook className="h-5 w-5" />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-500 transition-colors">
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 transition-colors">
+              <Github className="h-5 w-5" />
+            </a>
           </div>
         </div>
       </div>

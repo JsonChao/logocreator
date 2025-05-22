@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { ArrowRight, Check, Download, Star, Zap, Clock, Layout, Palette, Shield, Gift } from "lucide-react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -224,33 +225,132 @@ export default function LandingPage() {
   // 价格计划简介
   const pricingPlans = [
     {
-      name: "Free",
-      price: "$0",
-      description: "Basic logo creation for personal projects",
-      features: ["Standard resolution", "PNG format", "Limited style options", "Basic customization"],
-      cta: "Start Free",
+      name: "BASIC PLAN",
+      price: "US$4.99",
+      tokens: 100,
+      description: "Perfect for first-time logo creation with no need for bulk generation",
+      idealFor: "Ideal for exploring AI logo creation without bulk generation needs",
+      features: [
+        "Generate standard resolution logos",
+        "Export without watermarks",
+        "PNG and JPG format downloads",
+        "Basic style selection"
+      ],
+      cta: "Purchase",
       ctaAction: navigateToCreate,
       highlight: false
     },
     {
-      name: "Premium",
-      price: "$29",
-      description: "Professional logo for small businesses",
-      features: ["High resolution", "PNG, JPG, SVG formats", "All style options", "Full customization", "Commercial usage rights"],
-      cta: "Get Premium",
+      name: "INTERMEDIATE PLAN",
+      price: "US$15.99",
+      tokens: 350,
+      description: "More generations for regular users",
+      idealFor: "Perfect for users who need to create logos frequently",
+      features: [
+        "Generate high-resolution logos",
+        "Export without watermarks",
+        "PNG, JPG and SVG format downloads",
+        "More style options",
+        "Priority generation queue"
+      ],
+      cta: "Purchase",
       ctaAction: navigateToPricing,
       highlight: true
     },
     {
-      name: "Enterprise",
-      price: "$99",
-      description: "Complete branding solution",
-      features: ["Maximum resolution", "All file formats", "Priority generation", "Brand guidelines PDF", "Multiple variations", "Business card design"],
-      cta: "View Details",
+      name: "ADVANCED PLAN",
+      price: "US$34.99",
+      tokens: 900,
+      description: "Maximum generation capacity for professional users",
+      idealFor: "Designed for professionals who need bulk logo creation",
+      features: [
+        "Generate ultra-high resolution logos",
+        "Export without watermarks",
+        "All format downloads",
+        "All styles and features",
+        "Highest priority generation queue",
+        "Batch generation capability"
+      ],
+      cta: "Purchase",
       ctaAction: navigateToPricing,
       highlight: false
     },
   ];
+
+  // 生成Logo的函数，在用户点击"生成Logo"按钮时调用
+  const handleGenerateLogo = async () => {
+    if (wizardData.isLoading) return;
+    
+    try {
+      setWizardData({ ...wizardData, isLoading: true, errorMessage: undefined });
+      
+      // 构建请求体
+      const requestBody = {
+        companyName: wizardData.companyName,
+        selectedStyle: wizardData.style,
+        selectedPrimaryColor: wizardData.customPrimaryColor || getColorFromScheme(wizardData.primaryColor)?.primaryColor || "#000000",
+        selectedBackgroundColor: wizardData.customBackgroundColor || getColorFromScheme(wizardData.primaryColor)?.backgroundColor || "#FFFFFF",
+        additionalInfo: [
+          wizardData.additionalInfo,
+          wizardData.industry ? `Industry: ${wizardData.industry}` : "",
+          wizardData.fontStyle ? `Font style: ${wizardData.fontStyle}` : ""
+        ].filter(Boolean).join(". "),
+        width: wizardData.size.width,
+        height: wizardData.size.height,
+        logoCount: wizardData.logoCount || 6, // 确保包含要生成的Logo数量
+      };
+      
+      console.log("发送Logo生成请求:", requestBody);
+      
+      // 调用API
+      const response = await fetch("/api/generate-logo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP error ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("接收到的Logo数据:", data);
+      
+      // 更新生成的Logo URL列表
+      setWizardData({
+        ...wizardData,
+        generatedImages: data.display_urls,
+        isLoading: false,
+      });
+      
+      // 生成成功后，立即刷新用户额度信息
+      await refreshUserCredits();
+      
+    } catch (error) {
+      console.error("生成Logo出错:", error);
+      const errorMessage = error instanceof Error ? error.message : "生成Logo时发生未知错误";
+      
+      setWizardData({
+        ...wizardData,
+        isLoading: false,
+        errorMessage: errorMessage,
+      });
+    }
+  };
+  
+  // 刷新用户额度信息的函数
+  const refreshUserCredits = async () => {
+    try {
+      // 触发一个自定义事件，通知UserCreditsDisplay组件刷新
+      const refreshEvent = new CustomEvent('refreshUserCredits', { detail: { forceRefresh: true } });
+      window.dispatchEvent(refreshEvent);
+    } catch (error) {
+      console.error("刷新用户额度信息失败:", error);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -280,24 +380,18 @@ export default function LandingPage() {
               <p className="text-xl text-gray-700 mb-8 max-w-xl mx-auto lg:mx-0">
                 Transform your brand with professional, unique logos created by artificial intelligence. No design skills needed.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  onClick={navigateToCreate} 
-                  size="lg" 
-                  className="group bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-full px-8 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300"
-                >
-                  Create Your Logo Now
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Button 
-                  onClick={navigateToPricing} 
-                  size="lg" 
-                  variant="outline" 
-                  className="rounded-full px-8 border-2 border-gray-300 hover:border-gray-400 text-gray-700"
-                >
-                  View Pricing
-                </Button>
-                  </div>
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <Link href="/create">
+                  <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-6 text-lg font-medium rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all">
+                    开始创建Logo
+                  </Button>
+                </Link>
+                <Link href="/styles">
+                  <Button variant="outline" className="border-gray-300 px-8 py-6 text-lg font-medium rounded-xl hover:bg-gray-50 transition-all">
+                    浏览Logo样式库
+                  </Button>
+                </Link>
+              </div>
               <div className="mt-8 flex items-center justify-center lg:justify-start">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
@@ -522,10 +616,10 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-violet-700">
-              Simple, Transparent Pricing
+              Create More Logos with Our AI Tool
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Choose the perfect plan for your logo design needs
+              Choose a plan that fits your needs and generate unique logos. Whether you're just starting out or need regular creations, our flexible offerings will easily meet your branding requirements.
             </p>
           </motion.div>
           
@@ -549,7 +643,8 @@ export default function LandingPage() {
                 <div className="p-6 text-center">
                   <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
                   <div className="text-3xl font-bold mb-2">{plan.price}</div>
-                  <p className="text-sm text-gray-600 mb-6">{plan.description}</p>
+                  <div className="text-xl font-bold text-blue-600 mt-2">{plan.tokens} TOKENS</div>
+                  <p className="text-sm text-gray-600 mb-6">{plan.idealFor || plan.description}</p>
                   <Button
                     onClick={plan.ctaAction}
                     className={`w-full ${

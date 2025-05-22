@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+    <rect width="400" height="400" fill="white"/>
+    
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- 特定于样式和变体的内容 -->
+    <path d="M150,90 C200,70 250,90 250,130 C250,170 200,190 150,170 Z" fill="url(#grad)" stroke="#8B5CF6" stroke-width="2"/>
+    
+    <!-- 品牌名称 -->
+    <text x="200" y="250" font-family="Arial, sans-serif" font-size="20" 
+          font-weight="bold" text-anchor="middle" 
+          fill="#333">Elegance</text>
+  </svg>

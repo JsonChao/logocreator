@@ -1,23 +1,15 @@
-<svg width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- 专业风格logo - 使用清晰、权威的设计元素 -->
-  <rect width="250" height="250" fill="white"/>
-  
-  <!-- 主体部分 - 盾牌/徽章形状 -->
-  <path d="M125 40C160 40 185 65 185 100V150C185 170 160 185 125 185C90 185 65 170 65 150V100C65 65 90 40 125 40Z" fill="#F5F8FC"/>
-  <path d="M125 45C157.5 45 180 67.5 180 100V150C180 167.5 157.5 180 125 180C92.5 180 70 167.5 70 150V100C70 67.5 92.5 45 125 45Z" stroke="#162B59" stroke-width="2"/>
-  
-  <!-- 装饰元素 - 星形/几何图形 -->
-  <path d="M125 70L130 85H145L135 95L140 110L125 100L110 110L115 95L105 85H120L125 70Z" fill="#2B4F90"/>
-  
-  <!-- 简约横线 -->
-  <line x1="85" y1="130" x2="165" y2="130" stroke="#2B4F90" stroke-width="2"/>
-  <line x1="95" y1="140" x2="155" y2="140" stroke="#2B4F90" stroke-width="2"/>
-  <line x1="105" y1="150" x2="145" y2="150" stroke="#2B4F90" stroke-width="2"/>
-  
-  <!-- Logo文字部分 -->
-  <text x="125" y="205" font-family="sans-serif" font-size="20" font-weight="700" fill="#162B59" text-anchor="middle" dominant-baseline="middle">PROFESSIONAL</text>
-  
-  <!-- 额外装饰 - 精简的几何形状 -->
-  <rect x="85" y="115" width="80" height="2" fill="#162B59"/>
-  <circle cx="125" cy="85" r="3" fill="#162B59"/>
-</svg> 
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="white"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E40AF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- 样式特定的形状 -->
+  <rect x="120" y="100" width="160" height="60" fill="url(#grad)"/>
+      <rect x="140" y="120" width="120" height="20" fill="white"/>
+  <!-- 文本 -->
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#333333">专业</text>
+  <text x="200" y="250" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666666">样式预览</text>
+</svg>

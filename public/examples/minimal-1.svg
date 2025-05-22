@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+    <rect width="400" height="400" fill="white"/>
+    
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B7280;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#9CA3AF;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- 特定于样式和变体的内容 -->
+    <rect x="120" y="100" width="160" height="60" fill="url(#grad)"/>
+    
+    <!-- 品牌名称 -->
+    <text x="200" y="250" font-family="Arial, sans-serif" font-size="24" 
+          font-weight="bold" text-anchor="middle" 
+          fill="#6B7280">Minimal</text>
+  </svg>

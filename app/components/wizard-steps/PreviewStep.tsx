@@ -140,17 +140,6 @@ export default function PreviewStep({
 
   const toggleLike = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // 检查用户是否已登录
-    if (!isSignedIn) {
-      toast({
-        title: "需要登录",
-        description: "请登录以收藏您喜欢的Logo",
-        variant: "default",
-      });
-      return;
-    }
-    
     if (likedImages.includes(index)) {
       setLikedImages(likedImages.filter(i => i !== index));
       toast({
@@ -560,17 +549,6 @@ export default function PreviewStep({
   // 设置要下载的Logo索引
   const handleDownloadSelection = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    // 检查用户是否已登录
-    if (!isSignedIn) {
-      toast({
-        title: "需要登录",
-        description: "请登录以下载Logo",
-        variant: "default",
-      });
-      return;
-    }
-    
     setDownloadIndex(index);
     setShowExportOptions(true);
   };
@@ -695,33 +673,21 @@ export default function PreviewStep({
               ))}
             </div>
             
-            {onLoadMore && !showLoadMoreOptions && (
+            {onLoadMore && isSignedIn && !showLoadMoreOptions && (
               <div className="mt-8 flex justify-start">
-                {isSignedIn ? (
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setMoreLogoCount(logoCount); // 默认使用和主生成相同的数量
-                      setShowLoadMoreOptions(true);
-                    }}
-                    className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
-                    disabled={isLoading || loadingMore}
-                  >
-                    <span className="text-lg">查看更多Logo</span>
-                    <ChevronRightIcon className="h-4 w-4" />
-                    <ChevronRightIcon className="h-4 w-4 -ml-3" />
-                  </Button>
-                ) : (
-                  <SignInButton mode="modal">
-                    <Button 
-                      variant="ghost"
-                      className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
-                    >
-                      <span className="text-lg">登录查看更多Logo</span>
-                      <ChevronRightIcon className="h-4 w-4" />
-                    </Button>
-                  </SignInButton>
-                )}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setMoreLogoCount(logoCount); // 默认使用和主生成相同的数量
+                    setShowLoadMoreOptions(true);
+                  }}
+                  className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800 focus:outline-none" 
+                  disabled={isLoading || loadingMore}
+                >
+                  <span className="text-lg">查看更多Logo</span>
+                  <ChevronRightIcon className="h-4 w-4" />
+                  <ChevronRightIcon className="h-4 w-4 -ml-3" />
+                </Button>
               </div>
             )}
             
@@ -851,15 +817,6 @@ export default function PreviewStep({
                           <Button 
                             className="bg-orange-500 hover:bg-orange-600 text-white"
                             onClick={() => {
-                              if (!isSignedIn) {
-                                toast({
-                                  title: "需要登录",
-                                  description: "请登录以下载Logo",
-                                  variant: "default",
-                                });
-                                return;
-                              }
-                              
                               setShowPreview(false);
                               if (previewIndex !== null) {
                                 setDownloadIndex(previewIndex);
@@ -897,42 +854,61 @@ export default function PreviewStep({
             
             {/* Logo下载选项弹窗 */}
             <Dialog open={showExportOptions} onOpenChange={setShowExportOptions}>
-              <DialogContent className="w-72 p-4">
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-semibold mb-2 text-center">选择下载格式</h3>
+              <DialogContent className="w-80 p-5">
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-semibold mb-2 text-center text-lg">选择下载格式</h3>
+                  <div className="border-b pb-2">
+                    <p className="text-sm text-gray-500 mb-2">选择最适合您用途的文件格式</p>
+                  </div>
+                  
                   <Button 
-                    variant="ghost" 
-                    className="justify-start text-base" 
+                    variant="outline" 
+                    className="justify-start text-base py-6 pl-4 relative overflow-hidden group" 
                     onClick={() => {
                       handleDownloadLogo('png');
                       setShowExportOptions(false);
                     }}
                   >
-                    PNG格式
-                    <span className="ml-2 text-sm text-gray-500">(位图)</span>
+                    <div className="absolute right-3 top-3 h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">
+                      推荐
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg font-medium">PNG格式</span>
+                      <span className="text-sm text-gray-500 mt-1">透明背景位图，适合网站和数字媒体</span>
+                    </div>
                   </Button>
+                  
                   <Button 
-                    variant="ghost" 
-                    className="justify-start text-base" 
+                    variant="outline" 
+                    className="justify-start text-base py-6 pl-4 relative" 
                     onClick={() => {
                       handleDownloadLogo('svg');
                       setShowExportOptions(false);
                     }}
                   >
-                    SVG格式
-                    <span className="ml-2 text-sm text-gray-500">(矢量)</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg font-medium">SVG格式</span>
+                      <span className="text-sm text-gray-500 mt-1">矢量图形，可无限缩放，适合印刷</span>
+                    </div>
                   </Button>
+                  
                   <Button 
-                    variant="ghost" 
-                    className="justify-start text-base" 
+                    variant="outline" 
+                    className="justify-start text-base py-6 pl-4 relative" 
                     onClick={() => {
                       handleDownloadLogo('jpg');
                       setShowExportOptions(false);
                     }}
                   >
-                    JPG格式
-                    <span className="ml-2 text-sm text-gray-500">(压缩)</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-lg font-medium">JPG格式</span>
+                      <span className="text-sm text-gray-500 mt-1">压缩格式，适合电子邮件和社交媒体</span>
+                    </div>
                   </Button>
+                  
+                  <div className="text-xs text-gray-400 mt-2 text-center">
+                    所有格式均可免费商业使用
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -959,13 +935,23 @@ export default function PreviewStep({
               点击下方按钮生成 {logoCount} 个专业Logo{logoCount > 1 ? '' : ''}
             </p>
             
-            <Button
-              onClick={onGenerateLogo}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
-              disabled={isLoading}
-            >
-              {isLoading ? "生成中..." : "生成Logo"}
-            </Button>
+            {isSignedIn ? (
+              <Button
+                onClick={onGenerateLogo}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                {isLoading ? "生成中..." : "生成Logo"}
+              </Button>
+            ) : (
+              <SignInButton mode="modal">
+                <Button 
+                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
+                >
+                  登录以生成
+                </Button>
+              </SignInButton>
+            )}
           </motion.div>
         )}
         

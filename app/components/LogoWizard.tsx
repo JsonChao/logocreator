@@ -213,8 +213,8 @@ export default function LogoWizard({
             className="mx-auto container py-6"
           >
             {currentStep === 0 && (
-              <CompanyNameStep
-                companyName={wizardData.companyName}
+              <CompanyNameStep 
+                companyName={wizardData.companyName} 
                 onCompanyNameChange={handleCompanyNameChange}
                 onContinue={goToNextStep}
               />
@@ -230,15 +230,15 @@ export default function LogoWizard({
             )}
             
             {currentStep === 2 && (
-              <StyleSelectionStep
-                style={wizardData.style}
+              <StyleSelectionStep 
+                style={wizardData.style} 
                 onStyleChange={handleStyleChange}
                 onBack={goToPreviousStep}
               />
             )}
             
             {currentStep === 3 && (
-              <ColorSelectionStep
+              <ColorSelectionStep 
                 primaryColor={wizardData.primaryColor}
                 backgroundColor={wizardData.backgroundColor}
                 onPrimaryColorChange={handleColorChange}
@@ -249,7 +249,7 @@ export default function LogoWizard({
             )}
             
             {currentStep === 4 && (
-              <PreviewStep 
+              <PreviewStep
                 generatedImages={wizardData.generatedImages}
                 companyName={wizardData.companyName}
                 isLoading={wizardData.isLoading}

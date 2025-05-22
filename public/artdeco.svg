@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="white"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- 样式特定的形状 -->
+  <path d="M150,80 L250,80 L270,130 L250,180 L150,180 L130,130 Z" fill="url(#grad)" stroke="#4F46E5" stroke-width="2"/>
+      <rect x="170" y="100" width="60" height="60" fill="white"/>
+  <!-- 文本 -->
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#333333">装饰艺术</text>
+  <text x="200" y="250" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#666666">样式预览</text>
+</svg>
