@@ -148,172 +148,160 @@ export async function POST(req: Request) {
     
     // 批量生成多张图片 - 使用用户选择的数量
     const desiredImageCount = data.logoCount; // Use user-selected count
-    const batchSize = Math.min(3, desiredImageCount); // 减小单批次大小以确保每批都能成功
-    const batches = Math.ceil(desiredImageCount / batchSize);
+    const batchSize = 1; // 每个请求只能生成1张图片
+    const batches = desiredImageCount; // 总批次等于要生成的图片数量
     
-    console.log(`将生成 ${desiredImageCount} 张Logo图片，分 ${batches} 批次处理`);
+    console.log(`将生成 ${desiredImageCount} 张Logo图片，需要发送 ${batches} 个独立请求`);
     
     let allImageUrls: string[] = [];
     
-    // 按批次并行生成多张图片
-    for (let batch = 0; batch < batches; batch++) {
-      console.log(`开始生成第${batch + 1}/${batches}批图片...`);
+    // 并行发送多个请求，每个请求生成一张图片
+    const allPromises = [];
+    
+    for (let i = 0; i < desiredImageCount; i++) {
+      // 为每个请求添加轻微变化，确保生成的图片各不相同
+      const uniqueSuffix = [
+        ", modern perspective", 
+        ", minimalist approach", 
+        ", elegant design", 
+        ", creative concept", 
+        ", bold appearance", 
+        ", professional look",
+        ", distinctive brand", 
+        ", geometric style", 
+        ", artistic approach",
+        ", dynamic feel",
+        ", sleek finish",
+        ", premium quality"
+      ][i % 12];
       
-      const batchPromises = [];
-      for (let i = 0; i < batchSize && (batch * batchSize + i) < desiredImageCount; i++) {
-        // 为每个请求添加轻微变化，确保生成的图片各不相同
-        const uniqueSuffix = [
-          ", modern perspective", 
-          ", minimalist approach", 
-          ", elegant design", 
-          ", creative concept", 
-          ", bold appearance", 
-          ", professional look",
-          ", distinctive brand", 
-          ", geometric style", 
-          ", artistic approach",
-          ", dynamic feel",
-          ", sleek finish",
-          ", premium quality"
-        ][i % 12];
+      const input = {
+        prompt: basePrompt + uniqueSuffix,
+        seed: Math.floor(Math.random() * 1000000) // 随机种子增加多样性
+      };
+      
+      console.log(`准备生成第 ${i + 1}/${desiredImageCount} 张图片`);
+      
+      // 创建一个函数来处理单次预测，包括重试逻辑
+      const createSinglePrediction = async () => {
+        const maxCreateRetries = 3;
+        let prediction = null;
+        let createError = null;
         
-        const input = {
-          prompt: basePrompt + uniqueSuffix,
-          seed: Math.floor(Math.random() * 1000000) // 随机种子增加多样性
-        };
-        
-        // 创建一个函数来处理单次预测，包括重试逻辑
-        const createSinglePrediction = async () => {
-          const maxCreateRetries = 3;
-          let prediction = null;
-          let createError = null;
-          
-          for (let retry = 0; retry < maxCreateRetries; retry++) {
-            try {
-              console.log(`尝试创建预测 (批次 ${batch + 1}, 图片 ${i + 1}, 尝试 ${retry + 1}/${maxCreateRetries})...`);
-              
-              // 创建预测
-              prediction = await replicate.predictions.create({
-                version: model,
-                input: input,
-                webhook: undefined,
-                webhook_events_filter: undefined
-              });
-              
-              if (prediction && prediction.id) {
-                console.log(`成功创建预测: ${prediction.id}`);
-                break; // 成功创建，跳出循环
-              }
-            } catch (error) {
-              createError = error;
-              console.error(`创建预测尝试 ${retry + 1} 失败:`, error);
-              
-              // 如果是队列满的错误，等待后重试
-              if (error instanceof Error && 
-                  (error.message.includes("Queue is full") || error.message.includes("wait and retry"))) {
-                console.log("队列已满，等待后重试...");
-                await new Promise(resolve => setTimeout(resolve, 5000)); // 等待5秒后重试
-              } else {
-                // 其他错误直接抛出
-                break;
-              }
-            }
-          }
-          
-          if (!prediction) {
-            throw new Error(createError instanceof Error 
-              ? createError.message 
-              : "创建预测失败，请稍后重试");
-          }
-          
-          // 等待预测完成 - flux-schnell更快，可以减少等待时间
-          let finalPrediction = prediction;
-          let retries = 0;
-          const maxRetries = 15;
-          const retryInterval = 1500; // 1.5秒检查一次状态
-          
-          while (
-            finalPrediction.status !== "succeeded" && 
-            finalPrediction.status !== "failed" &&
-            retries < maxRetries
-          ) {
-            // 暂停执行
-            await new Promise((resolve) => setTimeout(resolve, retryInterval));
+        for (let retry = 0; retry < maxCreateRetries; retry++) {
+          try {
+            console.log(`尝试创建预测 (图片 ${i + 1}, 尝试 ${retry + 1}/${maxCreateRetries})...`);
             
-            // 获取预测状态
-            try {
-              finalPrediction = await replicate.predictions.get(finalPrediction.id);
-              retries++;
-            } catch (error) {
-              console.error("获取预测状态失败:", error);
-              retries++;
-              
-              if (error instanceof Error && error.message.includes("network")) {
-                continue;
-              }
-              
-              throw error;
+            // 创建预测
+            prediction = await replicate.predictions.create({
+              version: model,
+              input: input,
+              webhook: undefined,
+              webhook_events_filter: undefined
+            });
+            
+            if (prediction && prediction.id) {
+              console.log(`成功创建预测: ${prediction.id}`);
+              break; // 成功创建，跳出循环
+            }
+          } catch (error) {
+            createError = error;
+            console.error(`创建预测尝试 ${retry + 1} 失败:`, error);
+            
+            // 如果是队列满的错误，等待后重试
+            if (error instanceof Error && 
+                (error.message.includes("Queue is full") || error.message.includes("wait and retry"))) {
+              console.log("队列已满，等待后重试...");
+              await new Promise(resolve => setTimeout(resolve, 5000)); // 等待5秒后重试
+            } else {
+              // 其他错误直接抛出
+              break;
             }
           }
-          
-          if (retries >= maxRetries && finalPrediction.status !== "succeeded") {
-            throw new Error("生成Logo超时，请稍后重试。");
-          }
-          
-          if (finalPrediction.status === "failed") {
-            throw new Error(finalPrediction.error || "生成Logo失败，但未提供具体错误原因");
-          }
-          
-          // 处理输出 - 可能是字符串或数组
-          let outputUrl = "";
-          if (finalPrediction.output) {
-            if (Array.isArray(finalPrediction.output)) {
-              outputUrl = finalPrediction.output[0];
-            } else if (typeof finalPrediction.output === 'string') {
-              outputUrl = finalPrediction.output;
-            }
-          }
-          
-          if (!outputUrl) {
-            throw new Error("预测成功但没有返回有效的图片URL");
-          }
-          
-          return outputUrl;
-        };
-        
-        // 添加到批处理数组
-        batchPromises.push(createSinglePrediction());
-      }
-      
-      // 等待当前批次的所有请求完成
-      try {
-        const batchResults = await Promise.allSettled(batchPromises);
-        
-        // 筛选成功的结果
-        const successfulUrls = batchResults
-          .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
-          .map(result => result.value);
-        
-        // 记录失败数量
-        const failedCount = batchResults.filter(result => result.status === 'rejected').length;
-        if (failedCount > 0) {
-          console.log(`本批次中有 ${failedCount} 张图片生成失败`);
         }
         
-        // 将成功生成的图片URL添加到结果集
-        allImageUrls = [...allImageUrls, ...successfulUrls];
-        console.log(`批次 ${batch + 1} 完成，当前已成功生成 ${allImageUrls.length} 张图片`);
-      } catch (error) {
-        console.error(`批次 ${batch + 1} 处理失败:`, error);
-      }
+        if (!prediction) {
+          throw new Error(createError instanceof Error 
+            ? createError.message 
+            : "创建预测失败，请稍后重试");
+        }
+        
+        // 等待预测完成 - flux-schnell更快，可以减少等待时间
+        let finalPrediction = prediction;
+        let retries = 0;
+        const maxRetries = 15;
+        const retryInterval = 1500; // 1.5秒检查一次状态
+        
+        while (
+          finalPrediction.status !== "succeeded" && 
+          finalPrediction.status !== "failed" &&
+          retries < maxRetries
+        ) {
+          // 暂停执行
+          await new Promise((resolve) => setTimeout(resolve, retryInterval));
+          
+          // 获取预测状态
+          try {
+            finalPrediction = await replicate.predictions.get(finalPrediction.id);
+            retries++;
+          } catch (error) {
+            console.error("获取预测状态失败:", error);
+            retries++;
+            
+            if (error instanceof Error && error.message.includes("network")) {
+              continue;
+            }
+            
+            throw error;
+          }
+        }
+        
+        if (retries >= maxRetries && finalPrediction.status !== "succeeded") {
+          throw new Error("生成Logo超时，请稍后重试。");
+        }
+        
+        if (finalPrediction.status === "failed") {
+          throw new Error(finalPrediction.error || "生成Logo失败，但未提供具体错误原因");
+        }
+        
+        // 处理输出 - 可能是字符串或数组
+        let outputUrl = "";
+        if (finalPrediction.output) {
+          if (Array.isArray(finalPrediction.output)) {
+            outputUrl = finalPrediction.output[0];
+          } else if (typeof finalPrediction.output === 'string') {
+            outputUrl = finalPrediction.output;
+          }
+        }
+        
+        if (!outputUrl) {
+          throw new Error("预测成功但没有返回有效的图片URL");
+        }
+        
+        return outputUrl;
+      };
       
-      // 如果已生成足够多的图片，可以提前退出
-      if (allImageUrls.length >= Math.floor(desiredImageCount * 0.75)) {
-        // 如果已经生成了至少75%的请求数量，就提前结束
-        console.log(`已生成足够数量的图片 (${allImageUrls.length}/${desiredImageCount})，提前结束生成过程`);
-        break;
-      }
+      // 将这个请求添加到Promise数组
+      allPromises.push(createSinglePrediction());
     }
+    
+    // 等待所有请求完成，收集所有成功生成的图片
+    const results = await Promise.allSettled(allPromises);
+    
+    // 筛选成功的结果
+    const successfulUrls = results
+      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+      .map(result => result.value);
+    
+    // 记录失败数量
+    const failedCount = results.filter(result => result.status === 'rejected').length;
+    if (failedCount > 0) {
+      console.log(`共有 ${failedCount} 张图片生成失败`);
+    }
+    
+    // 添加所有成功的图片URL
+    allImageUrls = [...allImageUrls, ...successfulUrls];
+    console.log(`成功生成 ${allImageUrls.length}/${desiredImageCount} 张图片`);
     
     // 检查是否至少生成了一张图片
     if (allImageUrls.length === 0) {
@@ -332,7 +320,7 @@ export async function POST(req: Request) {
       return `${url}${separator}t=${Date.now()}`;
     });
     
-    console.log(`成功生成 ${timestampedUrls.length} 张Logo图片!`);
+    console.log(`最终返回 ${timestampedUrls.length} 张Logo图片!`);
     
     return new Response(
       JSON.stringify({

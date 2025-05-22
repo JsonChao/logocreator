@@ -112,10 +112,15 @@ export default function PreviewStep({
       // 添加等待时间让logoCount更新在状态中生效
       await new Promise(resolve => setTimeout(resolve, 100));
       
+      toast({
+        title: "正在生成额外Logo",
+        description: `每张Logo需要单独生成，即将生成${moreLogoCount}张，请耐心等待`,
+      });
+      
       await onLoadMore();
       toast({
-        title: "加载更多Logo",
-        description: `正在为您生成${moreLogoCount}个额外的Logo设计方案`,
+        title: "加载更多Logo完成",
+        description: `已为您完成${moreLogoCount}张额外Logo的生成`,
       });
       
       // 关闭数量选择对话框
