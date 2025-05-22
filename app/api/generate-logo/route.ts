@@ -6,7 +6,24 @@ import Replicate from "replicate";
 import { z } from "zod";
 import { uploadToImgBB, storeLogoUrlMapping, ensurePermanentLogoUrl } from "@/app/lib/imageStorage";
 
-let ratelimit: Ratelimit | undefined;
+// 初始化Ratelimit对象 - 确保它在外部作用域创建，而不是每次请求都创建新实例
+let ratelimit: Ratelimit | null = null;
+
+// 如果有Upstash Redis配置，初始化Ratelimit
+if (process.env.UPSTASH_REDIS_REST_URL) {
+  try {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      // Allow 3 requests per 2 months on prod
+      limiter: Ratelimit.fixedWindow(3, "60 d"),
+      analytics: true,
+      prefix: "logocreator",
+    });
+    console.log("Ratelimit已全局初始化");
+  } catch (error) {
+    console.error("初始化速率限制失败:", error);
+  }
+}
 
 // 检查Clerk配置
 const hasClerkConfig = 
@@ -39,13 +56,6 @@ export async function POST(req: Request) {
   // 应用速率限制（如果配置了Clerk和Upstash）
   if (hasClerkConfig && process.env.UPSTASH_REDIS_REST_URL) {
     try {
-    ratelimit = new Ratelimit({
-      redis: Redis.fromEnv(),
-      // Allow 3 requests per 2 months on prod
-      limiter: Ratelimit.fixedWindow(3, "60 d"),
-      analytics: true,
-      prefix: "logocreator",
-    });
     } catch (error) {
       console.error("初始化速率限制失败:", error);
     }
@@ -68,6 +78,39 @@ export async function POST(req: Request) {
   // 检查用户额度（仅当配置了Clerk和ratelimit且有用户时）
   if (hasClerkConfig && user && ratelimit) {
     try {
+      // 首先尝试手动从用户额度管理脚本使用的键中读取最新值
+      const userCreditsKey = `logocreator:${user.id}:rlflw`;
+      let manualCredits = null;
+      
+      try {
+        if (process.env.UPSTASH_REDIS_REST_URL) {
+          const redis = Redis.fromEnv();
+          manualCredits = await redis.get(userCreditsKey);
+          console.log(`从脚本键(${userCreditsKey})读取的用户额度: ${manualCredits}`);
+          
+          // 如果找到了脚本管理的额度信息，同步到ratelimit键
+          if (manualCredits !== null && typeof manualCredits === 'number' && manualCredits > 0) {
+            const ratelimitKey = `ratelimit:logocreator:${user.id}`;
+            // 检查当前的ratelimit键状态
+            const currentRatelimit = await redis.get(ratelimitKey);
+            
+            if (currentRatelimit) {
+              // 如果ratelimit键存在，更新remaining字段
+              const updatedRatelimit = {
+                ...currentRatelimit,
+                remaining: manualCredits
+              };
+              await redis.set(ratelimitKey, updatedRatelimit);
+              console.log(`已将ratelimit键(${ratelimitKey})的额度同步为: ${manualCredits}`);
+            }
+          }
+        }
+      } catch (syncError) {
+        console.error("尝试同步用户额度失败:", syncError);
+        // 继续使用常规方法检查
+      }
+      
+      // 现在使用ratelimit库检查额度
       const { success: hasCredits, limit, reset, remaining } = await ratelimit.limit(user.id);
       console.log(`用户 ${user.id} 额度状态: 剩余=${remaining}, 总额=${limit}, 重置时间=${new Date(reset).toLocaleString()}`);
       
