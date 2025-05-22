@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon } from "lucide-react";
+import { RefreshCwIcon, DownloadIcon, ChevronLeftIcon, AlertCircleIcon, HeartIcon, Share2Icon, ChevronRightIcon, MinusIcon, PlusIcon, ImageIcon } from "lucide-react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -7,12 +7,15 @@ import Spinner from "../Spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 interface PreviewStepProps {
   generatedImages: string[];
   companyName: string;
   isLoading: boolean;
   errorMessage?: string;
+  logoCount: number;
+  onLogoCountChange: (count: number) => void;
   onGenerateLogo: () => void;
   onDownloadLogo: (format: "png" | "svg" | "jpg") => void;
   onBack?: () => void;
@@ -24,6 +27,8 @@ export default function PreviewStep({
   companyName,
   isLoading,
   errorMessage,
+  logoCount,
+  onLogoCountChange,
   onGenerateLogo,
   onDownloadLogo,
   onBack,
@@ -101,18 +106,30 @@ export default function PreviewStep({
     try {
       await onLoadMore();
       toast({
-        title: "加载更多Logo",
-        description: "正在为您生成更多Logo设计方案",
+        title: "Loading More Logos",
+        description: "Generating additional logo design options for you",
       });
     } catch (error) {
       console.error("Failed to load more logos:", error);
       toast({
         variant: "destructive",
-        title: "加载失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        title: "Loading Failed",
+        description: error instanceof Error ? error.message : "Please try again later",
       });
     } finally {
       setLoadingMore(false);
+    }
+  };
+
+  const incrementLogoCount = () => {
+    if (logoCount < 12) {
+      onLogoCountChange(logoCount + 1);
+    }
+  };
+
+  const decrementLogoCount = () => {
+    if (logoCount > 1) {
+      onLogoCountChange(logoCount - 1);
     }
   };
 
@@ -184,6 +201,79 @@ export default function PreviewStep({
     );
   };
 
+  // Logo quantity selector
+  const renderLogoQuantitySelector = () => {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm"
+      >
+        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <ImageIcon className="mr-2 text-blue-500" size={20} />
+          Select Number of Logos to Generate
+        </h3>
+        
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">Choose how many logo variations you want to create (1-12)</p>
+            <div className="flex items-center">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={decrementLogoCount}
+                disabled={logoCount <= 1 || isLoading}
+                className="h-8 w-8 rounded-full"
+              >
+                <MinusIcon className="h-4 w-4" />
+              </Button>
+              
+              <span className="mx-4 font-bold text-xl w-6 text-center">{logoCount}</span>
+              
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={incrementLogoCount}
+                disabled={logoCount >= 12 || isLoading}
+                className="h-8 w-8 rounded-full"
+              >
+                <PlusIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <Slider
+              value={[logoCount]}
+              min={1}
+              max={12}
+              step={1}
+              onValueChange={(value) => onLogoCountChange(value[0])}
+              disabled={isLoading}
+              className="mx-1"
+            />
+            <div className="flex justify-between mt-2 text-xs text-gray-500">
+              <span>1</span>
+              <span>6</span>
+              <span>12</span>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg mt-2">
+            <p>
+              {logoCount <= 3 ? 
+                "Generate a few focused options (fastest generation time)" : 
+                logoCount <= 6 ? 
+                "Balanced selection of design variations (recommended)" : 
+                "Explore a wide range of design possibilities (longer generation time)"
+              }
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-12">
       <motion.div 
@@ -206,9 +296,9 @@ export default function PreviewStep({
             className="flex flex-col items-center justify-center py-24"
           >
             <Spinner className="h-20 w-20" />
-            <p className="mt-8 text-xl font-medium text-gray-700">正在生成您的Logo作品集...</p>
-            <p className="mt-3 text-base text-gray-600">生成18张高质量Logo需要3-5分钟时间</p>
-            <p className="mt-2 text-sm text-gray-500">AI正在精心设计多种风格的Logo方案，请耐心等待</p>
+            <p className="mt-8 text-xl font-medium text-gray-700">Generating your logo collection...</p>
+            <p className="mt-3 text-base text-gray-600">Generating {logoCount} high-quality logos takes 2-{Math.round(logoCount * 0.5)} minutes</p>
+            <p className="mt-2 text-sm text-gray-500">AI is carefully crafting multiple style variations for your logo, please be patient</p>
           </motion.div>
         ) : errorMessage ? (
           renderErrorState()
@@ -294,7 +384,7 @@ export default function PreviewStep({
                   {loadingMore ? (
                     <div className="flex items-center gap-2">
                       <Spinner className="h-4 w-4" />
-                      <span>加载中...</span>
+                      <span>Loading...</span>
                     </div>
                   ) : (
                     <>
@@ -418,6 +508,8 @@ export default function PreviewStep({
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-16 shadow-sm"
           >
+            {renderLogoQuantitySelector()}
+            
             <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Image
                 src="/logo-placeholder.svg"
@@ -429,7 +521,7 @@ export default function PreviewStep({
             </div>
             <h3 className="mb-3 text-2xl font-semibold text-gray-900">No Logo Generated Yet</h3>
             <p className="mb-10 max-w-md text-center text-lg text-gray-600">
-              Click the button below to start generating your professional logo
+              Click the button below to generate {logoCount} professional logo{logoCount > 1 ? 's' : ''}
             </p>
             
             {isSignedIn ? (
@@ -438,7 +530,7 @@ export default function PreviewStep({
                 className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-lg font-medium text-white hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? "Generating..." : "Generate Logo"}
+                {isLoading ? "Generating..." : "Generate Logos"}
               </Button>
             ) : (
               <SignInButton mode="modal">

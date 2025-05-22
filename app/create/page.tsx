@@ -60,6 +60,7 @@ export default function CreatePage() {
     isLoading: false,
     generatedImages: [],
     errorMessage: "",
+    logoCount: 6, // Default to 6 logos
   });
   
   const [imageError, setImageError] = useState(false);
@@ -215,7 +216,7 @@ export default function CreatePage() {
       console.log("Sending logo generation request...");
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时，适应生成18张图片的时间
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时，适应生成多张图片的时间
       
       const res = await fetch("/api/generate-logo", {
         method: "POST",
@@ -230,6 +231,7 @@ export default function CreatePage() {
           additionalInfo: wizardData.additionalInfo,
           width: wizardData.size.width,
           height: wizardData.size.height,
+          logoCount: wizardData.logoCount, // Add logoCount parameter to API request
         }),
         signal: controller.signal
       });

@@ -22,17 +22,18 @@ export async function POST(req: Request) {
   }
 
   const json = await req.json();
-  const data = z
-    .object({
-      companyName: z.string(),
-      selectedStyle: z.string(),
-      selectedPrimaryColor: z.string(),
-      selectedBackgroundColor: z.string(),
-      additionalInfo: z.string().optional(),
-      width: z.number().default(768),
-      height: z.number().default(768),
-    })
-    .parse(json);
+  const schema = z.object({
+    companyName: z.string(),
+    selectedStyle: z.string(),
+    selectedPrimaryColor: z.string(),
+    selectedBackgroundColor: z.string(),
+    additionalInfo: z.string().optional(),
+    width: z.number().default(768),
+    height: z.number().default(768),
+    logoCount: z.number().default(6).pipe(z.number().min(1).max(12)), // Fixed min/max validation
+  });
+
+  const data = schema.parse(json);
 
   // 应用速率限制（如果配置了Clerk和Upstash）
   if (hasClerkConfig && process.env.UPSTASH_REDIS_REST_URL) {
@@ -129,6 +130,7 @@ export async function POST(req: Request) {
       backgroundColor: data.selectedBackgroundColor,
       width: data.width,
       height: data.height,
+      logoCount: data.logoCount, // Log the requested logo count
     });
     
     // 使用Replicate API生成图像 - 替换为更经济的模型
@@ -144,10 +146,12 @@ export async function POST(req: Request) {
     console.log(`运行模型: ${model}`);
     console.log(`基础提示词: "${basePrompt.substring(0, 100)}..."`);
     
-    // 批量生成多张图片
-    const desiredImageCount = 18; // 期望生成的图片总数
-    const batchSize = 6; // 每批生成的数量(flux-schnell更快，可以增加批量)
+    // 批量生成多张图片 - 使用用户选择的数量
+    const desiredImageCount = data.logoCount; // Use user-selected count
+    const batchSize = Math.min(6, desiredImageCount); // Adjust batch size based on requested count
     const batches = Math.ceil(desiredImageCount / batchSize);
+    
+    console.log(`将生成 ${desiredImageCount} 张Logo图片，分 ${batches} 批次处理`);
     
     let allImageUrls: string[] = [];
     
@@ -298,7 +302,9 @@ export async function POST(req: Request) {
       }
       
       // 如果已生成足够多的图片，可以提前退出
-      if (allImageUrls.length >= desiredImageCount / 2) {
+      if (allImageUrls.length >= Math.floor(desiredImageCount * 0.75)) {
+        // 如果已经生成了至少75%的请求数量，就提前结束
+        console.log(`已生成足够数量的图片 (${allImageUrls.length}/${desiredImageCount})，提前结束生成过程`);
         break;
       }
     }

@@ -23,6 +23,7 @@ export interface WizardData {
   industry?: string;
   fontStyle?: string;
   errorMessage?: string;
+  logoCount: number; // Number of logos to generate (1-12)
 }
 
 interface LogoWizardProps {
@@ -67,6 +68,7 @@ export default function LogoWizard({
     isLoading: false,
     generatedImages: [],
     errorMessage: "",
+    logoCount: 6, // Default to 6 logos
   };
   
   const handleGenerateLogo = generateLogo || onGenerateLogo || (() => Promise.resolve());
@@ -148,6 +150,11 @@ export default function LogoWizard({
     
     // Automatically proceed to next step after selecting color
     setTimeout(() => goToNextStep(), 300);
+  };
+
+  // Handle logo count change
+  const handleLogoCountChange = (count: number) => {
+    onUpdateData({ logoCount: count });
   };
 
   const isCurrentStepValid = () => {
@@ -247,6 +254,8 @@ export default function LogoWizard({
                 companyName={wizardData.companyName}
                 isLoading={wizardData.isLoading}
                 errorMessage={wizardData.errorMessage}
+                logoCount={wizardData.logoCount}
+                onLogoCountChange={handleLogoCountChange}
                 onGenerateLogo={handleGenerateLogo}
                 onDownloadLogo={handleDownloadLogo}
                 onBack={goToPreviousStep}
