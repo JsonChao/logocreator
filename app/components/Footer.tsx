@@ -70,34 +70,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      
-      {/* Newsletter subscription - show only on larger screens */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="hidden md:block bg-gradient-to-r from-blue-50 to-indigo-50 py-8"
-      >
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="font-semibold text-lg text-gray-900">Subscribe to our newsletter</h3>
-              <p className="text-gray-600 text-sm">Get logo design tips and exclusive offers</p>
-            </div>
-            <div className="flex w-full md:w-auto">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
-              />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-lg transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
     </footer>
   );
 }
