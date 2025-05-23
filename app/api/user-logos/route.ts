@@ -3,11 +3,8 @@ import { NextResponse } from "next/server";
 // 修改导入路径指向api/lib目录
 import { ensurePermanentLogoUrl } from "../lib/imageStorage";
 import { userLogos, LogoRecord } from "../lib/store";
-
-// 声明全局变量，用于跨实例标记
-declare global {
-  var __FORCE_CLEAR_LOGOS_FOR_USER: string | undefined;
-}
+// 导入共享状态模块
+import { hasClearLogosMark, resetClearLogosMark } from "../lib/shared-state";
 
 // 获取用户的所有Logo
 export async function GET() {
@@ -21,11 +18,11 @@ export async function GET() {
     const userId = user.id;
     
     // 检查是否有清除标记，如果有则确保数据被清除
-    if (global.__FORCE_CLEAR_LOGOS_FOR_USER === userId) {
+    if (hasClearLogosMark(userId)) {
       console.log(`检测到用户 ${userId} 的清除标记，确保数据被清除`);
       userLogos[userId] = [];
       // 清除标记
-      global.__FORCE_CLEAR_LOGOS_FOR_USER = undefined;
+      resetClearLogosMark();
     }
     
     // 如果用户在我们的"数据库"中没有Logo，返回空数组

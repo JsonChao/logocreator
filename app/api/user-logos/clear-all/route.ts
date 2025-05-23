@@ -2,11 +2,8 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 // 修改导入路径指向api/lib目录
 import { userLogos } from "../../lib/store";
-
-// 声明全局变量，用于跨实例标记
-declare global {
-  var __FORCE_CLEAR_LOGOS_FOR_USER: string | undefined;
-}
+// 导入共享变量模块
+import { setClearLogosMark } from "../../lib/shared-state";
 
 // 清除用户的所有Logo记录
 export async function POST() {
@@ -43,7 +40,7 @@ export async function POST() {
     
     // 设置一个特殊标记，确保下次获取时重新初始化
     // 这是一个内存中的标记，但有助于解决部分清空问题
-    global.__FORCE_CLEAR_LOGOS_FOR_USER = userId;
+    setClearLogosMark(userId);
     
     return NextResponse.json({ 
       success: true, 
