@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { ensurePermanentLogoUrl } from "@/app/lib/imageStorage";
-import { userLogos } from "@/app/lib/store";
+import { ensurePermanentLogoUrl } from "src/lib/imageStorage";
+import { userLogos } from "src/lib/store";
 
 // 声明全局变量，用于跨实例标记
 declare global {
