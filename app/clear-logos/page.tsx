@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import Header from '../components/Header';
@@ -9,6 +10,7 @@ import Footer from '../components/Footer';
 
 export default function ClearLogosPage() {
   const { isSignedIn, user } = useUser();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   
@@ -46,6 +48,9 @@ export default function ClearLogosPage() {
         title: "操作成功",
         description: data.message,
       });
+      
+      // 强制刷新router，确保数据变更后视图更新
+      router.refresh();
     } catch (error) {
       console.error("清除Logo失败:", error);
       toast({
@@ -56,6 +61,12 @@ export default function ClearLogosPage() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // 返回到历史页面并刷新
+  const goToHistory = () => {
+    // 优先使用router.push以获得客户端导航体验
+    router.push('/history?forceRefresh=' + new Date().getTime());
   };
   
   return (
@@ -86,6 +97,17 @@ export default function ClearLogosPage() {
             {result && (
               <div className="mt-6 p-4 bg-green-50 text-green-800 rounded-md">
                 {result}
+              </div>
+            )}
+            
+            {result && (
+              <div className="flex gap-4 mt-2">
+                <Button 
+                  onClick={goToHistory}
+                  variant="outline"
+                >
+                  返回到我的Logo页面
+                </Button>
               </div>
             )}
           </div>
