@@ -1,6 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { userLogos } from "src/lib/store";
+import { userLogos } from "../../../lib/store";
 
 // 声明全局变量，用于跨实例标记
 declare global {
