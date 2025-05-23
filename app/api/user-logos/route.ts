@@ -2,7 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 // 直接使用绝对路径，不带别名
 import { ensurePermanentLogoUrl } from "app/lib/imageStorage";
-import { userLogos } from "app/lib/store";
+import { userLogos, LogoRecord } from "app/lib/store";
 
 // 声明全局变量，用于跨实例标记
 declare global {
@@ -35,7 +35,7 @@ export async function GET() {
     
     // 处理所有Logo URL，确保是永久URL
     const userLogosWithPermanentUrls = await Promise.all(
-      userLogos[userId].map(async (logo) => {
+      userLogos[userId].map(async (logo: LogoRecord) => {
         // 检查并更新图片URL为永久URL
         const permanentUrl = await ensurePermanentLogoUrl(logo.imageUrl);
         
