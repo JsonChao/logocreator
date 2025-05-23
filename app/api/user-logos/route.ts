@@ -1,20 +1,12 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { ensurePermanentLogoUrl } from "@/app/lib/imageStorage";
+import { userLogos } from "@/app/lib/store";
 
-// 模拟数据库存储
-// 在实际项目中，这应该使用真实的数据库，如Prisma + PostgreSQL
-const userLogos: Record<string, Array<{
-  id: string;
-  userId: string;
-  createdAt: string;
-  companyName: string;
-  style: string;
-  primaryColor: string;
-  backgroundColor: string;
-  imageUrl: string;
-  liked: boolean;
-}>> = {};
+// 声明全局变量，用于跨实例标记
+declare global {
+  var __FORCE_CLEAR_LOGOS_FOR_USER: string | undefined;
+}
 
 // 获取用户的所有Logo
 export async function GET() {
@@ -27,55 +19,17 @@ export async function GET() {
     
     const userId = user.id;
     
+    // 检查是否有清除标记，如果有则确保数据被清除
+    if (global.__FORCE_CLEAR_LOGOS_FOR_USER === userId) {
+      console.log(`检测到用户 ${userId} 的清除标记，确保数据被清除`);
+      userLogos[userId] = [];
+      // 清除标记
+      global.__FORCE_CLEAR_LOGOS_FOR_USER = undefined;
+    }
+    
     // 如果用户在我们的"数据库"中没有Logo，返回空数组
     if (!userLogos[userId]) {
-      // 创建模拟数据用于演示
-      userLogos[userId] = [
-        {
-          id: "1",
-          userId,
-          createdAt: "2023-05-20T10:30:00Z",
-          companyName: "TechWave",
-          style: "tech",
-          primaryColor: "#0288D1",
-          backgroundColor: "#FFFFFF",
-          imageUrl: "https://replicate.delivery/pbxt/IRXdmLGaXlMGLsE2ov7gm1Rn57VDKpbsXMC93j4NQLwZQIjIA/output.png",
-          liked: true
-        },
-        {
-          id: "2",
-          userId,
-          createdAt: "2023-05-18T14:20:00Z",
-          companyName: "EcoLeaf",
-          style: "minimal",
-          primaryColor: "#388E3C",
-          backgroundColor: "#FFFFFF",
-          imageUrl: "https://replicate.delivery/pbxt/W3Fde4F0D4kHFGriqfuNgpkK6OOh4PGZfg2W2z0LhyuJGPdFC/output.png",
-          liked: false
-        },
-        {
-          id: "3",
-          userId,
-          createdAt: "2023-05-15T09:45:00Z",
-          companyName: "ArtDeco",
-          style: "playful",
-          primaryColor: "#E53935",
-          backgroundColor: "#FFFFFF",
-          imageUrl: "https://replicate.delivery/pbxt/oGw43xMF2VZYElXGQYORJAkwcaWdamdTHkpA2wXHxpgwu7NJA/out-0.png",
-          liked: true
-        },
-        {
-          id: "4",
-          userId,
-          createdAt: "2023-05-10T16:30:00Z",
-          companyName: "CloudSync",
-          style: "modern",
-          primaryColor: "#2D2DFF",
-          backgroundColor: "#FFFFFF",
-          imageUrl: "https://replicate.delivery/pbxt/X3b71qPHVoEMRpnYVrQk32tlUCNpNH7Cs0bKyH7G6Dqr2cRJA/out-0.png",
-          liked: false
-        },
-      ];
+      userLogos[userId] = [];
     }
     
     // 处理所有Logo URL，确保是永久URL
