@@ -4,10 +4,22 @@ import { NextResponse } from "next/server";
 // 导入用户Logo存储对象
 // 注意：这是在模块作用域之外声明的，以模拟从另一个文件中导入
 // 在实际项目中，应该使用数据库而不是内存对象
-declare const userLogos: Record<string, Array<any>>;
+interface LogoRecord {
+  id: string;
+  userId: string;
+  createdAt: string;
+  companyName: string;
+  style: string;
+  primaryColor: string;
+  backgroundColor: string;
+  imageUrl: string;
+  liked: boolean;
+}
+
+declare const userLogos: Record<string, Array<LogoRecord>>;
 
 // 清除用户的所有Logo记录
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const user = await currentUser();
     

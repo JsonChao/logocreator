@@ -234,7 +234,7 @@ export async function DELETE(req: Request) {
 }
 
 // 删除用户的所有Logo
-export async function DELETE_ALL(req: Request) {
+export async function DELETE_ALL() {
   try {
     const user = await currentUser();
     
