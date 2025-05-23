@@ -1,16 +1,10 @@
 "use client";
 
 import React from 'react';
-import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-export const metadata: Metadata = {
-  title: 'Blog | LogocraftAI',
-  description: 'Discover the latest trends, tips, and best practices in logo design, brand strategy, and visual marketing.',
-};
 
 // Blog post type definition
 type BlogPost = {
