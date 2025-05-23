@@ -124,11 +124,11 @@ export async function POST(req: Request) {
         console.log(`用户 ${user.id} 额度状态: 剩余=${remaining}, 总额=${limit}, 重置时间=${new Date(reset).toLocaleString()}`);
         
         if (!hasCredits) {
-          return new Response(
+      return new Response(
             "Your logo generation credits have been depleted. Please wait until next month or upgrade your plan for more credits.",
-            {
+        {
               status: 429, // Too Many Requests
-              headers: { "Content-Type": "text/plain" },
+          headers: { "Content-Type": "text/plain" },
             }
           );
         }
@@ -420,7 +420,7 @@ export async function POST(req: Request) {
           } else {
             console.warn("未配置IMGBB_API_KEY，无法上传到ImgBB获取永久URL");
           }
-        } catch (error) {
+  } catch (error) {
           console.error("处理永久URL时出错:", error);
         }
         
