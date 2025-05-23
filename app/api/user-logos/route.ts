@@ -126,7 +126,7 @@ export async function PUT(req: Request) {
     }
     
     // 查找并更新Logo
-    const logoIndex = userLogos[userId].findIndex(logo => logo.id === data.id);
+    const logoIndex = userLogos[userId].findIndex((logo: LogoRecord) => logo.id === data.id);
     
     if (logoIndex === -1) {
       return new NextResponse("Logo不存在", { status: 404 });
@@ -174,7 +174,7 @@ export async function DELETE(req: Request) {
     
     // 查找并删除Logo
     const initialLength = userLogos[userId].length;
-    userLogos[userId] = userLogos[userId].filter(logo => logo.id !== id);
+    userLogos[userId] = userLogos[userId].filter((logo: LogoRecord) => logo.id !== id);
     
     // 检查是否删除了Logo
     if (userLogos[userId].length === initialLength) {
