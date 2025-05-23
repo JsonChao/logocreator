@@ -1,8 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-// 直接使用绝对路径，不带别名
-import { ensurePermanentLogoUrl } from "app/lib/imageStorage";
-import { userLogos, LogoRecord } from "app/lib/store";
+// 尝试使用通用的相对路径，从当前文件位置回溯到app目录
+import { ensurePermanentLogoUrl } from "../../lib/imageStorage";
+import { userLogos, LogoRecord } from "../../lib/store";
 
 // 声明全局变量，用于跨实例标记
 declare global {
