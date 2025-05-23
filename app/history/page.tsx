@@ -48,7 +48,9 @@ export default function HistoryPage() {
       
       try {
         setLoading(true);
-        const response = await fetch('/api/user-logos');
+        // 添加时间戳参数，确保每次请求都是全新的，避免浏览器缓存
+        const timeStamp = new Date().getTime();
+        const response = await fetch(`/api/user-logos?t=${timeStamp}`);
         
         if (!response.ok) {
           throw new Error(`Request failed: ${response.status}`);
